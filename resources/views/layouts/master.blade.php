@@ -7,6 +7,11 @@
 	<title>Dashboard - HRTech</title>
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/bootstrap.min.css') }}">
+	<!-- Include Bootstrap 4 or 5 and DateTimePicker dependencies -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/5.39.0/css/tempus-dominus.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/5.39.0/js/tempus-dominus.min.js"></script>
 	<!-- Fontawesome CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/font-awesome.min.css') }}">
 	<!-- Lineawesome CSS -->
@@ -21,7 +26,6 @@
 	<link rel="stylesheet" href="{{ URL::to('ssets/plugins/morris/morris.css') }}">
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/style.css') }}">
-
 	{{-- message toastr --}}
 	<link rel="stylesheet" href="{{ URL::to('assets/css/toastr.min.css') }}">
 	<script src="{{ URL::to('assets/js/toastr_jquery.min.js') }}"></script>
@@ -140,7 +144,7 @@
 				<div class="dropdown-menu">
 					<a class="dropdown-item" href="{{ route('profile_user') }}">My Profile</a>
 					<a class="dropdown-item" href="{{ route('company/settings/page') }}">Settings</a>
-					<a class="dropdown-item" href="{{ route('logout') }}">Logout</a>
+					<a class="dropdown-item" href="{{ route('auth/logout') }}">Logout</a>
 				</div>
 			</li>
 			<!-- /User Dropdown -->
@@ -155,12 +159,11 @@
 			<div class="dropdown-menu dropdown-menu-right">
 				<a class="dropdown-item" href="{{ route('profile_user') }}">My Profile</a>
 				<a class="dropdown-item" href="{{ route('company/settings/page') }}">Settings</a>
-				<a class="dropdown-item" href="{{ route('logout') }}">Logout</a>
+				<a class="dropdown-item" href="{{ route('auth/logout') }}">Logout</a>
 			</div>
 		</div>
 		<!-- /Mobile Menu -->
 	</div>
-
 		<!-- /Header -->
 		<!-- Sidebar -->
 		@include('sidebar.sidebar')

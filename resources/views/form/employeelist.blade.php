@@ -163,11 +163,7 @@
                                 <div class="col-sm-6">
                                     <div class="form-group">
                                         <label class="col-form-label">Company</label>
-                                        <select class="select" id="company" name="company">
-                                            <option value="">-- Select --</option>
-                                            <option value="Soeng Souy">Soeng Souy</option>
-                                            <option value="StarGame Kh">StarGame Kh</option>
-                                        </select>
+                                        <input type="text" class="form-control" id="company" name="company"  value="HRCompany" readonly>
                                     </div>
                                 </div>
                             </div>

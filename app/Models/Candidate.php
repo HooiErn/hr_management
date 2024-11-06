@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ApplyForJob extends Model
+class Candidate extends Model
 {
     use HasFactory;
     protected $fillable = [
         'job_title',
+        'candidate_id',
         'name',
         'age',
         'race',
@@ -22,5 +23,6 @@ class ApplyForJob extends Model
         'message',
         'cv_upload',
         'interview_datetime',
+        'role_name',
     ];
 }

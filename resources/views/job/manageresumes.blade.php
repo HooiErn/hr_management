@@ -1,5 +1,35 @@
 @extends('layouts.master')
 @section('content')
+<!-- CSS for Button Styling -->
+<style>
+    .toggle-btn {
+        background-color: transparent;
+        border: none;
+        color: #007bff;
+        font-weight: bold;
+        font-size: 10px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .toggle-btn:focus {
+        outline: none;
+    }
+
+    .toggle-btn:hover {
+        color: #0056b3;
+    }
+
+    .toggle-btn::after {
+        content: " ▼";
+        font-size: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-btn.active::after {
+        transform: rotate(-180deg);
+    }
+</style>
     <!-- Page Wrapper -->
     <div class="page-wrapper">
         <!-- Page Content -->
@@ -18,7 +48,100 @@
                 </div>
             </div>
             <!-- /Page Header -->
-            
+           <!-- Search Filter -->
+            <form action="#" method="POST">
+                @csrf
+                <div class="row filter-row">
+                    <!-- Basic Search Fields -->
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="employee_id">
+                            <label class="focus-label">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="age">
+                            <label class="focus-label">Age</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3"> 
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="position">
+                            <label class="focus-label">Position</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <button type="submit" class="btn btn-success btn-block"> Search </button>  
+                    </div>
+                </div>
+
+                <!-- Advanced Search Fields (Initially Hidden) -->
+                <div class="row filter-row" id="advanced-search" style="display: none;">
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="job_title">
+                            <label class="focus-label">Job Title</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="number" class="form-control floating" name="experience" min="0" max="100">
+                            <label class="focus-label">Work Experience (Years)</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="department">
+                            <label class="focus-label">Department</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="sex">
+                                <option value="" disabled selected></option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                            <label class="focus-label">Sex</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="job_type">
+                                <option value="" disabled selected></option>
+                                <option value="full_time">Full Time</option>
+                                <option value="part_time">Part Time</option>
+                                <option value="internship">Internship</option>
+                                <option value="temporary">Temporary</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <label class="focus-label">Job Type</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="race">
+                                <option value="" disabled selected></option>
+                                <option value="malay">Malay</option>
+                                <option value="chinese">Chinese</option>
+                                <option value="indian">Indian</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <label class="focus-label">Race</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Show More/Less Button -->
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <button type="button" id="toggle-advanced" class="btn btn-link">Show Advanced Search</button>
+                    </div>
+                </div>
+            </form>
+            <!-- Search Filter -->
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
@@ -57,7 +180,7 @@
                                     <td hidden class="age">{{ $items->age }}</td>
                                     <td>
                                         <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="{{ URL::to('assets/img/profiles/avatar-02.jpg')}}"></a>
+                                            <a href="profile.html" class="avatar"><img alt="" src="{{ URL::to('assets/images/profiles/avatar2.jpg')}}"></a>
                                             <a href="profile.html">{{ $items->name }} <span>{{ $items->job_title }}</span></a>
                                         </h2>
                                     </td>
@@ -266,8 +389,20 @@
         <!-- /Delete Job Modal -->
         
     </div>
+    <!-- JavaScript to Toggle Advanced Search -->
+    <script>
+        document.getElementById('toggle-advanced').addEventListener('click', function() {
+            var advancedSearch = document.getElementById('advanced-search');
+            if (advancedSearch.style.display === 'none') {
+                advancedSearch.style.display = 'flex';
+                this.textContent = 'Hide Advanced Search';
+            } else {
+                advancedSearch.style.display = 'none';
+                this.textContent = 'Show Advanced Search';
+            }
+        });
+    </script>
     <!-- /Page Wrapper -->
-
     {{-- update --}}
     <script>
         $(document).on('click','.edit_job',function()

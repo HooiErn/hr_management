@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'user_id',
         'email',
+        'gender',
         'join_date',
         'phone_number',
         'status',

@@ -8,15 +8,15 @@
             <div class="page-header">
                 <div class="row align-items-center">
                     <div class="col">
-                        <h3 class="page-title">Candidates List</h3>
+                        <h3 class="page-title">Interviewer List</h3>
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
                             <li class="breadcrumb-item">Jobs</li>
-                            <li class="breadcrumb-item active">Candidates List</li>
+                            <li class="breadcrumb-item active">Interviewer List</li>
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                        <a href="#" data-toggle="modal" data-target="#add_candidate" class="btn add-btn"> Add Candidates</a>
+                        <a href="#" data-toggle="modal" data-target="#add_candidate" class="btn add-btn"> Add Interviewer</a>
                     </div>
                 </div>
             </div>
@@ -29,10 +29,13 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>Interviewer ID</th>
                                     <th>Name</th>
                                     <th>Mobile Number</th>
                                     <th>Email</th>
-                                    <th>Created Date</th>
+                                    <th>Gender</th>
+                                    <th>Resume</th>
+                                    <th>Schedule DateTime</th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
@@ -47,7 +50,9 @@
                                     </td>
                                     <td>9876543210</td>
                                     <td>johndoe@example.com</td>
-                                    <td>1 Jan 2013</td>
+                                    <td>Male</td>
+                                    <td></td>
+                                    <td>1 Jan 2024</td>
                                     <td class="text-center">
                                         <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>

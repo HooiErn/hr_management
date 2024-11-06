@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('apply_for_jobs', function (Blueprint $table) {
+        Schema::create('interviewer', function (Blueprint $table) {
             $table->id();
             $table->string('job_title')->nullable();
             $table->string('name')->nullable();
@@ -28,9 +28,11 @@ return new class extends Migration
             $table->text('message')->nullable();
             $table->string('cv_upload')->nullable();
             $table->dateTime('interview_datetime')->nullable();  // Added interview_date and interview_time as combined datetime field
+            $table->string('status')->nullable();
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      *
@@ -38,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('apply_for_jobs');
+        Schema::dropIfExists('interviewers');
     }
 };

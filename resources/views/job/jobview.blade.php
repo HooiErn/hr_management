@@ -2,6 +2,15 @@
 @section('content')
     {{-- message --}}
     {!! Toastr::message() !!}
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
     <!-- Main Wrapper -->
     <div class="main-wrapper">
         <!-- Header -->
@@ -9,13 +18,13 @@
             <!-- Logo -->
             <div class="header-left">
                 <a href="{{ route('home') }}" class="logo">
-                    <img src="{{ URL::to('assets/img/logo.png') }}" width="40" height="40" alt="">
+                    <img src="{{ URL::to('images/logo-circle.png') }}" width="40" height="40" alt="">
                 </a>
             </div>
             <!-- /Logo -->
             <!-- Header Title -->
             <div class="page-title-box float-left">
-                <h3>Soeng Souy</h3>
+                <h3>Apply Job</h3>
             </div>
             <!-- /Header Title -->
             <!-- Header Menu -->
@@ -49,12 +58,6 @@
                 </li>
                 <!-- /Flag -->
                 
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('login') }}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('register') }}">Register</a>
-                </li>
             </ul>
             <!-- /Header Menu -->
 
@@ -81,7 +84,7 @@
                         <div class="col">
                             <h3 class="page-title">Jobs</h3>
                             <ul class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('form/job/list') }}">Dashboard</a></li>
                                 <li class="breadcrumb-item active">Jobs</li>
                             </ul>
                         </div>
@@ -136,12 +139,17 @@
                             <div class="info-list">
                                 <span><i class="fa fa-money"></i></span>
                                 <h5>Salary</h5>
-                                <p>{{ $job_view[0]->salary_from }}$ - {{ $job_view[0]->salary_to }}$</p>
+                                <p>RM{{ $job_view[0]->salary_from }} - RM{{ $job_view[0]->salary_to }}</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-suitcase"></i></span>
                                 <h5>Experience</h5>
                                 <p>{{ $job_view[0]->experience }}</p>
+                            </div>
+                            <div class="info-list">
+                                <span><i class="fa fa-user"></i></span>
+                                <h5>Age</h5>
+                                <p>{{ $job_view[0]->age }} above</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-ticket"></i></span>
@@ -179,36 +187,121 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form action="{{ route('form/apply/job/save') }}" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <div class="form-group">
-                                    <label>Name</label>
-                                    <input type="hidden" name="job_title" value="{{ $job_view[0]->job_title }}">
-                                    <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}">
-                                </div>
-                                <div class="form-group">
-                                    <label>Phone</label>
-                                    <input class="form-control @error('phone') is-invalid @enderror" type="tel" name="phone" value="{{ old('phone') }}">
-                                </div>
-                                <div class="form-group">
-                                    <label>Email Address</label>
-                                    <input class="form-control @error('email') is-invalid @enderror" type="text" name="email" value="{{ old('email') }}">
-                                </div>
-                                <div class="form-group">
-                                    <label>Message</label>
-                                    <textarea class="form-control @error('message') is-invalid @enderror" name="message">{{ old('message') }}</textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>Upload your CV</label>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload">
-                                        <label class="custom-file-label" for="cv_upload">Choose file</label>
+                        <form action="{{ route('form/apply/job/save') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6">
+                                <input type="hidden" name="interview_datetime" value="{{ old('interview_datetime') }}">
+                                    <div class="form-group">
+                                        <label>Name</label>
+                                        <input type="hidden" name="job_title" value="{{ $job_view[0]->job_title }}">
+                                        <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}">
+                                        <small class="form-text text-muted">*Fullname in NRIC</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Birth Date</label>
+                                        <input class="form-control @error('birth_date') is-invalid @enderror" type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Age</label>
+                                        <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" id="age" readonly>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Race</label>
+                                        <div class="form-group form-focus">
+                                        <select class="form-control floating" name="race">
+                                            <option value="" disabled selected></option>
+                                            <option value="malay">Malay</option>
+                                            <option value="chinese">Chinese</option>
+                                            <option value="indian">Indian</option>
+                                            <option value="others">Others</option>
+                                        </select>
+                                        <label class="focus-label">Race</label>
+                                    </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Gender</label>
+                                        <select class="form-control @error('gender') is-invalid @enderror" name="gender">
+                                            <option value="" disabled selected></option>
+                                            <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                            <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                            <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="submit-section">
-                                    <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" id="phone_number" placeholder="Enter phone number with country code" pattern="[0-9]{10,13}" value="{{ old('phone_number') }}">
+                                        <small class="form-text text-muted">e.g., 60123456789 for Malaysia</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Email Address</label>
+                                        <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" value="{{ old('email') }}">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Highest Education</label>
+                                        <select class="form-control @error('highest_education') is-invalid @enderror" name="highest_education">
+                                            <option value="" disabled selected>Select your education</option>
+                                            <option value="Secondary" {{ old('highest_education') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
+                                            <option value="Foundation" {{ old('highest_education') == 'Foundation ' ? 'selected' : '' }}>Foundation</option>
+                                            <option value="Diploma" {{ old('highest_education') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                                            <option value="Degree" {{ old('highest_education') == 'Degree' ? 'selected' : '' }}>Degree</option>
+                                            <option value="Master" {{ old('highest_education') == 'Master' ? 'selected' : '' }}>Master</option>
+                                            <option value="PhD" {{ old('highest_education') == 'PhD' ? 'selected' : '' }}>PhD</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Work Experiences (Years)</label>
+                                        <input class="form-control @error('work_experiences') is-invalid @enderror" type="number" name="work_experiences" value="{{ old('work_experiences') }}" min="0" max="100">
+                                        @error('work_experiences')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Role Name</label>
+                                        <input class="form-control @error('role_name') is-invalid @enderror" type="text" name="role_name" value="{{ old('role_name', 'Candidate') }}" readonly>
+                                    </div>
+
                                 </div>
-                            </form>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Upload your CV</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload" onchange="updateFileName(this)">
+                                    <label class="custom-file-label" for="cv_upload">Choose file</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Message (short intro)</label>
+                                <textarea class="form-control @error('message') is-invalid @enderror" name="message" id="message" placeholder="Max 20 words">{{ old('message') }}</textarea>
+                                <small class="form-text text-muted" id="word-count">0/20 words</small>
+                            </div>
+                            
+
+                            <!-- <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Interview Date and Time</label>
+                                    <input class="form-control @error('interview_datetime') is-invalid @enderror" type="datetime-local" name="interview_datetime" value="{{ old('interview_datetime') }}">
+                                </div>
+                            </div>
+                        </div> -->
+                            <div class="submit-section">
+                                <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                            </div>
+                        </form>
+
                         </div>
                     </div>
                 </div>
@@ -219,4 +312,52 @@
         <!-- /Page Wrapper -->
     </div>
     <!-- /Main Wrapper -->
+    <!-- Auto-calculate Age Based on Birth Date -->
+    <script>
+        document.getElementById('birth_date').addEventListener('change', function() {
+            const birthDate = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            document.getElementById('age').value = age;
+        });
+    </script>
+    <!-- /Auto-calculate Age Based on Birth Date -->
+    <!--  Message Field with Word Limit -->
+    <script>
+        document.getElementById('message').addEventListener('input', function() {
+            const message = this.value.trim();
+            const words = message.split(/\s+/).filter(word => word.length > 0);
+            const wordCount = words.length;
+            
+            document.getElementById('word-count').textContent = wordCount + '/20 words';
+
+            // Prevent adding more than 20 words
+            if (wordCount > 20) {
+                this.value = words.slice(0, 20).join(' ');
+                document.getElementById('word-count').textContent = '20/20 words'; // Ensure count shows 20/20
+            }
+        });
+    </script>
+    <!-- /Message Field with Word Limit-->
+    <!--Show CV filename when Upload-->
+    <script>
+        function updateFileName(input) {
+            // Get the label associated with the input
+            var label = input.nextElementSibling;
+            
+            // Check if a file is selected
+            if (input.files && input.files[0]) {
+                // Set the label to the name of the selected file
+                label.innerText = input.files[0].name;
+            } else {
+                // Reset to default text if no file is selected
+                label.innerText = 'Choose file';
+            }
+        }
+        </script>
+     <!--/Show CV filename when Upload-->
 @endsection

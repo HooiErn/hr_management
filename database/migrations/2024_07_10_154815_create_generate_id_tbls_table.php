@@ -29,6 +29,6 @@ class CreateGenerateIdTblsTable extends Migration
      */
     public function down()
     {
-       DB::unprepared('DROP TRIGGER "id_store"');
+       DB::unprepared('DROP TRIGGER `id_store`');
     }
 }

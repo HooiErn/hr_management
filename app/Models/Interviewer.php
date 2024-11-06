@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ApplyForJob extends Model
+class Interviewer extends Model
 {
     use HasFactory;
     protected $fillable = [
@@ -16,7 +16,6 @@ class ApplyForJob extends Model
         'gender',
         'phone_number',
         'email',
-        'birth_date',
         'highest_education',
         'work_experiences',
         'message',

@@ -7,7 +7,7 @@ use App\Http\Controllers\PhotosController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LockScreen;
@@ -36,12 +36,16 @@ use App\Http\Controllers\PersonalInformationController;
 */
 
 /** for side bar menu active */
-function set_active( $route ) {
-    if( is_array( $route ) ){
-        return in_array(Request::path(), $route) ? 'active' : '';
+// Ensure the function is not redeclared
+if (!function_exists('set_active')) {
+    function set_active($route) {
+        if (is_array($route)) {
+            return in_array(Request::path(), $route) ? 'active' : '';
+        }
+        return Request::path() == $route ? 'active' : '';
     }
-    return Request::path() == $route ? 'active' : '';
 }
+
 
 Route::get('/', function () {
     return view('auth.login');
@@ -80,7 +84,7 @@ Route::controller(SettingController::class)->group(function () {
 Route::controller(LoginController::class)->group(function () {
     Route::get('/login', 'login')->name('login');
     Route::post('/login', 'authenticate');
-    Route::get('/logout', 'logout')->name('logout');
+    Route::get('/logout', 'logout')->name('auth/logout');
 });
 
 // ----------------------------- lock screen --------------------------------//
@@ -92,13 +96,13 @@ Route::controller(LockScreen::class)->group(function () {
 // ------------------------------ register ---------------------------------//
 Route::controller(RegisterController::class)->group(function () {
     Route::get('/register', 'register')->name('register');
-    Route::post('/register','storeUser')->name('register');    
+    Route::post('/register','storeUser')->name('store/register');    
 });
 
 // ----------------------------- forget password ----------------------------//
 Route::controller(ForgotPasswordController::class)->group(function () {
     Route::get('forget-password', 'getEmail')->name('forget-password');
-    Route::post('forget-password', 'postEmail')->name('forget-password');    
+    Route::post('forget-password', 'postEmail')->name('password/email');    
 });
 
 // ----------------------------- reset password -----------------------------//
@@ -158,6 +162,8 @@ Route::controller(JobController::class)->group(function () {
     Route::post('form/apply/job/update', 'applyJobUpdateRecord')->name('form/apply/job/update');
 
     Route::get('page/manage/resumes', 'manageResumesIndex')->middleware('auth')->name('page/manage/resumes');
+    Route::post('all/resumes/search', 'employeeSearch')->name('all/resumes/search');
+    
     Route::get('page/shortlist/candidates', 'shortlistCandidatesIndex')->middleware('auth')->name('page/shortlist/candidates');
     Route::get('page/interview/questions', 'interviewQuestionsIndex')->middleware('auth')->name('page/interview/questions'); // view page
     Route::post('save/category', 'categorySave')->name('save/category'); // save record category
@@ -167,6 +173,7 @@ Route::controller(JobController::class)->group(function () {
     Route::get('page/offer/approvals', 'offerApprovalsIndex')->middleware('auth')->name('page/offer/approvals');
     Route::get('page/experience/level', 'experienceLevelIndex')->middleware('auth')->name('page/experience/level');
     Route::get('page/candidates', 'candidatesIndex')->middleware('auth')->name('page/candidates');
+    Route::get('page/interviewer', 'InterviewerIndex')->middleware('auth')->name('page/interviwer');
     Route::get('page/schedule/timing', 'scheduleTimingIndex')->middleware('auth')->name('page/schedule/timing');
     Route::get('page/aptitude/result', 'aptituderesultIndex')->middleware('auth')->name('page/aptitude/result');
 
@@ -310,7 +317,7 @@ Route::controller(SalesController::class)->group(function () {
     Route::post('expenses/delete', 'deleteRecord')->middleware('auth')->name('expenses/delete');
         // ---------------------- search expenses  ---------------//
     Route::get('expenses/search', 'searchRecord')->middleware('auth')->name('expenses/search');
-    Route::post('expenses/search', 'searchRecord')->middleware('auth')->name('expenses/search');
+    Route::post('expenses/search', 'searchRecord')->middleware('auth')->name('search/record');
     
 });
 

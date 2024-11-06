@@ -10,7 +10,7 @@
                         <h3 class="account-title">Register</h3>
                         <p class="account-subtitle">Access to our dashboard</p>
                         <!-- Account Form -->
-                        <form method="POST" action="{{ route('register') }}">
+                        <form method="POST" action="{{ route('store/register') }}">
                             @csrf
                             <div class="form-group">
                                 <label>Full Name</label>
@@ -34,12 +34,7 @@
                             <input type="hidden" class="image" name="image" value="photo_defaults.jpg">
                             <div class="form-group">
                                 <label class="col-form-label">Role Name</label>
-                                <select class="select @error('role_name') is-invalid @enderror" name="role_name" id="role_name">
-                                    <option selected disabled>-- Select Role Name --</option>
-                                    @foreach ($role as $name)
-                                        <option value="{{ $name->role_type }}">{{ $name->role_type }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" class="form-control" name="role_name" value="Interviewer" readonly>
                                 @error('role_name')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>

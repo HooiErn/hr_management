@@ -6,7 +6,7 @@
             <!-- Logo -->
             <div class="header-left">
                 <a href="{{ route('home') }}" class="logo">
-                    <img src="{{ URL::to('assets/img/logo.png') }}" width="40" height="40" alt="">
+                    <img src="{{ URL::to('images/logo-circle.png') }}" width="45" height="45" alt="HR logo">
                 </a>
             </div>
             <!-- /Logo -->
@@ -43,9 +43,9 @@
                 <div class="page-header">
                     <div class="row">
                         <div class="col-sm-12">
-                            <h3 class="page-title">Jobs</h3>
+                            <h3 class="page-title">Get a Job !</h3>
                             <ul class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('form/job/list') }}">Dashboard</a></li>
                                 <li class="breadcrumb-item active">Jobs</li>
                             </ul>
                         </div>

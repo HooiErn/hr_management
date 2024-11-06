@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use DB;
 use App\Models\AddJob;
 use App\Models\ApplyForJob;
+use App\Models\Candidate;
 use App\Models\Category;
 use App\Models\Question;
 use Carbon\Carbon;
@@ -133,7 +134,7 @@ class JobController extends Controller
             $add_job->save();
 
             DB::commit();
-            Toastr::success('Create add job successfully :)','Success');
+            Toastr::success('Create job successfully :)','Success');
             return redirect()->back();
             
         } catch(\Exception $e) {
@@ -153,7 +154,7 @@ class JobController extends Controller
     /** download */
     public function downloadCV($id) {
         $cv_uploads = DB::table('apply_for_jobs')->where('id',$id)->first();
-        $pathToFile = public_path("assets/images/{$cv_uploads->cv_upload}");
+        $pathToFile = public_path("assets/cv/{$cv_uploads->cv_upload}");
         return \Response::download($pathToFile);
     }
 
@@ -164,16 +165,28 @@ class JobController extends Controller
         return view('job.jobdetails',compact('job_view_detail'));
     }
 
+    protected function generateUniqueCandidateId()
+    {
+        return 'CAND-' . time() . '-' . mt_rand(1000, 9999); // format
+    }
+
     /** apply Job SaveRecord */
     public function applyJobSaveRecord(Request $request) 
     {
         $request->validate([
-            'job_title' => 'required|string|max:255',
-            'name'      => 'required|string|max:255',
-            'phone'     => 'required|string|max:255',
-            'email'     => 'required|string|email',
-            'message'   => 'required|string|max:255',
-            'cv_upload' => 'required',
+            'job_title' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'phone_number' => 'required|string|regex:/^[0-9]{10,13}$/', 
+            'email' => 'required|email|max:255',
+            'age' => 'nullable|integer|min:0|max:120',
+            'race' => 'nullable|string|max:50',
+            'gender' => 'nullable|string|in:Male,Female,Other', 
+            'birth_date' => 'nullable|date', 
+            'highest_education' => 'nullable|string|max:255',
+            'work_experiences' => 'nullable|integer|min:0|max:100',
+            'message' => 'nullable|string|max:1000',
+            'cv_upload' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'interview_datetime' => 'nullable|date_format:Y-m-d H:i:s'
         ]);
 
         DB::beginTransaction();
@@ -181,15 +194,42 @@ class JobController extends Controller
 
             /** upload file */
             $cv_uploads = time().'.'.$request->cv_upload->extension();  
-            $request->cv_upload->move(public_path('assets/images'), $cv_uploads);
+            $request->cv_upload->move(public_path('assets/cv/'), $cv_uploads);
+
+            // Generate a unique candidate ID
+            $candidate_id = $this->generateUniqueCandidateId(); // Call the method
+
+            // Save candidate data
+            $candidate = new Candidate;
+            $candidate->candidate_id = $candidate_id;
+            $candidate->name = $request->name;
+            $candidate->age = $request->age; 
+            $candidate->race = $request->race; 
+            $candidate->gender = $request->gender; 
+            $candidate->phone_number = $request->phone_number; 
+            $candidate->email = $request->email;
+            $candidate->birth_date = $request->birth_date; 
+            $candidate->highest_education = $request->highest_education; 
+            $candidate->work_experiences = $request->work_experiences;
+            $candidate->role_name = $request->role_name; 
+            $candidate->interview_datetime = $request->interview_datetime; 
+            $candidate->save();
             
+            // Save job application data
             $apply_job = new ApplyForJob;
-            $apply_job->job_title = $request->job_title;
-            $apply_job->name      = $request->name;
-            $apply_job->phone     = $request->phone;
-            $apply_job->email     = $request->email;
-            $apply_job->message   = $request->message;
-            $apply_job->cv_upload = $cv_uploads;
+            $apply_job->job_title          = $request->job_title;
+            $apply_job->name               = $request->name;
+            $apply_job->age                = $request->age; 
+            $apply_job->race               = $request->race; 
+            $apply_job->gender             = $request->gender; 
+            $apply_job->birth_date         = $request->birth_date; 
+            $apply_job->phone_number       = $request->phone_number;
+            $apply_job->email              = $request->email;
+            $apply_job->highest_education  = $request->highest_education;
+            $apply_job->work_experiences   = $request->work_experiences; 
+            $apply_job->message            = $request->message;
+            $apply_job->cv_upload          = $cv_uploads;
+            $apply_job->interview_datetime = $request->interview_datetime;
             $apply_job->save();
 
             DB::commit();
@@ -251,6 +291,11 @@ class JobController extends Controller
     public function shortlistCandidatesIndex()
     {
         return view('job.shortlistcandidates');
+    }
+
+    /**Interviwerer page */
+    public function InterviewerIndex(){
+        return view('job.interviewer');
     }
 
     /** interview questions */

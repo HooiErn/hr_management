@@ -138,12 +138,7 @@
                                 <div class="col-sm-6">
                                     <div class="form-group">
                                         <label class="col-form-label">Company</label>
-                                        <select class="select select2s-hidden-accessible" style="width: 100%;" tabindex="-1" aria-hidden="true" id="company" name="company">
-                                            <option value="">-- Select --</option>
-                                            @foreach ($userList as $key=>$user )
-                                                <option value="{{ $user->name }}">{{ $user->name }}</option>
-                                            @endforeach
-                                        </select>
+                                        <input type="text" class="form-control" id="company" name="company"  value="HRCompany" readonly>
                                     </div>
                                 </div>
                             </div>

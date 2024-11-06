@@ -184,8 +184,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Age</label>
-                                        <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" value="{{ old('age') }}">
+                                        <label>Age (+)</label>
+                                        <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" value="{{ old('age') }}" min="17" max="100">
                                     </div>
                                 </div>
                             </div>
