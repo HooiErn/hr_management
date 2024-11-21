@@ -74,6 +74,7 @@ Route::controller(HomeController::class)->group(function () {
 // -----------------------------settings----------------------------------------//
 Route::controller(SettingController::class)->group(function () {
     Route::get('company/settings/page', 'companySettings')->middleware('auth')->name('company/settings/page');
+    Route::post('/settings/companysettings/save', 'saveCompanySettings')->middleware('auth')->name('company/settings/save');
     Route::get('roles/permissions/page', 'rolesPermissions')->middleware('auth')->name('roles/permissions/page');
     Route::post('roles/permissions/save', 'addRecord')->middleware('auth')->name('roles/permissions/save');
     Route::post('roles/permissions/update', 'editRolesPermissions')->middleware('auth')->name('roles/permissions/update');
@@ -153,6 +154,7 @@ Route::controller(JobController::class)->group(function () {
     Route::get('user/dashboard/visited/jobs', 'userDashboardVisited')->middleware('auth')->name('user/dashboard/visited/jobs');
     Route::get('user/dashboard/archived/jobs', 'userDashboardArchived')->middleware('auth')->name('user/dashboard/archived/jobs');
     Route::get('jobs', 'Jobs')->middleware('auth')->name('jobs');
+    Route::post('/jobs/delete',  'JobsDeleteRecord')->middleware('auth')->name('jobs/delete');
     Route::get('job/applicants/{job_title}', 'jobApplicants')->middleware('auth');
     Route::get('job/details/{id}', 'jobDetails')->middleware('auth');
     Route::get('cv/download/{id}', 'downloadCV')->middleware('auth');
@@ -173,6 +175,7 @@ Route::controller(JobController::class)->group(function () {
     Route::get('page/offer/approvals', 'offerApprovalsIndex')->middleware('auth')->name('page/offer/approvals');
     Route::get('page/experience/level', 'experienceLevelIndex')->middleware('auth')->name('page/experience/level');
     Route::get('page/candidates', 'candidatesIndex')->middleware('auth')->name('page/candidates');
+    Route::post('page/candidates/search', 'searchCandidates')->middleware('auth')->name('candidates/search');
     Route::get('page/interviewer', 'InterviewerIndex')->middleware('auth')->name('page/interviwer');
     Route::get('page/schedule/timing', 'scheduleTimingIndex')->middleware('auth')->name('page/schedule/timing');
     Route::get('page/aptitude/result', 'aptituderesultIndex')->middleware('auth')->name('page/aptitude/result');
