@@ -28,19 +28,20 @@
 			<!-- /Page Header -->
 
             <!-- Search Filter -->
-            <form action="{{ route('all/employee/search') }}" method="POST">
+            <form action="#" method="POST">
                 @csrf
                 <div class="row filter-row">
+                    <!-- Basic Search Fields -->
                     <div class="col-sm-6 col-md-3">  
                         <div class="form-group form-focus">
                             <input type="text" class="form-control floating" name="employee_id">
-                            <label class="focus-label">Employee ID</label>
+                            <label class="focus-label">Name</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">  
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="name">
-                            <label class="focus-label">Employee Name</label>
+                            <input type="text" class="form-control floating" name="age">
+                            <label class="focus-label">Age</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3"> 
@@ -50,10 +51,73 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">  
-                        <button type="sumit" class="btn btn-success btn-block"> Search </button>  
+                        <button type="submit" class="btn btn-success btn-block"> Search </button>  
                     </div>
                 </div>
-            </form>
+
+                <!-- Advanced Search Fields (Initially Hidden) -->
+                <div class="row filter-row" id="advanced-search" style="display: none;">
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="job_title">
+                            <label class="focus-label">Job Title</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="number" class="form-control floating" name="experience" min="0" max="100">
+                            <label class="focus-label">Work Experience (Years)</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="department">
+                            <label class="focus-label">Department</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="sex">
+                                <option value="" disabled selected></option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                            <label class="focus-label">Sex</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="job_type">
+                                <option value="" disabled selected></option>
+                                <option value="full_time">Full Time</option>
+                                <option value="part_time">Part Time</option>
+                                <option value="internship">Internship</option>
+                                <option value="temporary">Temporary</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <label class="focus-label">Job Type</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="race">
+                                <option value="" disabled selected></option>
+                                <option value="malay">Malay</option>
+                                <option value="chinese">Chinese</option>
+                                <option value="indian">Indian</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <label class="focus-label">Race</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Show More/Less Button -->
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <button type="button" id="toggle-advanced" class="btn btn-link">Show Advanced Search</button>
+                    </div>
+                </div>
             <!-- Search Filter -->
             {{-- message --}}
             {!! Toastr::message() !!}

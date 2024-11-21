@@ -108,17 +108,18 @@
                                             Candidates
                                         </a>
                                     </td>
-                                    
-                                    <td class="text-right">
-                                        <div class="dropdown dropdown-action">
+                                    <td>
+                                    <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                             <div class="dropdown-menu dropdown-menu-right">
                                                 <a href="#" class="dropdown-item edit_job" data-toggle="modal" data-target="#edit_job"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                                    <a href="javascript:void(0);" class="dropdown-item" data-toggle="modal" data-target="#delete_job" data-id="{{ $items->id }}">
+                                                        <i class="fa fa-trash-o m-r-5"></i> Delete
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -171,7 +172,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>No of Vacancies</label>
-                                        <input class="form-control @error('no_of_vacancies') is-invalid @enderror" type="text" name="no_of_vacancies" value="{{ old('no_of_vacancies') }}">
+                                        <input class="form-control @error('no_of_vacancies') is-invalid @enderror" type="number" name="no_of_vacancies" value="{{ old('no_of_vacancies') }}" min="1" max="99">
                                     </div>
                                 </div>
                             </div>
@@ -300,7 +301,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>No of Vacancies</label>
-                                        <input class="form-control" type="text" id="e_no_of_vacancies" name="no_of_vacancies" value="">
+                                        <input class="form-control" type="number" id="e_no_of_vacancies" name="no_of_vacancies" value="" min="1" max="99">
                                     </div>
                                 </div>
                             </div>
@@ -386,19 +387,23 @@
         </div>
         <!-- /Edit Job Modal -->
 
-        <!-- Delete Job Modal -->
+      <!-- Delete Job Modal -->
         <div class="modal custom-modal fade" id="delete_job" role="dialog">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="form-header">
                             <h3>Delete Job</h3>
-                            <p>Are you sure want to delete?</p>
+                            <p>Are you sure you want to delete?</p>
                         </div>
                         <div class="modal-btn delete-action">
                             <div class="row">
-                                <div class="col-6">
-                                    <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                                <div class="col-6 text-center">
+                                    <form id="deleteForm" action="{{ route('jobs/delete') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="job_id" id="job_id" value="">
+                                        <button type="submit" class="btn btn-primary continue-btn">Delete</button>
+                                    </form>
                                 </div>
                                 <div class="col-6">
                                     <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
@@ -445,7 +450,13 @@
                 var _option = '<option selected value="' +status+ '">' + _this.find('.status').text() + '</option>'
                 $( _option).appendTo("#e_status");
             });
-            
+
+            $(document).on('click', '[data-target="#delete_job"]', function () {
+                var jobId = $(this).data('id');
+                $('#job_id').val(jobId);
+            });
+
+
         </script>
     @endsection
 @endsection

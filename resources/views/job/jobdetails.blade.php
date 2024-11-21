@@ -78,8 +78,8 @@
                         </div>
                         <div class="info-list">
                             <p class="text-truncate"> 096-566-666
-                            <br> <a href="https://www.souysoeng.com" title="soengsouy@example.com">soengsouy@example.com</a>
-                            <br> <a href="https://www.souysoeng.com" target="_blank" title="https://www.souysoeng.com">https://www.souysoeng.com</a>
+                            <br> <a href="#" title="soengsouy@example.com">soengsouy@example.com</a>
+                            <br> <a href="#" target="_blank">https://www.souysoeng.com</a>
                             </p>
                         </div>
                         <div class="info-list text-center">

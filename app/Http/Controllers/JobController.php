@@ -89,10 +89,11 @@ class JobController extends Controller
     /** jobs */
     public function Jobs()
     {
+        $jobs = AddJob::all(); 
         $department = DB::table('departments')->get();
         $type_job   = DB::table('type_jobs')->get();
         $job_list   = DB::table('add_jobs')->get();
-        return view('job.jobs',compact('department','type_job','job_list'));
+        return view('job.jobs',compact('department','type_job','job_list','jobs'));
     }
 
     /** job save record */
@@ -143,6 +144,25 @@ class JobController extends Controller
             return redirect()->back();
         } 
     }
+
+    /*Delete Jobs */
+    public function JobsDeleteRecord(Request $request)
+{
+    DB::beginTransaction();
+    try {
+        $job = AddJob::findOrFail($request->job_id);
+        $job->delete();
+
+        DB::commit();
+        Toastr::success('Job deleted successfully :)', 'Success');
+        return redirect()->back();
+    } catch (\Exception $e) {
+        DB::rollback();
+        Toastr::error('Failed to delete the job :)', 'Error');
+        return redirect()->back();
+    }
+}
+
     
     /** job applicants */
     public function jobApplicants($job_title)
@@ -209,6 +229,7 @@ class JobController extends Controller
             $candidate->phone_number = $request->phone_number; 
             $candidate->email = $request->email;
             $candidate->birth_date = $request->birth_date; 
+            $candidate->job_title = $request->job_title;
             $candidate->highest_education = $request->highest_education; 
             $candidate->work_experiences = $request->work_experiences;
             $candidate->role_name = $request->role_name; 
@@ -445,8 +466,66 @@ class JobController extends Controller
     /** candidates */
     public function candidatesIndex()
     {
-        return view('job.candidates');
+        $candidates = DB::table('candidates')->get();
+
+        return view('job.candidates',compact('candidates'));
     }
+
+    /*Search Candidates*/
+    public function searchCandidates(Request $request)
+{
+        // Validate input
+        $validated = $request->validate([
+            'employee_id' => 'nullable|string',
+            'age' => 'nullable|numeric',
+            'position' => 'nullable|string',
+            'job_title' => 'nullable|string',
+            'experience' => 'nullable|numeric|min:0|max:100',
+            'department' => 'nullable|string',
+            'Gender' => 'nullable|string|in:male,female',
+            'job_type' => 'nullable|string|in:full_time,part_time,internship,temporary,others',
+            'race' => 'nullable|string|in:malay,chinese,indian,others',
+        ]);
+
+        // Build the query dynamically
+        $query = Candidate::query();
+
+        // Add conditions based on input fields
+        if (!empty($validated['employee_id'])) {
+            $query->where('name', 'like', '%' . $validated['employee_id'] . '%');
+        }
+        if (!empty($validated['age'])) {
+            $query->where('age', $validated['age']);
+        }
+        if (!empty($validated['position'])) {
+            $query->where('position', 'like', '%' . $validated['position'] . '%');
+        }
+        if (!empty($validated['job_title'])) {
+            $query->where('job_title', 'like', '%' . $validated['job_title'] . '%');
+        }
+        if (!empty($validated['experience'])) {
+            $query->where('work_experiences', '>=', $validated['experience']);
+        }
+        if (!empty($validated['department'])) {
+            $query->where('department', 'like', '%' . $validated['department'] . '%');
+        }
+        if (!empty($validated['Gender'])) {
+            $query->where('gender', $validated['Gender']);
+        }
+        if (!empty($validated['job_type'])) {
+            $query->where('job_type', $validated['job_type']);
+        }
+        if (!empty($validated['race'])) {
+            $query->where('race', $validated['race']);
+        }
+
+        // Execute the query and get the results
+        $candidates = $query->get();
+
+        // Return the results to a view
+        return view('job.candidates', compact('candidates'));
+    }
+
 
     /** schedule timing */
     public function scheduleTimingIndex()

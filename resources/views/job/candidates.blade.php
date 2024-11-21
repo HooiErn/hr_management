@@ -1,3 +1,38 @@
+<style>
+    /* Reduce table cell padding */
+.table td, 
+.table th {
+    padding: 5px; 
+    font-size: 12px; 
+    vertical-align: middle; 
+}
+
+/* Compact the dropdown actions */
+.dropdown-menu {
+    font-size: 12px; 
+    padding: 5px;
+}
+
+.dropdown-menu a {
+    padding: 5px 10px; 
+}
+
+/* Adjust header row for compact size */
+.table thead th {
+    font-size: 12px; 
+    padding: 5px; 
+}
+
+/* Optional: Adjust overall table styling */
+.table {
+    margin-bottom: 10px; 
+}
+
+.form-focus .form-control {
+    height: 46px!important;
+    padding: 15px 10px 0px!important;
+}
+</style>
 @extends('layouts.master')
 @section('content')
     <!-- Page Wrapper -->
@@ -21,7 +56,99 @@
                 </div>
             </div>
             <!-- /Page Header -->
-            
+            <!-- Search Filter -->
+            <form action="{{ route('candidates/search') }}" method="POST">
+                @csrf
+                <div class="row filter-row">
+                    <!-- Basic Search Fields -->
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="employee_id">
+                            <label class="focus-label">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="age">
+                            <label class="focus-label">Age</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3"> 
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="position">
+                            <label class="focus-label">Position</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <button type="submit" class="btn btn-success btn-block"> Search </button>  
+                    </div>
+                </div>
+
+                <!-- Advanced Search Fields (Initially Hidden) -->
+                <div class="row filter-row" id="advanced-search" style="display: none;">
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="job_title">
+                            <label class="focus-label">Job Title</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="number" class="form-control floating" name="experience" min="0" max="100">
+                            <label class="focus-label">Work Experience (Years)</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="department">
+                            <label class="focus-label">Department</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="Gender">
+                                <option value="" disabled selected></option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                            <label class="focus-label">Gender</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="job_type">
+                                <option value="" disabled selected></option>
+                                <option value="full_time">Full Time</option>
+                                <option value="part_time">Part Time</option>
+                                <option value="internship">Internship</option>
+                                <option value="temporary">Temporary</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <label class="focus-label">Job Type</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="race">
+                                <option value="" disabled selected></option>
+                                <option value="malay">Malay</option>
+                                <option value="chinese">Chinese</option>
+                                <option value="indian">Indian</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <label class="focus-label">Race</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Show More/Less Button -->
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <button type="button" id="toggle-advanced" class="btn btn-link">Show Advanced Search</button>
+                    </div>
+                </div>
+            </form>
+            <!-- /Search Filter -->
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
@@ -30,24 +157,32 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
+                                    <th>Candidate ID</th>
+                                    <th>Gender</th>
                                     <th>Mobile Number</th>
                                     <th>Email</th>
-                                    <th>Created Date</th>
+                                    <th>Work Experience</th>
                                     <th class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @foreach ($candidates as $candidate )
+                                
                                 <tr>
-                                    <td>1</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>
                                         <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="assets/images/profiles/avatar2.jpg"></a>
-                                            <a href="profile.html">John Doe </a>
+                                        <a href="" class="avatar">
+                                            <img alt="" src="{{ URL::to('assets/images/profiles/' . ($candidate->gender == 'Female' ? 'avatar4.jpg' : 'avatar2.jpg')) }}">
+                                        </a>
+                                            <a href="">{{$candidate -> name}}</a>
                                         </h2>
                                     </td>
-                                    <td>9876543210</td>
-                                    <td>johndoe@example.com</td>
-                                    <td>1 Jan 2013</td>
+                                    <td>{{$candidate -> candidate_id}}</td>
+                                    <td>{{$candidate -> gender}}</td>
+                                    <td>{{$candidate -> phone_number}}</td>
+                                    <td>{{$candidate -> email}}/td>
+                                    <td>{{$candidate -> work_experiences}}</td>
                                     <td class="text-center">
                                         <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
@@ -59,55 +194,13 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>
-                                        <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="assets/images/profiles/avatar1.jpg"></a>
-                                            <a href="profile.html">Richard Miles </a>
-                                        </h2>
-                                    </td>
-                                    <td>9876543210</td>
-                                    <td>richardmiles@example.com</td>
-                                    <td>18 Mar 2014</td>
-                                    <td class="text-center">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#approval_modal"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>
-                                        <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="assets/images/profiles/avatar4.jpg"></a>
-                                            <a href="profile.html">John Smith </a>
-                                        </h2>
-                                    </td>
-                                    <td>9876543210</td>
-                                    <td>johnsmith@example.com</td>
-                                    <td>1 Apr 2014</td>
-                                    <td class="text-center">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#approval_modal"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            <!-- /Search Filter -->
         </div>
         <!-- /Page Content -->
         
@@ -280,4 +373,17 @@
         <!-- /Delete Job Modal -->
     </div>
     <!-- /Page Wrapper -->
+<!-- JavaScript to Toggle Advanced Search -->
+<script>
+document.getElementById('toggle-advanced').addEventListener('click', function() {
+    var advancedSearch = document.getElementById('advanced-search');
+    if (advancedSearch.style.display === 'none') {
+        advancedSearch.style.display = 'flex';
+        this.textContent = 'Hide Advanced Search';
+    } else {
+        advancedSearch.style.display = 'none';
+        this.textContent = 'Show Advanced Search';
+    }
+});
+</script>
 @endsection

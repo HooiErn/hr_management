@@ -98,7 +98,7 @@
                     </div>
                     <div class="col-sm-6 col-md-3">  
                         <div class="form-group form-focus">
-                            <select class="form-control floating" name="sex">
+                            <select class="form-control floating" name="Gender">
                                 <option value="" disabled selected></option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -184,7 +184,7 @@
                                             <a href="profile.html">{{ $items->name }} <span>{{ $items->job_title }}</span></a>
                                         </h2>
                                     </td>
-                                    <td><a href="job-details.html">{{ $items->job_title }}</a></td>
+                                    <td><a href="{{ url('job/details/'.$items->id) }}">{{ $items->job_title }}</a></td>
                                     <td>{{ $items->department }}</td>
                                     <td>{{ date('d F, Y',strtotime($items->start_date)) }}</td>
                                     <td>{{ date('d F, Y',strtotime($items->expired_date)) }}</td>

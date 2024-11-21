@@ -34,7 +34,7 @@
                             <input type="hidden" class="image" name="image" value="photo_defaults.jpg">
                             <div class="form-group">
                                 <label class="col-form-label">Role Name</label>
-                                <input type="text" class="form-control" name="role_name" value="Interviewer" readonly>
+                                <input type="text" class="form-control" name="role_name" value="Candidates" readonly>
                                 @error('role_name')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
