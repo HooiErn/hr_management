@@ -5,13 +5,40 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\RolesPermissions;
 use Brian2694\Toastr\Facades\Toastr;
+use App\Models\Company;
 use DB;
 class SettingController extends Controller
 {
     // company/settings/page
     public function companySettings()
     {
-        return view('settings.companysettings');
+        $company = Company::first(); 
+        return view('settings.companysettings', compact('company'));
+    }
+    //Save Company Detail
+    public function saveCompanySettings(Request $request)
+    {
+        $validatedData = $request->validate([
+            'company_name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'country' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'mobile_number' => 'nullable|string|max:20',
+            'fax' => 'nullable|string|max:20',
+            'website_url' => 'nullable|url|max:255',
+        ]);
+
+        Company::updateOrCreate(
+            ['id' => 1], // You can adjust this logic if multiple companies are allowed
+            $validatedData
+        );
+
+        return redirect()->back()->with('success', 'Company details saved successfully!');
     }
     
     // Roles & Permissions 
