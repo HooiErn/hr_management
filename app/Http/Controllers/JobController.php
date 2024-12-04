@@ -467,8 +467,8 @@ class JobController extends Controller
     public function candidatesIndex()
     {
         $candidates = DB::table('candidates')->get();
-
-        return view('job.candidates',compact('candidates'));
+        $jobs = DB::table('add_jobs')->get(); // Get available jobs
+        return view('job.candidates', compact('candidates', 'jobs'));
     }
 
     /*Search Candidates*/
