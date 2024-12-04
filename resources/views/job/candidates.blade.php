@@ -28,10 +28,28 @@
     margin-bottom: 10px; 
 }
 
+
 .form-focus .form-control {
-    height: 46px!important;
-    padding: 15px 10px 0px!important;
+    height: 46px;
+    padding: 10px 12px;
 }
+
+#advanced-search {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.form-focus select.form-control {
+    padding-top: 10px;
+}
+
 </style>
 @extends('layouts.master')
 @section('content')
@@ -68,14 +86,55 @@
                     </div>
                     <div class="col-sm-6 col-md-3">  
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="age" id="search-age">
-                            <label class="focus-label">Age</label>
+                            <input type="text" class="form-control floating" name="email" id="search-email">
+                            <label class="focus-label">Email</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3"> 
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="position" id="search-position">
-                            <label class="focus-label">Position</label>
+                            <input type="text" class="form-control floating" name="candidate_id" id="search-candidate-id">
+                            <label class="focus-label">Candidate ID</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <button type="button" class="btn btn-secondary btn-block" id="toggle-advanced">Advanced Search</button>
+                    </div>
+                </div>
+
+                <!-- Advanced Search Fields -->
+                <div class="row filter-row" id="advanced-search" style="display: none;">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="job_title" id="search-job-title">
+                            <label class="focus-label">Job Title</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="gender" id="search-gender">
+                                <option value=""></option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                            <label class="focus-label">Gender</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus">
+                            <input type="number" class="form-control floating" name="experience" id="search-experience" min="0">
+                            <label class="focus-label">Experience (Years)</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="race" id="search-race">
+                                <option value=""></option>
+                                <option value="Malay">Malay</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <label class="focus-label">Race</label>
                         </div>
                     </div>
                 </div>
@@ -342,15 +401,89 @@
     <!-- /Page Wrapper -->
 <!-- JavaScript to Toggle Advanced Search -->
 <script>
-document.getElementById('toggle-advanced').addEventListener('click', function() {
-    var advancedSearch = document.getElementById('advanced-search');
-    if (advancedSearch.style.display === 'none') {
-        advancedSearch.style.display = 'flex';
-        this.textContent = 'Hide Advanced Search';
-    } else {
-        advancedSearch.style.display = 'none';
-        this.textContent = 'Show Advanced Search';
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('search-form');
+    const advancedSearch = document.getElementById('advanced-search');
+    const toggleButton = document.getElementById('toggle-advanced');
+    const inputs = searchForm.querySelectorAll('input, select');
+    let debounceTimer;
+
+    // Fix for Advanced Search Toggle
+    toggleButton.addEventListener('click', function() {
+        const isHidden = advancedSearch.style.display === 'none' || advancedSearch.style.display === '';
+        advancedSearch.style.display = isHidden ? 'flex' : 'none';
+        this.textContent = isHidden ? 'Hide Advanced Search' : 'Advanced Search';
+    });
+
+    // Function to perform AJAX search with debounce
+    function performSearch() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const formData = new FormData(searchForm);
+            
+            fetch("{{ route('candidates/search') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('.table tbody');
+                tableBody.innerHTML = '';
+
+                if (data.candidates.length > 0) {
+                    data.candidates.forEach((candidate, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>
+                                <h2 class="table-avatar">
+                                    <a href="" class="avatar">
+                                        <img alt="" src="{{ URL::to('assets/images/profiles/') }}/${candidate.gender === 'Female' ? 'avatar4.jpg' : 'avatar2.jpg'}">
+                                    </a>
+                                    <a href="">${candidate.name}</a>
+                                </h2>
+                            </td>
+                            <td>${candidate.candidate_id || ''}</td>
+                            <td>${candidate.gender || ''}</td>
+                            <td>${candidate.phone_number || ''}</td>
+                            <td>${candidate.email || ''}</td>
+                            <td>${candidate.work_experiences ? candidate.work_experiences + ' years' : ''}</td>
+                            <td class="text-center">
+                                <div class="dropdown dropdown-action">
+                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="#"><i class="fa fa-check m-r-5"></i> Approval</a>
+                                        <a class="dropdown-item" href="#"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item" href="#"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="8" class="text-center">No candidates found.</td>`;
+                    tableBody.appendChild(row);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }, 300);
     }
+
+    // Add event listeners for all input and select fields
+    inputs.forEach(input => {
+        if (input.tagName === 'SELECT') {
+            input.addEventListener('change', performSearch);
+        } else {
+            input.addEventListener('input', performSearch);
+        }
+    });
 });
 </script>
 @endsection

@@ -474,48 +474,35 @@ class JobController extends Controller
     /*Search Candidates*/
     public function search(Request $request)
     {
-        // Retrieve search inputs
-        $filters = $request->only([
-            'name', 'age', 'position', 'job_title', 'experience', 
-            'department', 'gender', 'job_type', 'race'
-        ]);
-
-        // Query the database based on the filters
         $query = Candidate::query();
 
-        if (!empty($filters['name'])) {
-            $query->where('name', 'LIKE', '%' . $filters['name'] . '%');
+        // Basic Search
+        if ($request->filled('name')) {
+            $query->where('name', 'LIKE', '%' . $request->name . '%');
         }
-        if (!empty($filters['age'])) {
-            $query->where('age', $filters['age']);
+        if ($request->filled('email')) {
+            $query->where('email', 'LIKE', '%' . $request->email . '%');
         }
-        if (!empty($filters['position'])) {
-            $query->where('position', 'LIKE', '%' . $filters['position'] . '%');
-        }
-        if (!empty($filters['job_title'])) {
-            $query->where('job_title', 'LIKE', '%' . $filters['job_title'] . '%');
-        }
-        if (!empty($filters['experience'])) {
-            $query->where('work_experiences', '>=', $filters['experience']);
-        }
-        if (!empty($filters['department'])) {
-            $query->where('department', 'LIKE', '%' . $filters['department'] . '%');
-        }
-        if (!empty($filters['gender'])) {
-            $query->where('gender', $filters['gender']);
-        }
-        if (!empty($filters['job_type'])) {
-            $query->where('job_type', $filters['job_type']);
-        }
-        if (!empty($filters['race'])) {
-            $query->where('race', $filters['race']);
+        if ($request->filled('candidate_id')) {
+            $query->where('candidate_id', 'LIKE', '%' . $request->candidate_id . '%');
         }
 
-        // Fetch filtered results
+        // Advanced Search
+        if ($request->filled('job_title')) {
+            $query->where('job_title', 'LIKE', '%' . $request->job_title . '%');
+        }
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+        if ($request->filled('experience')) {
+            $query->where('work_experiences', '>=', $request->experience);
+        }
+        if ($request->filled('race')) {
+            $query->where('race', $request->race);
+        }
+
         $candidates = $query->get();
-
-        // Return to the same view with results
-        return view('job.candidates', compact('candidates'));
+        return response()->json(['candidates' => $candidates]);
     }
 
 

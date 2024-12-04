@@ -176,10 +176,11 @@ Route::controller(JobController::class)->group(function () {
     Route::get('page/offer/approvals', 'offerApprovalsIndex')->middleware('auth')->name('page/offer/approvals');
     Route::get('page/experience/level', 'experienceLevelIndex')->middleware('auth')->name('page/experience/level');
     Route::get('page/candidates', 'candidatesIndex')->middleware('auth')->name('page/candidates');
-    Route::post('page/candidates/search', 'search')->middleware('auth')->name('candidates/search');
+    Route::post('candidates/search', [JobController::class, 'search'])->middleware('auth')->name('candidates/search');
     Route::get('page/interviewer', 'InterviewerIndex')->middleware('auth')->name('page/interviwer');
     Route::get('page/schedule/timing', 'scheduleTimingIndex')->middleware('auth')->name('page/schedule/timing');
     Route::get('page/aptitude/result', 'aptituderesultIndex')->middleware('auth')->name('page/aptitude/result');
+   
 
 });
 
