@@ -18,7 +18,6 @@ class ChatController extends Controller
             $confirm = $request->input('confirm', false);
             $sessionData = session('chat_data', []);
 
-            // If confirming application
             if ($confirm) {
                 $this->saveApplication($sessionData);
                 return response()->json([
@@ -27,14 +26,25 @@ class ChatController extends Controller
                 ]);
             }
 
-            // Store the current answer if we're past step 0
             if ($step > 0 && !empty($answer)) {
-                $currentField = $this->getFieldNameByStep($step - 1);
+                $currentQuestion = $this->getNextQuestion($step - 1);
+                
+                if ($currentQuestion['field'] === 'work_experiences') {
+                    if (!is_numeric($answer) || $answer < 0) {
+                        return response()->json([
+                            'error' => true,
+                            'message' => 'Please enter a valid number for work experience.',
+                            'question' => $currentQuestion['question']
+                        ]);
+                    }
+                    $answer = (int)$answer;
+                }
+
+                $currentField = $currentQuestion['field'];
                 $sessionData[$currentField] = $answer;
                 session(['chat_data' => $sessionData]);
             }
 
-            // Get next question
             $nextQuestion = $this->getNextQuestion($step);
             
             if ($nextQuestion) {
@@ -42,10 +52,10 @@ class ChatController extends Controller
                     'question' => $nextQuestion['question'],
                     'options' => $nextQuestion['options'] ?? null,
                     'field' => $nextQuestion['field'],
+                    'type' => $nextQuestion['type'] ?? 'text',
                     'step' => $step + 1
                 ]);
             } else {
-                // All questions completed, ask for confirmation
                 $summary = $this->generateSummary($sessionData);
                 return response()->json([
                     'summary' => $summary,
@@ -135,7 +145,7 @@ class ChatController extends Controller
             ],
             [
                 'field' => 'phone_number',
-                'question' => 'What is your phone number?'
+                'question' => 'What is your phone number?(e.g. 0123456789)'
             ],
             [
                 'field' => 'birth_date',
@@ -148,11 +158,19 @@ class ChatController extends Controller
             ],
             [
                 'field' => 'work_experiences',
-                'question' => 'How many years of work experience do you have? (answer in number)'
+                'question' => 'How many years of work experience do you have?',
+                'type' => 'number',
+                'validation' => 'numeric'
             ]
         ];
 
         return $questions[$step] ?? null;
+    }
+
+    private function getFieldNameByStep($step)
+    {
+        $fields = ['name', 'gender', 'email', 'phone_number', 'birth_date', 'highest_education', 'work_experiences'];
+        return $fields[$step] ?? null;
     }
 }
 

@@ -9,20 +9,19 @@ function handleKeyPress(event) {
     }
 }
 
-function sendMessage() {
+function sendMessage(message = null) {
     const input = document.getElementById('chatbox-input');
-    const message = input.value.trim();
+    const userMessage = message || input.value.trim();
     
-    if (!message) return;
+    if (!userMessage) return;
     
-    // Add user message to chat
-    addMessageToChatbox('You', message);
-    input.value = '';
+    if (!message) {
+        addMessageToChatbox('You', userMessage);
+        input.value = '';
+    }
 
-    // Show typing indicator
     const typingIndicator = addTypingIndicator();
 
-    // Send to server
     fetch(CHAT_HANDLE_URL, {
         method: 'POST',
         headers: {
@@ -30,17 +29,16 @@ function sendMessage() {
             'X-CSRF-TOKEN': CSRF_TOKEN
         },
         body: JSON.stringify({
-            answer: message,
+            answer: userMessage,
             step: currentStep
         })
     })
     .then(response => response.json())
     .then(data => {
-        // Remove typing indicator
         if (typingIndicator) typingIndicator.remove();
 
         if (data.error) {
-            addMessageToChatbox('Bot', 'Sorry, something went wrong. Please try again.');
+            addMessageToChatbox('Bot', data.message || 'Sorry, something went wrong. Please try again.');
             return;
         }
 
@@ -78,7 +76,19 @@ function addOptionsToChatbox(options) {
     const chatbox = document.getElementById('chatbox-messages');
     const optionsDiv = document.createElement('div');
     optionsDiv.className = 'chat-options';
-    optionsDiv.innerHTML = 'Options: ' + options.join(', ');
+
+    options.forEach(option => {
+        const optionButton = document.createElement('button');
+        optionButton.className = 'option-button';
+        optionButton.textContent = option;
+        optionButton.onclick = () => {
+            addMessageToChatbox('You', option);
+            sendMessage(option);
+            optionsDiv.remove();
+        };
+        optionsDiv.appendChild(optionButton);
+    });
+
     chatbox.appendChild(optionsDiv);
     chatbox.scrollTop = chatbox.scrollHeight;
 }
