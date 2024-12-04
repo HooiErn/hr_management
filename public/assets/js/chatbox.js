@@ -1,76 +1,94 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    let step = 0;
+let currentStep = 0;
 
-    // Toggle the visibility of the chatbox
-       function toggleChatbox() {
-        const chatbox = document.getElementById('chatbox');
-        if (chatbox.style.display === 'none' || chatbox.style.display === '') {
-            chatbox.style.display = 'block';
-            // Show first question when chatbox is opened
-            if (step === 0) {
-                showNextQuestion("What is your name?");
-            }
-        } else {
-            chatbox.style.display = 'none';
-        }
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        sendMessage();
     }
+}
 
-// Function to send messages to the backend and update the chat
 function sendMessage() {
-    const message = document.getElementById("chatbox-input").value;
-    if (message.trim() === '') return;
+    const input = document.getElementById('chatbox-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addMessageToChatbox('You', message);
+    input.value = '';
 
-    // Send message to the backend to process
+    // Show typing indicator
+    const typingIndicator = addTypingIndicator();
+
+    // Send to server
     fetch(CHAT_HANDLE_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': CSRF_TOKEN,
+            'X-CSRF-TOKEN': CSRF_TOKEN
         },
         body: JSON.stringify({
-            step: step,
             answer: message,
-            job_title: '{{ $job_view[0]->job_title }}',
+            step: currentStep
         })
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        const chatMessages = document.getElementById("chatbox-messages");
+        // Remove typing indicator
+        if (typingIndicator) typingIndicator.remove();
 
-        // Display the user's message
-        const messageElem = document.createElement('div');
-        messageElem.classList.add('user-message');
-        messageElem.textContent = message;
-        chatMessages.appendChild(messageElem);
-
-        // If we are in the confirmation step, display the confirmation data
-        if (data.step === 'confirm') {
-            data.confirmation.forEach(item => {
-                const confirmMessage = document.createElement('div');
-                confirmMessage.classList.add('system-message');
-                confirmMessage.textContent = `${item.question} ${item.answer}`;
-                chatMessages.appendChild(confirmMessage);
-            });
-        } else {
-            // Otherwise, show the next question
-            const questionElem = document.createElement('div');
-            questionElem.classList.add('system-message');
-            questionElem.textContent = data.question;
-            chatMessages.appendChild(questionElem);
-            step = data.step;  // Update the step for next interaction
+        if (data.error) {
+            addMessageToChatbox('Bot', 'Sorry, something went wrong. Please try again.');
+            return;
         }
 
-        // Scroll chat to the bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        // Clear the input field
-        document.getElementById("chatbox-input").value = '';
+        if (data.needsConfirmation) {
+            addMessageToChatbox('Bot', `Here's a summary of your application:\n${data.summary}\n\nWould you like to submit this application? (yes/no)`);
+            currentStep = 'confirm';
+        } else if (data.status === 'complete') {
+            addMessageToChatbox('Bot', data.message);
+            currentStep = 0;
+        } else {
+            addMessageToChatbox('Bot', data.question);
+            if (data.options) {
+                addOptionsToChatbox(data.options);
+            }
+            currentStep++;
+        }
+    })
+    .catch(error => {
+        if (typingIndicator) typingIndicator.remove();
+        console.error('Error:', error);
+        addMessageToChatbox('Bot', 'Sorry, something went wrong. Please try again.');
     });
-    }
+}
+
+function addMessageToChatbox(sender, message) {
+    const chatbox = document.getElementById('chatbox-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender.toLowerCase()}-message`;
+    messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    chatbox.appendChild(messageDiv);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function addOptionsToChatbox(options) {
+    const chatbox = document.getElementById('chatbox-messages');
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'chat-options';
+    optionsDiv.innerHTML = 'Options: ' + options.join(', ');
+    chatbox.appendChild(optionsDiv);
+    chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function addTypingIndicator() {
+    const chatbox = document.getElementById('chatbox-messages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.innerHTML = 'Bot is typing...';
+    chatbox.appendChild(typingDiv);
+    chatbox.scrollTop = chatbox.scrollHeight;
+    return typingDiv;
+}

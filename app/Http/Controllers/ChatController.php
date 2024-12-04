@@ -13,110 +13,93 @@ class ChatController extends Controller
     public function handleMessage(Request $request)
     {
         try {
-            // Log the request input for debugging
-            \Log::info('ChatController Request:', $request->all());
-    
-            // Original controller code...
+            $step = $request->input('step', 0);
+            $answer = $request->input('answer', '');
+            $confirm = $request->input('confirm', false);
+            $sessionData = session('chat_data', []);
+
+            // If confirming application
+            if ($confirm) {
+                $this->saveApplication($sessionData);
+                return response()->json([
+                    'message' => 'Your application has been submitted successfully.',
+                    'status' => 'complete'
+                ]);
+            }
+
+            // Store the current answer if we're past step 0
+            if ($step > 0 && !empty($answer)) {
+                $currentField = $this->getFieldNameByStep($step - 1);
+                $sessionData[$currentField] = $answer;
+                session(['chat_data' => $sessionData]);
+            }
+
+            // Get next question
+            $nextQuestion = $this->getNextQuestion($step);
+            
+            if ($nextQuestion) {
+                return response()->json([
+                    'question' => $nextQuestion['question'],
+                    'options' => $nextQuestion['options'] ?? null,
+                    'field' => $nextQuestion['field'],
+                    'step' => $step + 1
+                ]);
+            } else {
+                // All questions completed, ask for confirmation
+                $summary = $this->generateSummary($sessionData);
+                return response()->json([
+                    'summary' => $summary,
+                    'needsConfirmation' => true
+                ]);
+            }
         } catch (\Exception $e) {
             \Log::error('Error in ChatController:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Something went wrong!'], 500);
         }
-        
-        // Get input data and the current step
-        $step = $request->input('step', 0);
-        $answer = $request->input('answer', '');
-        $jobTitle = $request->input('job_title', 'N/A'); // Default value if job_title is not provided
-       
-
-        // Define the questions
-        $questions = [
-            'name' => 'What is your name?',
-            'age' => 'What is your age?',
-            'race' => 'What is your race?',
-            'gender' => 'What is your gender?', 
-            'birth_date' => 'What is your birth date? (YYYY-MM-DD)',
-            'phone_number' => 'What is your phone number?',
-            'email' => 'What is your email address?',
-            'highest_education' => 'What is your highest level of education?',
-            'work_experiences' => 'How many years of work experience do you have? (answer in number)',
-            'cv_upload' => 'Please upload your CV.',  
-        ];
-
-           // Start with a greeting
-            if ($step === 0) {
-                return response()->json([
-                    'question' => $questions[0],
-                    'step' => 1,  // Proceed to the first real question
-                ]);
-            }
-
-        // Get the keys of the questions (to keep track of the order)
-        $questionKeys = array_keys($questions);
-
-        // Retrieve session data (answers so far)
-        $sessionData = session('chat_data', []);
-
-        // Store the current answer if it exists
-        if ($step > 0 && isset($questionKeys[$step - 1])) {
-            $currentKey = $questionKeys[$step - 1];
-            $sessionData[$currentKey] = $answer;
-            session(['chat_data' => $sessionData]);
-        }
-
-        // If all questions are answered, show the confirmation screen
-        if ($step >= count($questions)) {
-            $confirmationData = [];
-            foreach ($sessionData as $key => $value) {
-                $confirmationData[] = ['question' => $questions[$key], 'answer' => $value];
-            }
-
-            return response()->json([
-                'confirmation' => $confirmationData,
-                'step' => 'confirm',  // Mark that we're at the confirmation step
-            ]);
-        }
-
-        // Proceed to the next question if it's available
-        $nextQuestionKey = $questionKeys[$step] ?? null;
-        if ($nextQuestionKey) {
-            return response()->json([
-                'question' => $questions[$nextQuestionKey],
-                'step' => $step + 1, // Move to the next question
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Your application is complete.',
-        ]);
     }
 
-    public function saveApplication(Request $request)
+    private function saveApplication($data)
     {
-        // Create the candidate record
-        $candidate = new Candidate();
-        $candidate->candidate_id = $this->generateUniqueCandidateId();
-        $candidate->name = $request->name;
-        $candidate->gender = $request->gender;  // Gender instead of sex
-        $candidate->email = $request->email;
-        $candidate->job_title = $request->job_title;
-        $candidate->birth_date = $request->birth_date;
-        $candidate->age = $request->age;
-        $candidate->race = $request->race;
-        $candidate->phone_number = $request->phone_number;
-        $candidate->highest_education = $request->highest_education;
-        $candidate->work_experiences = $request->work_experiences;
-        $candidate->message = $request->message;
-        $candidate->cv_upload = $request->cv_upload;
-        $candidate->interview_datetime = $request->interview_datetime;
-        $candidate->role_name = 'Candidate';  // Default role for applicants
-        $candidate->save();
+        try {
+            $candidate = new Candidate();
+            $candidate->candidate_id = $this->generateUniqueCandidateId();
+            $candidate->name = $data['name'];
+            $candidate->gender = $data['gender'];
+            $candidate->email = $data['email'];
+            $candidate->job_title = $data['job_title'];
+            $candidate->birth_date = $data['birth_date'];
+            $candidate->age = $data['age'];
+            $candidate->race = $data['race'];
+            $candidate->phone_number = $data['phone_number'];
+            $candidate->highest_education = $data['highest_education'];
+            $candidate->work_experiences = $data['work_experiences'];
+            $candidate->message = $data['message'];
+            $candidate->cv_upload = $data['cv_upload'];
+            $candidate->interview_datetime = $data['interview_datetime'];
+            $candidate->role_name = 'Candidate';
+            $candidate->save();
 
-        return response()->json([
-            'message' => 'Your application has been saved successfully!',
-            'candidate_id' => $candidate->candidate_id,
-        ]);
+            $applyForJob = new ApplyForJob();
+            $applyForJob->job_title = $data['job_title'];
+            $applyForJob->name = $data['name'];
+            $applyForJob->age = $data['age'];
+            $applyForJob->race = $data['race'];
+            $applyForJob->gender = $data['gender'];
+            $applyForJob->birth_date = $data['birth_date'];
+            $applyForJob->phone_number = $data['phone_number'];
+            $applyForJob->email = $data['email'];
+            $applyForJob->highest_education = $data['highest_education'];
+            $applyForJob->work_experiences = $data['work_experiences'];
+            $applyForJob->message = $data['message'];
+            $applyForJob->cv_upload = $data['cv_upload'];
+            $applyForJob->interview_datetime = $data['interview_datetime'];
+            $applyForJob->save();
+        } catch (\Exception $e) {
+            \Log::error('Error in ChatController:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Something went wrong!'], 500);
+        }
     }
-    
+
     public function uploadCv(Request $request)
     {
         // Handle file upload logic
@@ -132,6 +115,44 @@ class ChatController extends Controller
     private function generateUniqueCandidateId()
     {
         return 'CAND-' . strtoupper(uniqid());
+    }
+
+    private function getNextQuestion($step)
+    {
+        $questions = [
+            [
+                'field' => 'name',
+                'question' => 'What is your name?'
+            ],
+            [
+                'field' => 'gender',
+                'question' => 'What is your gender?',
+                'options' => ['Male', 'Female', 'Other']
+            ],
+            [
+                'field' => 'email',
+                'question' => 'What is your email address?'
+            ],
+            [
+                'field' => 'phone_number',
+                'question' => 'What is your phone number?'
+            ],
+            [
+                'field' => 'birth_date',
+                'question' => 'What is your birth date? (YYYY-MM-DD)'
+            ],
+            [
+                'field' => 'highest_education',
+                'question' => 'What is your highest level of education?',
+                'options' => ['Secondary', 'Foundation', 'Diploma', 'Degree', 'Master', 'PhD']
+            ],
+            [
+                'field' => 'work_experiences',
+                'question' => 'How many years of work experience do you have? (answer in number)'
+            ]
+        ];
+
+        return $questions[$step] ?? null;
     }
 }
 

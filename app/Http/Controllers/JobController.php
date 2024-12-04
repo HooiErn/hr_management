@@ -29,8 +29,11 @@ class JobController extends Controller
         $update = ['count' =>$post->count + 1,];
         AddJob::where('id',$post->id)->update($update);
 
+        // Get all jobs for the dropdown
+        $jobs = DB::table('add_jobs')->get();
+        
         $job_view = DB::table('add_jobs')->where('id',$id)->get();
-        return view('job.jobview',compact('job_view'));
+        return view('job.jobview', compact('job_view', 'jobs'));
     }
 
     /** users dashboard index */

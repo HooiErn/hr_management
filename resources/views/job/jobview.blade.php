@@ -175,26 +175,27 @@
                     </div>
                 </div>
                 <!-- Chatbox Icon -->
-                <div id="chatbox-icon" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; background: #007bff; color: #fff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;" onclick="toggleChatbox()">
-                    <i class="fa fa-comments" style="font-size: 24px;"></i> 
+                <div id="chatbox-icon" onclick="toggleChatbox()" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; background: #007bff; color: #fff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <i class="fa fa-comments" style="font-size: 24px;"></i>
                 </div>
 
-                <!-- Chatbox -->
-                <div id="chatbox" style="display: none; position: fixed; bottom: 90px; right: 20px; background: #fff; border: 1px solid #ddd; border-radius: 10px; width: 300px; max-height: 400px; overflow: hidden; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <div style="background: #007bff; color: #fff; padding: 10px; text-align: center; border-radius: 10px 10px 0 0;">
-                    Chat with Us
-                    <span style="float: right; cursor: pointer;" onclick="toggleChatbox()">×</span> <!-- Close button -->
+                <!-- Chatbox Container -->
+                <div id="chatbox" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 300px; height: 400px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); z-index: 1000;">
+                    <div style="background: #007bff; color: white; padding: 10px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Chat with Us</span>
+                        <span style="cursor: pointer;" onclick="toggleChatbox()">×</span>
+                    </div>
+                    <div id="chatbox-messages" style="height: 300px; overflow-y: auto; padding: 10px;"></div>
+                        <input type="text" id="chatbox-input" 
+                               style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 8px;" 
+                               placeholder="Type your message..." 
+                               onkeypress="handleKeyPress(event)">
+                        <button onclick="sendMessage()" 
+                                style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                            Send
+                        </button>
+                    </div>
                 </div>
-                <div id="chatbox-messages" style="padding: 10px; height: 300px; overflow-y: auto;">
-                    <!-- Initial static message -->
-                    <div style="text-align: left;">Hello! Let’s start your job application for <b>{{ $job_view[0]->job_title ?? 'the position' }}</b>.</div>
-                </div>
-                <div style="display: flex; border-top: 1px solid #ddd;">
-                    <input type="file" id="chatbox-file" name="file" style="display:none;">
-                    <input type="text" id="chatbox-input" style="flex: 1; border: none; padding: 10px;" placeholder="Type your message..." />
-                    <button id="chatbox-send" style="background: #007bff; color: #fff; border: none; padding: 10px;" onclick="sendMessage()">Send</button>
-                </div>
-            </div>
 
                 <!-- /Chatbox -->
 
@@ -216,12 +217,21 @@
                             @csrf
                             <div class="row">
                                 <div class="col-md-6">
-                                <input type="hidden" name="interview_datetime" value="{{ old('interview_datetime') }}">
                                     <div class="form-group">
-                                        <label>Name</label>
-                                        <input type="hidden" name="job_title" value="{{ $job_view[0]->job_title }}">
-                                        <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}">
-                                        <small class="form-text text-muted">*Fullname in NRIC</small>
+                                        <label>Job Title</label>
+                                        <select class="form-control @error('job_title') is-invalid @enderror" name="job_title" required>
+                                            <option value="" selected disabled>Select Job Title</option>
+                                            @foreach($jobs as $job)
+                                                <option value="{{ $job->job_title }}" {{ $job_view[0]->job_title == $job->job_title ? 'selected' : '' }}>
+                                                    {{ $job->job_title }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <input type="hidden" name="interview_datetime" value="{{ old('interview_datetime') }}">
+                                    <div class="form-group">
+                                        <label>Name <span class="text-danger">*</span></label>
+                                        <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" placeholder="Full name as per IC" required>
                                     </div>
                                     <div class="form-group">
                                         <label>Birth Date</label>
@@ -260,14 +270,13 @@
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Phone</label>
-                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" id="phone_number" placeholder="Enter phone number with country code" pattern="[0-9]{10,13}" value="{{ old('phone_number') }}">
-                                        <small class="form-text text-muted">e.g., 60123456789 for Malaysia</small>
+                                        <label>Phone Number <span class="text-danger">*</span></label>
+                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" placeholder="e.g., 60123456789" required>
                                     </div>
 
                                     <div class="form-group">
-                                        <label>Email Address</label>
-                                        <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" value="{{ old('email') }}">
+                                        <label>Email <span class="text-danger">*</span></label>
+                                        <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" placeholder="e.g., example@domain.com" required>
                                     </div>
 
                                     <div class="form-group">
@@ -339,10 +348,57 @@
     <!-- /Main Wrapper -->
     <!--Chatbox-->
     <script>
+        // Define global variables
         const CHAT_HANDLE_URL = "{{ route('chat/handle') }}";
         const CSRF_TOKEN = "{{ csrf_token() }}";
+        const currentJobTitle = "{{ $job_view[0]->job_title }}";
+
+        // Initialize chat when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeChat();
+        });
+
+        function toggleChatbox() {
+            const chatbox = document.getElementById('chatbox');
+            if (!chatbox) return;
+
+            const isHidden = chatbox.style.display === 'none';
+            chatbox.style.display = isHidden ? 'block' : 'none';
+            
+            if (isHidden) {
+                showInitialMessage();
+                const chatInput = document.getElementById('chatbox-input');
+                if (chatInput) chatInput.focus();
+            }
+        }
+
+        function showInitialMessage() {
+            const chatboxMessages = document.getElementById('chatbox-messages');
+            if (!chatboxMessages) return;
+
+            chatboxMessages.innerHTML = `
+                <div class="chat-message bot-message">
+                    Hello! Let's start your job application for <b>${currentJobTitle}</b>.<br>
+                    Type anything to begin...
+                </div>
+            `;
+        }
+
+        function initializeChat() {
+            const chatInput = document.getElementById('chatbox-input');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', handleKeyPress);
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
     </script>
-    <script src="/assets/js/chatbox.js"></script>
+    <script src="{{ asset('assets/js/chatbox.js') }}"></script>
     <!--/Chatbox-->
     <!-- Auto-calculate Age Based on Birth Date -->
     <script>
