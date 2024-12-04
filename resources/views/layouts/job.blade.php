@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+		<meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Jobs - HRTech admin dashboard</title>
 		<!-- Favicon -->
         <link rel="shortcut icon" type="image/x-icon" href="{{URL::asset('/images/logo-circle.png')}}">
@@ -135,9 +136,9 @@
 		}
 		</script>
 		<!--Chatbot Button-->
-		<div class="floating-chatbot">
+		<!-- <div class="floating-chatbot">
 			<i class="fa fa-comment" aria-hidden="true"></i>
-		</div>
+		</div> -->
 		<!-- Chatbox -->
 		<div class="container chatbox-container" style="display: none;">
 			<div class="chatbox">

@@ -170,9 +170,35 @@
                             <div class="info-list text-center">
                                 <a class="app-ends" href="#">Application ends in 2d 7h 6m</a>
                             </div>
+                
+                            </div>
                         </div>
                     </div>
                 </div>
+                <!-- Chatbox Icon -->
+                <div id="chatbox-icon" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; background: #007bff; color: #fff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;" onclick="toggleChatbox()">
+                    <i class="fa fa-comments" style="font-size: 24px;"></i> 
+                </div>
+
+                <!-- Chatbox -->
+                <div id="chatbox" style="display: none; position: fixed; bottom: 90px; right: 20px; background: #fff; border: 1px solid #ddd; border-radius: 10px; width: 300px; max-height: 400px; overflow: hidden; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+                <div style="background: #007bff; color: #fff; padding: 10px; text-align: center; border-radius: 10px 10px 0 0;">
+                    Chat with Us
+                    <span style="float: right; cursor: pointer;" onclick="toggleChatbox()">×</span> <!-- Close button -->
+                </div>
+                <div id="chatbox-messages" style="padding: 10px; height: 300px; overflow-y: auto;">
+                    <!-- Initial static message -->
+                    <div style="text-align: left;">Hello! Let’s start your job application for <b>{{ $job_view[0]->job_title ?? 'the position' }}</b>.</div>
+                </div>
+                <div style="display: flex; border-top: 1px solid #ddd;">
+                    <input type="file" id="chatbox-file" name="file" style="display:none;">
+                    <input type="text" id="chatbox-input" style="flex: 1; border: none; padding: 10px;" placeholder="Type your message..." />
+                    <button id="chatbox-send" style="background: #007bff; color: #fff; border: none; padding: 10px;" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+                <!-- /Chatbox -->
+
             </div>
             <!-- /Page Content -->
 
@@ -310,8 +336,15 @@
 
         </div>
         <!-- /Page Wrapper -->
-    </div>
+    
     <!-- /Main Wrapper -->
+    <!--Chatbox-->
+    <script>
+        const CHAT_HANDLE_URL = "{{ route('chat/handle') }}";
+        const CSRF_TOKEN = "{{ csrf_token() }}";
+    </script>
+    <script src="/assets/js/chatbox.js"></script>
+    <!--/Chatbox-->
     <!-- Auto-calculate Age Based on Birth Date -->
     <script>
         document.getElementById('birth_date').addEventListener('change', function() {
@@ -360,4 +393,5 @@
         }
         </script>
      <!--/Show CV filename when Upload-->
+
 @endsection

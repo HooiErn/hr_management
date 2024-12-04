@@ -472,57 +472,49 @@ class JobController extends Controller
     }
 
     /*Search Candidates*/
-    public function searchCandidates(Request $request)
-{
-        // Validate input
-        $validated = $request->validate([
-            'employee_id' => 'nullable|string',
-            'age' => 'nullable|numeric',
-            'position' => 'nullable|string',
-            'job_title' => 'nullable|string',
-            'experience' => 'nullable|numeric|min:0|max:100',
-            'department' => 'nullable|string',
-            'Gender' => 'nullable|string|in:male,female',
-            'job_type' => 'nullable|string|in:full_time,part_time,internship,temporary,others',
-            'race' => 'nullable|string|in:malay,chinese,indian,others',
+    public function search(Request $request)
+    {
+        // Retrieve search inputs
+        $filters = $request->only([
+            'name', 'age', 'position', 'job_title', 'experience', 
+            'department', 'gender', 'job_type', 'race'
         ]);
 
-        // Build the query dynamically
+        // Query the database based on the filters
         $query = Candidate::query();
 
-        // Add conditions based on input fields
-        if (!empty($validated['employee_id'])) {
-            $query->where('name', 'like', '%' . $validated['employee_id'] . '%');
+        if (!empty($filters['name'])) {
+            $query->where('name', 'LIKE', '%' . $filters['name'] . '%');
         }
-        if (!empty($validated['age'])) {
-            $query->where('age', $validated['age']);
+        if (!empty($filters['age'])) {
+            $query->where('age', $filters['age']);
         }
-        if (!empty($validated['position'])) {
-            $query->where('position', 'like', '%' . $validated['position'] . '%');
+        if (!empty($filters['position'])) {
+            $query->where('position', 'LIKE', '%' . $filters['position'] . '%');
         }
-        if (!empty($validated['job_title'])) {
-            $query->where('job_title', 'like', '%' . $validated['job_title'] . '%');
+        if (!empty($filters['job_title'])) {
+            $query->where('job_title', 'LIKE', '%' . $filters['job_title'] . '%');
         }
-        if (!empty($validated['experience'])) {
-            $query->where('work_experiences', '>=', $validated['experience']);
+        if (!empty($filters['experience'])) {
+            $query->where('work_experiences', '>=', $filters['experience']);
         }
-        if (!empty($validated['department'])) {
-            $query->where('department', 'like', '%' . $validated['department'] . '%');
+        if (!empty($filters['department'])) {
+            $query->where('department', 'LIKE', '%' . $filters['department'] . '%');
         }
-        if (!empty($validated['Gender'])) {
-            $query->where('gender', $validated['Gender']);
+        if (!empty($filters['gender'])) {
+            $query->where('gender', $filters['gender']);
         }
-        if (!empty($validated['job_type'])) {
-            $query->where('job_type', $validated['job_type']);
+        if (!empty($filters['job_type'])) {
+            $query->where('job_type', $filters['job_type']);
         }
-        if (!empty($validated['race'])) {
-            $query->where('race', $validated['race']);
+        if (!empty($filters['race'])) {
+            $query->where('race', $filters['race']);
         }
 
-        // Execute the query and get the results
+        // Fetch filtered results
         $candidates = $query->get();
 
-        // Return the results to a view
+        // Return to the same view with results
         return view('job.candidates', compact('candidates'));
     }
 

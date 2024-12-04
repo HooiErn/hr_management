@@ -38,6 +38,9 @@
 			font-size: 14px;
 		}
 	</style>
+	<!-- Audio file -->
+    <audio id="notificationSound" src="{{ asset('audio/notification.mp3') }}" preload="auto"></audio>
+	
 	<!-- Main Wrapper -->
 	<div class="main-wrapper">
 		

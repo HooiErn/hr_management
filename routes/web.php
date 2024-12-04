@@ -22,6 +22,7 @@ use App\Http\Controllers\TrainersController;
 use App\Http\Controllers\TrainingTypeController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PersonalInformationController;
+use App\Http\Controllers\ChatController;
 
 
 /*
@@ -175,11 +176,17 @@ Route::controller(JobController::class)->group(function () {
     Route::get('page/offer/approvals', 'offerApprovalsIndex')->middleware('auth')->name('page/offer/approvals');
     Route::get('page/experience/level', 'experienceLevelIndex')->middleware('auth')->name('page/experience/level');
     Route::get('page/candidates', 'candidatesIndex')->middleware('auth')->name('page/candidates');
-    Route::post('page/candidates/search', 'searchCandidates')->middleware('auth')->name('candidates/search');
+    Route::post('page/candidates/search', 'search')->middleware('auth')->name('candidates/search');
     Route::get('page/interviewer', 'InterviewerIndex')->middleware('auth')->name('page/interviwer');
     Route::get('page/schedule/timing', 'scheduleTimingIndex')->middleware('auth')->name('page/schedule/timing');
     Route::get('page/aptitude/result', 'aptituderesultIndex')->middleware('auth')->name('page/aptitude/result');
 
+});
+
+// ----------------------------- chatbox candidates ------------------------------//
+Route::controller(ChatController::class)->group(function () {
+    Route::post('/chat', [ChatController::class, 'handleMessage'])->name('chat/handle');
+    Route::post('/upload-cv', [ChatController::class, 'uploadCv'])->name('chat/uploadCv');
 });
  
 // ----------------------------- form employee ------------------------------//

@@ -57,94 +57,26 @@
             </div>
             <!-- /Page Header -->
             <!-- Search Filter -->
-            <form action="{{ route('candidates/search') }}" method="POST">
+            <form id="search-form">
                 @csrf
                 <div class="row filter-row">
-                    <!-- Basic Search Fields -->
                     <div class="col-sm-6 col-md-3">  
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="employee_id">
+                            <input type="text" class="form-control floating" name="name" id="search-name">
                             <label class="focus-label">Name</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">  
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="age">
+                            <input type="text" class="form-control floating" name="age" id="search-age">
                             <label class="focus-label">Age</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3"> 
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="position">
+                            <input type="text" class="form-control floating" name="position" id="search-position">
                             <label class="focus-label">Position</label>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <button type="submit" class="btn btn-success btn-block"> Search </button>  
-                    </div>
-                </div>
-
-                <!-- Advanced Search Fields (Initially Hidden) -->
-                <div class="row filter-row" id="advanced-search" style="display: none;">
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="job_title">
-                            <label class="focus-label">Job Title</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <input type="number" class="form-control floating" name="experience" min="0" max="100">
-                            <label class="focus-label">Work Experience (Years)</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="department">
-                            <label class="focus-label">Department</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <select class="form-control floating" name="Gender">
-                                <option value="" disabled selected></option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                            <label class="focus-label">Gender</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <select class="form-control floating" name="job_type">
-                                <option value="" disabled selected></option>
-                                <option value="full_time">Full Time</option>
-                                <option value="part_time">Part Time</option>
-                                <option value="internship">Internship</option>
-                                <option value="temporary">Temporary</option>
-                                <option value="others">Others</option>
-                            </select>
-                            <label class="focus-label">Job Type</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <select class="form-control floating" name="race">
-                                <option value="" disabled selected></option>
-                                <option value="malay">Malay</option>
-                                <option value="chinese">Chinese</option>
-                                <option value="indian">Indian</option>
-                                <option value="others">Others</option>
-                            </select>
-                            <label class="focus-label">Race</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Show More/Less Button -->
-                <div class="row">
-                    <div class="col-sm-12 text-center">
-                        <button type="button" id="toggle-advanced" class="btn btn-link">Show Advanced Search</button>
                     </div>
                 </div>
             </form>
@@ -166,6 +98,41 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse ($candidates as $candidate)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            <h2 class="table-avatar">
+                                            <a href="" class="avatar">
+                                                <img alt="" src="{{ URL::to('assets/images/profiles/' . ($candidate->gender == 'Female' ? 'avatar4.jpg' : 'avatar2.jpg')) }}">
+                                            </a>
+                                                <a href="">{{$candidate -> name}}</a>
+                                            </h2>
+                                        </td>
+                                        <td>{{ $candidate->candidate_id }}</td>
+                                        <td>{{ $candidate->gender }}</td>
+                                        <td>{{ $candidate->phone_number }}</td>
+                                        <td>{{ $candidate->email }}</td>
+                                        <td>{{ $candidate->work_experiences }} years</td>
+                                        <td class="text-center">
+                                            <div class="dropdown dropdown-action">
+                                                <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" href="#"><i class="fa fa-check m-r-5"></i> Approval</a>
+                                                    <a class="dropdown-item" href="#"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                                    <a class="dropdown-item" href="#"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="text-center">No candidates found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+
+                            <!-- <tbody>
                                 @foreach ($candidates as $candidate )
                                 
                                 <tr>
@@ -195,7 +162,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                            </tbody>
+                            </tbody> -->
                         </table>
                     </div>
                 </div>
