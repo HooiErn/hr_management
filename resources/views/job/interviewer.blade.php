@@ -40,74 +40,60 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>
-                                        <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="assets/images/profiles/avatar2.jpg"></a>
-                                            <a href="profile.html">John Doe </a>
-                                        </h2>
-                                    </td>
-                                    <td>9876543210</td>
-                                    <td>johndoe@example.com</td>
-                                    <td>Male</td>
-                                    <td></td>
-                                    <td>1 Jan 2024</td>
-                                    <td class="text-center">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#approval_modal"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                @forelse ($interviewers as $key => $interviewer)
+                                    <tr>
+                                        <td>{{ $key + 1 }}</td>
+                                        <td>{{ $interviewer->candidate_id }}</td>
+                                        <td>
+                                            <h2 class="table-avatar">
+                                                <a href="javascript:void(0);" class="avatar">
+                                                    <img alt="" src="{{ asset('assets/images/profiles/avatar-02.jpg') }}">
+                                                </a>
+                                                <a href="javascript:void(0);">{{ $interviewer->name }}</a>
+                                            </h2>
+                                        </td>
+                                        <td>{{ $interviewer->phone_number }}</td>
+                                        <td>{{ $interviewer->email }}</td>
+                                        <td>{{ $interviewer->gender }}</td>
+                                        <td>
+                                            @if($interviewer->cv_upload)
+                                                <a href="{{ asset('assets/cv/' . $interviewer->cv_upload) }}" class="btn btn-sm btn-primary" target="_blank">
+                                                    <i class="fa fa-download"></i> Download
+                                                </a>
+                                            @else
+                                                <span class="text-muted">No Resume</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            {{ $interviewer->interview_datetime ? date('d M Y H:i', strtotime($interviewer->interview_datetime)) : 'Not Scheduled' }}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="dropdown dropdown-action">
+                                                <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="material-icons">more_vert</i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job" 
+                                                       data-id="{{ $interviewer->id }}"
+                                                       data-name="{{ $interviewer->name }}"
+                                                       data-email="{{ $interviewer->email }}"
+                                                       data-phone="{{ $interviewer->phone_number }}"
+                                                       data-candidate-id="{{ $interviewer->candidate_id }}">
+                                                        <i class="fa fa-pencil m-r-5"></i> Edit
+                                                    </a>
+                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job" 
+                                                       data-id="{{ $interviewer->id }}">
+                                                        <i class="fa fa-trash-o m-r-5"></i> Delete
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>
-                                        <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="assets/images/profiles/avatar1.jpg"></a>
-                                            <a href="profile.html">Richard Miles </a>
-                                        </h2>
-                                    </td>
-                                    <td>9876543210</td>
-                                    <td>richardmiles@example.com</td>
-                                    <td>18 Mar 2014</td>
-                                    <td class="text-center">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#approval_modal"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>
-                                        <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="assets/images/profiles/avatar4.jpg"></a>
-                                            <a href="profile.html">John Smith </a>
-                                        </h2>
-                                    </td>
-                                    <td>9876543210</td>
-                                    <td>johnsmith@example.com</td>
-                                    <td>1 Apr 2014</td>
-                                    <td class="text-center">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#approval_modal"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center">No interviewers found</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

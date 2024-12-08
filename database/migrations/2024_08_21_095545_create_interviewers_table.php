@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('interviewer', function (Blueprint $table) {
+        Schema::create('interviewers', function (Blueprint $table) {
             $table->id();
             $table->string('job_title')->nullable();
             $table->string('candidate_id');

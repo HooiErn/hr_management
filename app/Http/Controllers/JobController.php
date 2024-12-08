@@ -320,8 +320,10 @@ class JobController extends Controller
     }
 
     /**Interviwerer page */
-    public function InterviewerIndex(){
-        return view('job.interviewer');
+    public function InterviewerIndex()
+    {
+        $interviewers = Interviewer::all();
+        return view('job.interviewer', compact('interviewers'));
     }
 
     /** interview questions */
