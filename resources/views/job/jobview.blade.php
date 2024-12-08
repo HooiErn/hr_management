@@ -186,6 +186,7 @@
                         <span style="cursor: pointer;" onclick="toggleChatbox()">×</span>
                     </div>
                     <div id="chatbox-messages" style="height: 300px; overflow-y: auto; padding: 10px;"></div>
+                    <div style="border-top: 1px solid #ddd; padding: 10px; display: flex; align-items: center;">
                         <input type="text" id="chatbox-input" 
                                style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 8px;" 
                                placeholder="Type your message..." 
@@ -308,7 +309,27 @@
 
                                 </div>
                             </div>
-                            
+                            // ... existing code ...
+
+                            </div>
+                            <div class="form-group">
+                                <label>IC Number <span class="text-danger">*</span></label>
+                                <input class="form-control @error('ic_number') is-invalid @enderror" 
+                                       type="text" 
+                                       name="ic_number" 
+                                       id="ic_number" 
+                                       pattern="\d{12}" 
+                                       maxlength="12"
+                                       placeholder="Enter IC number without dashes (e.g., 991231121234)" 
+                                       value="{{ old('ic_number') }}" 
+                                       required>
+                                <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
+                                @error('ic_number')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
                             <div class="form-group">
                                 <label>Upload your CV</label>
                                 <div class="custom-file">
@@ -448,5 +469,90 @@
         }
         </script>
      <!--/Show CV filename when Upload-->
-
+     <!--Validate IC number format-->
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const icNumberInput = document.getElementById('ic_number');
+            
+            if (icNumberInput) {
+                icNumberInput.addEventListener('input', function(e) {
+                    // Remove any non-digits and dashes
+                    let value = this.value.replace(/[^\d]/g, '');
+                    
+                    // Limit to 12 digits
+                    if (value.length > 12) {
+                        value = value.slice(0, 12);
+                    }
+                    
+                    this.value = value;
+                    
+                    // Validation
+                    if (value.length === 12) {
+                        const year = parseInt(value.substring(0, 2));
+                        const month = parseInt(value.substring(2, 4));
+                        const day = parseInt(value.substring(4, 6));
+                        
+                        let isValid = true;
+                        let errorMessage = '';
+                        
+                        // Validate month (01-12)
+                        if (month < 1 || month > 12) {
+                            isValid = false;
+                            errorMessage = 'Invalid month in IC number';
+                        }
+                        
+                        // Validate day (01-31)
+                        if (day < 1 || day > 31) {
+                            isValid = false;
+                            errorMessage = 'Invalid day in IC number';
+                        }
+                        
+                        // Additional validation for specific months
+                        if (isValid) {
+                            if (month === 2) {
+                                // February
+                                const isLeapYear = (year % 4 === 0);
+                                if (day > (isLeapYear ? 29 : 28)) {
+                                    isValid = false;
+                                    errorMessage = 'Invalid day for February';
+                                }
+                            } else if ([4, 6, 9, 11].includes(month) && day > 30) {
+                                // Months with 30 days
+                                isValid = false;
+                                errorMessage = 'Invalid day for this month';
+                            }
+                        }
+                        
+                        this.setCustomValidity(errorMessage);
+                        
+                        // Visual feedback
+                        if (isValid) {
+                            this.classList.remove('is-invalid');
+                            this.classList.add('is-valid');
+                        } else {
+                            this.classList.remove('is-valid');
+                            this.classList.add('is-invalid');
+                        }
+                    } else {
+                        this.setCustomValidity('IC number must be exactly 12 digits');
+                        this.classList.remove('is-valid');
+                        if (value.length > 0) {
+                            this.classList.add('is-invalid');
+                        } else {
+                            this.classList.remove('is-invalid');
+                        }
+                    }
+                });
+                
+                // Add blur event for additional validation
+                icNumberInput.addEventListener('blur', function() {
+                    if (this.value.length > 0 && this.value.length < 12) {
+                        this.classList.add('is-invalid');
+                        this.setCustomValidity('IC number must be exactly 12 digits');
+                    }
+                });
+            }
+        });
+        </script>
+<!--/Validate IC number format-->
 @endsection

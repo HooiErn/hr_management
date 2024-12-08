@@ -22,5 +22,6 @@ class ApplyForJob extends Model
         'message',
         'cv_upload',
         'interview_datetime',
+        'ic_number',
     ];
 }

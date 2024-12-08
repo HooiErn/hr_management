@@ -30,12 +30,32 @@
 	<link rel="stylesheet" href="{{ URL::to('assets/css/toastr.min.css') }}">
 	<script src="{{ URL::to('assets/js/toastr_jquery.min.js') }}"></script>
 	<script src="{{ URL::to('assets/js/toastr.min.js') }}"></script>
+	<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css' rel='stylesheet' />
 </head>
 
 <body>
 	<style>    
 		.invalid-feedback{
 			font-size: 14px;
+		}
+		.fc-event {
+			cursor: pointer;
+			padding: 2px 5px;
+		}
+		
+		.holiday-event {
+			border-radius: 3px;
+		}
+		
+		.leave-event {
+			border-radius: 3px;
+		}
+		
+		#calendar {
+			max-width: 1100px;
+			margin: 0 auto;
+			background: white;
+			padding: 20px;
 		}
 	</style>
 	<!-- Audio file -->

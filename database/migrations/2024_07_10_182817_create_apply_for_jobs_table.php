@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('birth_date')->nullable();
             $table->string('phone_number')->nullable();
             $table->string('email')->nullable();
+            $table->string('ic_number', 12)->unique(); 
             $table->string('highest_education')->nullable(); 
             $table->integer('work_experiences')->nullable();  
             $table->text('message')->nullable();

@@ -180,7 +180,8 @@ Route::controller(JobController::class)->group(function () {
     Route::get('page/interviewer', 'InterviewerIndex')->middleware('auth')->name('page/interviwer');
     Route::get('page/schedule/timing', 'scheduleTimingIndex')->middleware('auth')->name('page/schedule/timing');
     Route::get('page/aptitude/result', 'aptituderesultIndex')->middleware('auth')->name('page/aptitude/result');
-   
+    Route::post('candidate/approve', 'approveCandidate')->middleware('auth')->name('candidate/approve');
+    Route::post('candidate/edit', 'editCandidate')->middleware('auth')->name('candidate/edit');
 
 });
 

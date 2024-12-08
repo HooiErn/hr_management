@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Question;
 use Carbon\Carbon;
 use Brian2694\Toastr\Facades\Toastr;
+use App\Models\Interviewer;
 
 class JobController extends Controller
 {
@@ -199,6 +200,7 @@ class JobController extends Controller
         $request->validate([
             'job_title' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
+            'ic_number' => 'required|string|size:12|unique:candidates,ic_number|regex:/^\d{12}$/',
             'phone_number' => 'required|string|regex:/^[0-9]{10,13}$/', 
             'email' => 'required|email|max:255',
             'age' => 'nullable|integer|min:0|max:120',
@@ -454,18 +456,6 @@ class JobController extends Controller
         }
     }
 
-    /** offer approvals */
-    public function offerApprovalsIndex()
-    {
-        return view('job.offerapprovals');
-    }
-
-    /** experience level */
-    public function experienceLevelIndex()
-    {
-        return view('job.experiencelevel');
-    }
-
     /** candidates */
     public function candidatesIndex()
     {
@@ -520,4 +510,146 @@ class JobController extends Controller
     {
         return view('job.aptituderesult');
     }
+
+    public function approveCandidate(Request $request)
+    {
+        // Validate if candidate_id exists
+        if (!$request->has('candidate_id')) {
+            Toastr::error('No candidate selected for approval', 'Error');
+            return redirect()->back();
+        }
+
+        DB::beginTransaction();
+        try {
+            // Try to find the candidate, handle if not found
+            $candidate = Candidate::find($request->candidate_id);
+            
+            if (!$candidate) {
+                DB::rollback();
+                Toastr::error('Candidate not found', 'Error');
+                return redirect()->back();
+            }
+
+            // Create new interviewer record with candidate's data
+            $interviewer = new Interviewer();
+            $interviewer->job_title = $candidate->job_title;
+            $interviewer->candidate_id = $candidate->candidate_id;
+            $interviewer->name = $candidate->name;
+            $interviewer->ic_number = $candidate->ic_number;
+            $interviewer->age = $candidate->age;
+            $interviewer->race = $candidate->race;
+            $interviewer->gender = $candidate->gender;
+            $interviewer->birth_date = $candidate->birth_date;
+            $interviewer->phone_number = $candidate->phone_number;
+            $interviewer->email = $candidate->email;
+            $interviewer->highest_education = $candidate->highest_education;
+            $interviewer->work_experiences = $candidate->work_experiences;
+            $interviewer->message = $candidate->message;
+            $interviewer->cv_upload = $candidate->cv_upload;
+            $interviewer->interview_datetime = $candidate->interview_datetime;
+            $interviewer->status = 'Approved';
+            $interviewer->save();
+
+            // Delete candidate record
+            $candidate->delete();
+
+            DB::commit();
+            Toastr::success('Candidate approved as interviewer successfully :)', 'Success');
+            return redirect()->back();
+        } catch(\Exception $e) {
+            DB::rollback();
+            Toastr::error('Failed to approve candidate: ' . $e->getMessage(), 'Error');
+            return redirect()->back();
+        }
+    }
+
+    // Add edit candidate method
+    public function editCandidate(Request $request)
+    {
+        // Validate if candidate_id exists
+        if (!$request->has('candidate_id')) {
+            Toastr::error('No candidate selected for editing', 'Error');
+            return redirect()->back();
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'ic_number' => 'required|string|size:12',
+            'phone_number' => 'required|string|regex:/^[0-9]{10,13}$/',
+            'birth_date' => 'nullable|date',
+            'age' => 'nullable|integer|min:0|max:120',
+            'gender' => 'nullable|string|in:Male,Female,Other',
+            'race' => 'nullable|string|max:50',
+            'highest_education' => 'nullable|string|max:255',
+            'work_experiences' => 'nullable|integer|min:0|max:100',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Try to find the candidate, handle if not found
+            $candidate = Candidate::find($request->candidate_id);
+            
+            if (!$candidate) {
+                DB::rollback();
+                Toastr::error('Candidate not found', 'Error');
+                return redirect()->back();
+            }
+            
+            $candidate->name = $request->name;
+            $candidate->email = $request->email;
+            $candidate->ic_number = $request->ic_number;
+            $candidate->phone_number = $request->phone_number;
+            $candidate->birth_date = $request->birth_date;
+            $candidate->age = $request->age;
+            $candidate->gender = $request->gender;
+            $candidate->race = $request->race;
+            $candidate->highest_education = $request->highest_education;
+            $candidate->work_experiences = $request->work_experiences;
+            
+            $candidate->save();
+
+            DB::commit();
+            Toastr::success('Candidate updated successfully :)', 'Success');
+            return redirect()->back();
+        } catch(\Exception $e) {
+            DB::rollback();
+            Toastr::error('Failed to update candidate: ' . $e->getMessage(), 'Error');
+            return redirect()->back();
+        }
+    }
+
+    public function editCandidateForm($id)
+    {
+        $candidate = Candidate::findOrFail($id);
+        return view('job.edit_candidate', compact('candidate'));
+    }
+
+    public function editCandidateSave(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'ic_number' => 'required|string|size:12',
+            'phone_number' => 'required|string',
+            'birth_date' => 'nullable|date',
+            'age' => 'nullable|integer',
+            'gender' => 'nullable|string',
+            'race' => 'nullable|string',
+            'highest_education' => 'nullable|string',
+            'work_experiences' => 'nullable|integer'
+        ]);
+
+        try {
+            $candidate = Candidate::findOrFail($request->id);
+            $candidate->update($request->all());
+            
+            Toastr::success('Candidate updated successfully :)','Success');
+            return redirect()->route('candidates');
+        } catch(\Exception $e) {
+            Toastr::error('Failed to update candidate :)','Error');
+            return redirect()->back();
+        }
+    }
+
 }

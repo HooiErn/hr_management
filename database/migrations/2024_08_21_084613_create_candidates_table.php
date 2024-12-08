@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('candidate_id');
+            $table->string('ic_number', 12)->unique(); 
             $table->string('gender')->nullable();
             $table->string('email')->unique();
             $table->string('job_title')->nullable();

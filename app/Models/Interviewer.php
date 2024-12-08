@@ -10,6 +10,7 @@ class Interviewer extends Model
     use HasFactory;
     protected $fillable = [
         'job_title',
+        'candidate_id',
         'name',
         'age',
         'race',
@@ -21,5 +22,6 @@ class Interviewer extends Model
         'message',
         'cv_upload',
         'interview_datetime',
+        'ic_number',
     ];
 }

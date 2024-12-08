@@ -152,7 +152,7 @@
                                     <th>#</th>
                                     <th>Name</th>
                                     <th>Candidate ID</th>
-                                    <th>Gender</th>
+                                    <th>Job Title</th>
                                     <th>Mobile Number</th>
                                     <th>Email</th>
                                     <th>Work Experience</th>
@@ -172,7 +172,7 @@
                                             </h2>
                                         </td>
                                         <td>{{ $candidate->candidate_id }}</td>
-                                        <td>{{ $candidate->gender }}</td>
+                                        <td>{{ $candidate->job_title }}</td>
                                         <td>{{ $candidate->phone_number }}</td>
                                         <td>{{ $candidate->email }}</td>
                                         <td>{{ $candidate->work_experiences }} years</td>
@@ -180,9 +180,23 @@
                                             <div class="dropdown dropdown-action">
                                                 <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                                 <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" href="#"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                                    <a class="dropdown-item" href="#"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                    <a class="dropdown-item" href="#"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                                    <a class="dropdown-item approve-candidate" href="#" data-toggle="modal" data-target="#approval_modal" data-id="{{ $candidate->id }}">
+                                                        <i class="fa fa-check m-r-5"></i> Approval
+                                                    </a>
+                                                    <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
+                                                        data-id="{{ $candidate->id }}"
+                                                        data-name="{{ $candidate->name }}"
+                                                        data-email="{{ $candidate->email }}"
+                                                        data-phone="{{ $candidate->phone_number }}"
+                                                        data-age="{{ $candidate->age }}"
+                                                        data-gender="{{ $candidate->gender }}"
+                                                        data-race="{{ $candidate->race }}"
+                                                        data-education="{{ $candidate->highest_education }}"
+                                                        data-experience="{{ $candidate->work_experiences }}"
+                                                        data-birth-date="{{ $candidate->birth_date }}">
+                                                        <i class="fa fa-pencil m-r-5"></i> Edit
+                                                    </a>
+                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -293,7 +307,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Phone <span class="text-danger">*</span></label>
-                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" value="{{ old('phone_number') }}" placeholder="60123456789" required>
+                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" value="{{ old('phone_number') }}" placeholder="0123456789" required>
                                     </div>
                                     <div class="form-group">
                                         <label>Email <span class="text-danger">*</span></label>
@@ -316,6 +330,25 @@
                                         <input class="form-control @error('work_experiences') is-invalid @enderror" type="number" name="work_experiences" value="{{ old('work_experiences') }}" min="0">
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>IC Number <span class="text-danger">*</span></label>
+                                <input class="form-control @error('ic_number') is-invalid @enderror" 
+                                       type="text" 
+                                       name="ic_number" 
+                                       id="ic_number" 
+                                       pattern="\d{12}" 
+                                       maxlength="12"
+                                       placeholder="Enter IC number without dashes (e.g., 991231121234)" 
+                                       value="{{ old('ic_number') }}" 
+                                       required>
+                                <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
+                                @error('ic_number')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
                             </div>
                             <div class="form-group">
                                 <label>Upload CV</label>
@@ -352,79 +385,121 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Are you sure you want to approve the candidate as an interviewer?</p>
-                        <div class="submit-section">
-                            <button class="btn btn-primary submit-btn-sm">Yes</button>
-                            <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /Approval Modal -->
-
-        <!-- Edit Job Modal -->
-        <div id="edit_job" class="modal custom-modal fade" role="dialog">
-            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Candidates</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label class="col-form-label"><span class="text-danger">Position*</span></label>
-                                        <input class="form-control" type="text" value="" readonly>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label class="col-form-label">Name</label>
-                                        <input class="form-control" type="text">
-                                    </div>
-                                </div>
-                                
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label class="col-form-label">Email <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="email">
-                                    </div>
-                                </div>
-                                
-                                <div class="col-sm-6">  
-                                    <div class="form-group">
-                                        <label class="col-form-label">Candidate ID <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">  
-                                    <div class="form-group">
-                                        <label class="col-form-label">Created Date <span class="text-danger">*</span></label>
-                                        <div class="cal-icon"><input class="form-control datetimepicker" type="text"></div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label class="col-form-label">Phone </label>
-                                        <input class="form-control" type="text">
-                                    </div>
-                                </div>
-                                
-                            </div>
+                        <form action="{{ route('candidate/approve') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="candidate_id" id="approve_candidate_id">
+                            <p>Are you sure you want to approve this candidate as an interviewer?</p>
                             <div class="submit-section">
-                                <button class="btn btn-primary submit-btn">Save</button>
+                                <button type="submit" class="btn btn-primary submit-btn">Yes, Approve</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- /Edit Job Modal -->
+        <!-- /Approval Modal -->
+
+        <!-- Edit Candidate Modal -->
+        <div id="edit_candidate" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Candidate</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ route('candidate/edit') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="candidate_id" id="edit_candidate_id" value="{{ $candidate->candidate_id }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Name <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text" name="name" id="edit_name" value="{{ old('name', $candidate->name ?? '') }}"required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Birth Date</label>
+                                        <input class="form-control" type="date" name="birth_date" id="edit_birth_date" value="{{ old('birth_date', $candidate->birth_date ?? '') }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Age</label>
+                                        <input class="form-control" type="number" name="age" id="edit_age" value="{{ old('age', $candidate->age ?? '') }}" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Race</label>
+                                        <select class="form-control" name="race" id="edit_race">
+                                            <option value="">Select Race</option>
+                                            <option value="Malay" {{ old('race', $candidate->race ?? '') == 'Malay' ? 'selected' : '' }}>Malay</option>
+                                            <option value="Chinese" {{ old('race', $candidate->race ?? '') == 'Chinese' ? 'selected' : '' }}>Chinese</option>
+                                            <option value="Indian" {{ old('race', $candidate->race ?? '') == 'Indian' ? 'selected' : '' }}>Indian</option>
+                                            <option value="Others" {{ old('race', $candidate->race ?? '') == 'Others' ? 'selected' : '' }}>Others</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Work Experience (Years)</label>
+                                        <input class="form-control" type="number" name="work_experiences" 
+                                               id="edit_experience" value="{{ old('work_experiences', $candidate->work_experiences ?? '') }}" min="0" max="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Phone <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="tel" name="phone_number" id="edit_phone_number" 
+                                               pattern="[0-9]{10,13}" value="{{ old('phone_number', $candidate->phone_number ?? '') }}" required>
+                                        <small class="form-text text-muted">e.g., 0123456789</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="email" name="email" id="edit_email" value="{{ old('email', $candidate->email ?? '') }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Highest Education</label>
+                                        <select class="form-control" name="highest_education" id="edit_education">
+                                            <option value="">Select Education</option>
+                                            <option value="Secondary" {{ old('highest_education', $candidate->highest_education ?? '') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
+                                            <option value="Foundation" {{ old('highest_education', $candidate->highest_education ?? '') == 'Foundation' ? 'selected' : '' }}>Foundation</option>
+                                            <option value="Diploma" {{ old('highest_education', $candidate->highest_education ?? '') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                                            <option value="Degree" {{ old('highest_education', $candidate->highest_education ?? '') == 'Degree' ? 'selected' : '' }}>Degree</option>
+                                            <option value="Master" {{ old('highest_education', $candidate->highest_education ?? '') == 'Master' ? 'selected' : '' }}>Master</option>
+                                            <option value="PhD" {{ old('highest_education', $candidate->highest_education ?? '') == 'PhD' ? 'selected' : '' }}>PhD</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Gender</label>
+                                        <select class="form-control" name="gender" id="edit_gender">
+                                            <option value="">Select Gender</option>
+                                            <option value="Male" {{ old('gender', $candidate->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
+                                            <option value="Female" {{ old('gender', $candidate->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
+                                            <option value="Other" {{ old('gender', $candidate->gender ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>IC Number <span class="text-danger">*</span></label>
+                                <input class="form-control" 
+                                       type="text" 
+                                       name="ic_number" 
+                                       id="edit_ic_number" 
+                                       pattern="\d{12}" 
+                                       maxlength="12"
+                                       placeholder="Enter IC number without dashes" 
+                                       value="{{ old('ic_number', $candidate->ic_number ?? '') }}" 
+                                       required>
+                                <small class="form-text text-muted">Format: 12 digits without dashes (e.g., 991231121234)</small>
+                            </div>
+                            <div class="submit-section">
+                                <button type="submit" class="btn btn-primary submit-btn">Update</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Edit Candidate Modal -->
 
         <!-- Delete Job Modal -->
         <div class="modal custom-modal fade" id="delete_job" role="dialog">
@@ -568,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const isHidden = advancedSearch.style.display === 'none' || advancedSearch.style.display === '';
         advancedSearch.style.display = isHidden ? 'flex' : 'none';
         this.textContent = isHidden ? 'Hide Advanced Search' : 'Advanced Search';
-    });
+    }); 
 
     // Function to perform AJAX search with debounce
     function performSearch() {
@@ -612,9 +687,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#"><i class="fa fa-check m-r-5"></i> Approval</a>
-                                        <a class="dropdown-item" href="#"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                        <a class="dropdown-item" href="#"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                        <a class="dropdown-item approve-candidate" href="#" data-toggle="modal" data-target="#approval_modal" data-id="${candidate.id}">
+                                            <i class="fa fa-check m-r-5"></i> Approval
+                                        </a>
+                                        <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
+                                            data-id="${candidate.id}"
+                                            data-name="${candidate.name}"
+                                            data-email="${candidate.email}"
+                                            data-phone="${candidate.phone_number}"
+                                            data-age="${candidate.age}"
+                                            data-gender="${candidate.gender}"
+                                            data-race="${candidate.race}">
+                                            <i class="fa fa-pencil m-r-5"></i> Edit
+                                        </a>
+                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                     </div>
                                 </div>
                             </td>
@@ -689,5 +775,99 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         </script>
      <!--/Show CV filename when Upload-->
+
+     <script>
+     document.addEventListener('DOMContentLoaded', function() {
+         const icNumberInput = document.getElementById('ic_number');
+         
+         if (icNumberInput) {
+             icNumberInput.addEventListener('input', function(e) {
+                 // Remove any non-digits and dashes
+                 let value = this.value.replace(/[^\d]/g, '');
+                 
+                 // Limit to 12 digits
+                 if (value.length > 12) {
+                     value = value.slice(0, 12);
+                 }
+                 
+                 this.value = value;
+                 
+                 // Validation
+                 if (value.length === 12) {
+                     const year = parseInt(value.substring(0, 2));
+                     const month = parseInt(value.substring(2, 4));
+                     const day = parseInt(value.substring(4, 6));
+                     
+                     let isValid = true;
+                     let errorMessage = '';
+                     
+                     // Validate month (01-12)
+                     if (month < 1 || month > 12) {
+                         isValid = false;
+                         errorMessage = 'Invalid month in IC number';
+                     }
+                     
+                     // Validate day (01-31)
+                     if (day < 1 || day > 31) {
+                         isValid = false;
+                         errorMessage = 'Invalid day in IC number';
+                     }
+                     
+                     // Additional validation for specific months
+                     if (isValid) {
+                         if (month === 2) {
+                             // February
+                             const isLeapYear = (year % 4 === 0);
+                             if (day > (isLeapYear ? 29 : 28)) {
+                                 isValid = false;
+                                 errorMessage = 'Invalid day for February';
+                             }
+                         } else if ([4, 6, 9, 11].includes(month) && day > 30) {
+                             // Months with 30 days
+                             isValid = false;
+                             errorMessage = 'Invalid day for this month';
+                         }
+                     }
+                     
+                     this.setCustomValidity(errorMessage);
+                     
+                     // Visual feedback
+                     if (isValid) {
+                         this.classList.remove('is-invalid');
+                         this.classList.add('is-valid');
+                     } else {
+                         this.classList.remove('is-valid');
+                         this.classList.add('is-invalid');
+                     }
+                 } else {
+                     this.setCustomValidity('IC number must be exactly 12 digits');
+                     this.classList.remove('is-valid');
+                     if (value.length > 0) {
+                         this.classList.add('is-invalid');
+                     } else {
+                         this.classList.remove('is-invalid');
+                     }
+                 }
+             });
+             
+             // Add blur event for additional validation
+             icNumberInput.addEventListener('blur', function() {
+                 if (this.value.length > 0 && this.value.length < 12) {
+                     this.classList.add('is-invalid');
+                     this.setCustomValidity('IC number must be exactly 12 digits');
+                 }
+             });
+         }
+     });
+     </script>
+
+     <script>
+     $(document).ready(function() {
+         $('.approve-candidate').click(function() {
+             var candidateId = $(this).data('id');
+             $('#approve_candidate_id').val(candidateId);
+         });
+     });
+     </script>
 
 @endsection

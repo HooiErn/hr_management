@@ -21,6 +21,7 @@ class CreateEmployeesTable extends Migration
             $table->string('race')->nullable(); 
             $table->string('highest_education')->nullable(); 
             $table->integer('work_experiences')->nullable();  
+            $table->string('ic_number', 12)->unique(); 
             $table->string('cv_upload')->nullable();
             $table->string('birth_date')->nullable();
             $table->string('gender')->nullable();

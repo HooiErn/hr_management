@@ -22,5 +22,6 @@ class Employee extends Model
         'tasks',
         'assets',
         'timing_sheets',
+        'ic_number',
     ];
 }

@@ -16,7 +16,9 @@ return new class extends Migration
         Schema::create('interviewer', function (Blueprint $table) {
             $table->id();
             $table->string('job_title')->nullable();
+            $table->string('candidate_id');
             $table->string('name')->nullable();
+            $table->string('ic_number', 12)->unique(); 
             $table->integer('age')->nullable();
             $table->string('race')->nullable(); 
             $table->string('gender')->nullable();  

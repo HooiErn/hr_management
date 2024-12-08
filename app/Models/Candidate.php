@@ -24,5 +24,6 @@ class Candidate extends Model
         'cv_upload',
         'interview_datetime',
         'role_name',
+        'ic_number',
     ];
 }
