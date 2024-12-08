@@ -34,7 +34,7 @@ class SettingController extends Controller
         ]);
 
         Company::updateOrCreate(
-            ['id' => 1], // You can adjust this logic if multiple companies are allowed
+            ['id' => 1], // can adjust this logic if multiple companies are allowed
             $validatedData
         );
 

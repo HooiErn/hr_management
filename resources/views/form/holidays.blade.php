@@ -1,4 +1,3 @@
-
 @extends('layouts.master')
 @section('content')
     <!-- Page Wrapper -->
@@ -30,52 +29,10 @@
             @endphp
             <div class="row">
                 <div class="col-md-12">
-                    <div class="table-responsive">
-                        <table class="table table-striped custom-table datatable">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Title </th>
-                                    <th>Holiday Date</th>
-                                    <th>Day</th>
-                                    <th class="text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($holiday as $key=>$items )
-                                    @if(($today_date > $items->date_holiday))
-                                        <tr class="holiday-completed">
-                                            <td>{{ ++$key }}</td>
-                                            <td>{{ $items->name_holiday }}</td>
-                                            <td>{{date('d F, Y',strtotime($items->date_holiday)) }}</td>
-                                            <td>{{date('l',strtotime($items->date_holiday)) }}</td>
-                                            <td></td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                                @foreach ($holiday as $key=>$items )
-                                    @if(($today_date <= $items->date_holiday))
-                                        <tr class="holiday-upcoming">
-                                            <td hidden class="id">{{ $items->id }}</td>
-                                            <td>{{ ++$key }}</td>
-                                            <td class="holidayName">{{ $items->name_holiday }}</td>
-                                            <td hidden class="holidayDate">{{$items->date_holiday }}</td>
-                                            <td>{{date('d F, Y',strtotime($items->date_holiday)) }}</td>
-                                            <td>{{date('l',strtotime($items->date_holiday)) }}</td>
-                                            <td class="text-right">
-                                                <div class="dropdown dropdown-action">
-                                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item userUpdate" data-toggle="modal" data-id="'.$items->id.'" data-target="#edit_holiday"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_holiday"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="calendar"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,17 +133,46 @@
     </div>
     <!-- /Page Wrapper -->
     @section('script')
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script>
-        document.getElementById("year").innerHTML = new Date().getFullYear();
-    </script>
-    {{-- update js --}}
-    <script>
-        $(document).on('click','.userUpdate',function()
-        {
-            var _this = $(this).parents('tr');
-            $('#e_id').val(_this.find('.id').text());
-            $('#holidayName_edit').val(_this.find('.holidayName').text());
-            $('#holidayDate_edit').val(_this.find('.holidayDate').text());  
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [
+                    // Holidays
+                    @foreach($holiday as $item)
+                    {
+                        title: '🎉 ' + '{{ $item->name_holiday }}',
+                        start: '{{ $item->date_holiday }}',
+                        backgroundColor: '#f43b48',
+                        borderColor: '#f43b48',
+                        className: 'holiday-event'
+                    },
+                    @endforeach
+                    
+                    // Approved Leaves
+                    @foreach($approvedLeaves ?? [] as $leave)
+                    {
+                        title: '🌴 ' + '{{ $leave->employee_name }}',
+                        start: '{{ $leave->from_date }}',
+                        end: '{{ $leave->to_date }}',
+                        backgroundColor: '#55ce63',
+                        borderColor: '#55ce63',
+                        className: 'leave-event'
+                    },
+                    @endforeach
+                ],
+                eventClick: function(info) {
+                    // Handle event clicks if needed
+                }
+            });
+            calendar.render();
         });
     </script>
     @endsection
