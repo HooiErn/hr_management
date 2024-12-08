@@ -183,19 +183,27 @@
                                                     <a class="dropdown-item approve-candidate" href="#" data-toggle="modal" data-target="#approval_modal" data-id="{{ $candidate->id }}">
                                                         <i class="fa fa-check m-r-5"></i> Approval
                                                     </a>
-                                                    <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
-                                                        data-id="{{ $candidate->id }}"
-                                                        data-name="{{ $candidate->name }}"
-                                                        data-email="{{ $candidate->email }}"
-                                                        data-phone="{{ $candidate->phone_number }}"
-                                                        data-age="{{ $candidate->age }}"
-                                                        data-gender="{{ $candidate->gender }}"
-                                                        data-race="{{ $candidate->race }}"
-                                                        data-education="{{ $candidate->highest_education }}"
-                                                        data-experience="{{ $candidate->work_experiences }}"
-                                                        data-birth-date="{{ $candidate->birth_date }}">
-                                                        <i class="fa fa-pencil m-r-5"></i> Edit
-                                                    </a>
+                                                    @if($candidates->count() > 0)
+                                                        <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
+                                                           data-id="{{ $candidate->id ?? '' }}"
+                                                           data-name="{{ $candidate->name ?? '' }}"
+                                                           data-candidate-id="{{ $candidate->candidate_id ?? '' }}"
+                                                           data-email="{{ $candidate->email ?? '' }}"
+                                                           data-phone="{{ $candidate->phone_number ?? '' }}"
+                                                           data-ic-number="{{ $candidate->ic_number ?? '' }}"
+                                                           data-birth-date="{{ $candidate->birth_date ?? '' }}"
+                                                           data-age="{{ $candidate->age ?? '' }}"
+                                                           data-gender="{{ $candidate->gender ?? '' }}"
+                                                           data-race="{{ $candidate->race ?? '' }}"
+                                                           data-education="{{ $candidate->highest_education ?? '' }}"
+                                                           data-experience="{{ $candidate->work_experiences ?? '' }}">
+                                                            <i class="fa fa-pencil m-r-5"></i> Edit
+                                                        </a>
+                                                    @else
+                                                        <a class="dropdown-item disabled" href="#" onclick="return false;">
+                                                            <i class="fa fa-pencil m-r-5"></i> No Candidates to Edit
+                                                        </a>
+                                                    @endif
                                                     <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                                 </div>
                                             </div>
@@ -411,90 +419,96 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('candidate/edit') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="candidate_id" id="edit_candidate_id" value="{{ $candidate->candidate_id }}">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Name <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="text" name="name" id="edit_name" value="{{ old('name', $candidate->name ?? '') }}"required>
+                        @if(isset($candidate) && $candidate)
+                            <form action="{{ route('candidate/edit') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="candidate_id" id="edit_candidate_id" value="{{ $candidate->candidate_id }}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Name <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text" name="name" id="edit_name" value="{{ old('name', $candidate->name ?? '') }}"required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Birth Date</label>
+                                            <input class="form-control" type="date" name="birth_date" id="edit_birth_date" value="{{ old('birth_date', $candidate->birth_date ?? '') }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Age</label>
+                                            <input class="form-control" type="number" name="age" id="edit_age" value="{{ old('age', $candidate->age ?? '') }}" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Race</label>
+                                            <select class="form-control" name="race" id="edit_race">
+                                                <option value="">Select Race</option>
+                                                <option value="Malay" {{ old('race', $candidate->race ?? '') == 'Malay' ? 'selected' : '' }}>Malay</option>
+                                                <option value="Chinese" {{ old('race', $candidate->race ?? '') == 'Chinese' ? 'selected' : '' }}>Chinese</option>
+                                                <option value="Indian" {{ old('race', $candidate->race ?? '') == 'Indian' ? 'selected' : '' }}>Indian</option>
+                                                <option value="Others" {{ old('race', $candidate->race ?? '') == 'Others' ? 'selected' : '' }}>Others</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Work Experience (Years)</label>
+                                            <input class="form-control" type="number" name="work_experiences" 
+                                                   id="edit_experience" value="{{ old('work_experiences', $candidate->work_experiences ?? '') }}" min="0" max="100">
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Birth Date</label>
-                                        <input class="form-control" type="date" name="birth_date" id="edit_birth_date" value="{{ old('birth_date', $candidate->birth_date ?? '') }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Age</label>
-                                        <input class="form-control" type="number" name="age" id="edit_age" value="{{ old('age', $candidate->age ?? '') }}" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Race</label>
-                                        <select class="form-control" name="race" id="edit_race">
-                                            <option value="">Select Race</option>
-                                            <option value="Malay" {{ old('race', $candidate->race ?? '') == 'Malay' ? 'selected' : '' }}>Malay</option>
-                                            <option value="Chinese" {{ old('race', $candidate->race ?? '') == 'Chinese' ? 'selected' : '' }}>Chinese</option>
-                                            <option value="Indian" {{ old('race', $candidate->race ?? '') == 'Indian' ? 'selected' : '' }}>Indian</option>
-                                            <option value="Others" {{ old('race', $candidate->race ?? '') == 'Others' ? 'selected' : '' }}>Others</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Work Experience (Years)</label>
-                                        <input class="form-control" type="number" name="work_experiences" 
-                                               id="edit_experience" value="{{ old('work_experiences', $candidate->work_experiences ?? '') }}" min="0" max="100">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Phone <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="tel" name="phone_number" id="edit_phone_number" 
+                                                   pattern="[0-9]{10,13}" value="{{ old('phone_number', $candidate->phone_number ?? '') }}" required>
+                                            <small class="form-text text-muted">e.g., 0123456789</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Email <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="email" name="email" id="edit_email" value="{{ old('email', $candidate->email ?? '') }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Highest Education</label>
+                                            <select class="form-control" name="highest_education" id="edit_education">
+                                                <option value="">Select Education</option>
+                                                <option value="Secondary" {{ old('highest_education', $candidate->highest_education ?? '') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
+                                                <option value="Foundation" {{ old('highest_education', $candidate->highest_education ?? '') == 'Foundation' ? 'selected' : '' }}>Foundation</option>
+                                                <option value="Diploma" {{ old('highest_education', $candidate->highest_education ?? '') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                                                <option value="Degree" {{ old('highest_education', $candidate->highest_education ?? '') == 'Degree' ? 'selected' : '' }}>Degree</option>
+                                                <option value="Master" {{ old('highest_education', $candidate->highest_education ?? '') == 'Master' ? 'selected' : '' }}>Master</option>
+                                                <option value="PhD" {{ old('highest_education', $candidate->highest_education ?? '') == 'PhD' ? 'selected' : '' }}>PhD</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Gender</label>
+                                            <select class="form-control" name="gender" id="edit_gender">
+                                                <option value="">Select Gender</option>
+                                                <option value="Male" {{ old('gender', $candidate->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
+                                                <option value="Female" {{ old('gender', $candidate->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
+                                                <option value="Other" {{ old('gender', $candidate->gender ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Phone <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="tel" name="phone_number" id="edit_phone_number" 
-                                               pattern="[0-9]{10,13}" value="{{ old('phone_number', $candidate->phone_number ?? '') }}" required>
-                                        <small class="form-text text-muted">e.g., 0123456789</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Email <span class="text-danger">*</span></label>
-                                        <input class="form-control" type="email" name="email" id="edit_email" value="{{ old('email', $candidate->email ?? '') }}" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Highest Education</label>
-                                        <select class="form-control" name="highest_education" id="edit_education">
-                                            <option value="">Select Education</option>
-                                            <option value="Secondary" {{ old('highest_education', $candidate->highest_education ?? '') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
-                                            <option value="Foundation" {{ old('highest_education', $candidate->highest_education ?? '') == 'Foundation' ? 'selected' : '' }}>Foundation</option>
-                                            <option value="Diploma" {{ old('highest_education', $candidate->highest_education ?? '') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
-                                            <option value="Degree" {{ old('highest_education', $candidate->highest_education ?? '') == 'Degree' ? 'selected' : '' }}>Degree</option>
-                                            <option value="Master" {{ old('highest_education', $candidate->highest_education ?? '') == 'Master' ? 'selected' : '' }}>Master</option>
-                                            <option value="PhD" {{ old('highest_education', $candidate->highest_education ?? '') == 'PhD' ? 'selected' : '' }}>PhD</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Gender</label>
-                                        <select class="form-control" name="gender" id="edit_gender">
-                                            <option value="">Select Gender</option>
-                                            <option value="Male" {{ old('gender', $candidate->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
-                                            <option value="Female" {{ old('gender', $candidate->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
-                                            <option value="Other" {{ old('gender', $candidate->gender ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
-                                        </select>
-                                    </div>
+                                <div class="form-group">
+                                    <label>IC Number <span class="text-danger">*</span></label>
+                                    <input class="form-control" 
+                                           type="text" 
+                                           name="ic_number" 
+                                           id="edit_ic_number" 
+                                           pattern="\d{12}" 
+                                           maxlength="12"
+                                           placeholder="Enter IC number without dashes" 
+                                           value="{{ old('ic_number', $candidate->ic_number ?? '') }}" 
+                                           required>
+                                    <small class="form-text text-muted">Format: 12 digits without dashes (e.g., 991231121234)</small>
                                 </div>
+                                <div class="submit-section">
+                                    <button type="submit" class="btn btn-primary submit-btn">Update</button>
+                                </div>
+                            </form>
+                        @else
+                            <div class="alert alert-info">
+                                No candidate data available to edit.
                             </div>
-                            <div class="form-group">
-                                <label>IC Number <span class="text-danger">*</span></label>
-                                <input class="form-control" 
-                                       type="text" 
-                                       name="ic_number" 
-                                       id="edit_ic_number" 
-                                       pattern="\d{12}" 
-                                       maxlength="12"
-                                       placeholder="Enter IC number without dashes" 
-                                       value="{{ old('ic_number', $candidate->ic_number ?? '') }}" 
-                                       required>
-                                <small class="form-text text-muted">Format: 12 digits without dashes (e.g., 991231121234)</small>
-                            </div>
-                            <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Update</button>
-                            </div>
-                        </form>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -227,6 +227,7 @@ class JobController extends Controller
             // Save candidate data
             $candidate = new Candidate;
             $candidate->candidate_id = $candidate_id;
+            $candidate->ic_number = $request->ic_number;
             $candidate->name = $request->name;
             $candidate->age = $request->age; 
             $candidate->race = $request->race; 
@@ -245,6 +246,7 @@ class JobController extends Controller
             $apply_job = new ApplyForJob;
             $apply_job->job_title          = $request->job_title;
             $apply_job->name               = $request->name;
+            $apply_job->ic_number          = $request->ic_number;
             $apply_job->age                = $request->age; 
             $apply_job->race               = $request->race; 
             $apply_job->gender             = $request->gender; 
@@ -277,6 +279,7 @@ class JobController extends Controller
             $update = [
                 'id'              => $request->id,
                 'job_title'       => $request->job_title,
+                'ic_number'       => $request->ic_number,
                 'department'      => $request->department,
                 'job_location'    => $request->job_location,
                 'no_of_vacancies' => $request->no_of_vacancies,
@@ -410,54 +413,6 @@ class JobController extends Controller
         } 
     }
 
-    /** question update */
-    public function questionsUpdate(Request $request)
-    {
-        DB::beginTransaction();
-        try {
-            
-            $update = [
-                'id'            => $request->id,
-                'category'      => $request->category,
-                'department'    => $request->department,
-                'questions'     => $request->questions,
-                'option_a'      => $request->option_a,
-                'option_b'      => $request->option_b,
-                'option_c'      => $request->option_c,
-                'option_d'      => $request->option_d,
-                'answer'        => $request->answer,
-                'code_snippets' => $request->code_snippets,
-                'answer_explanation' => $request->answer_explanation,
-                'video_link' => $request->video_link,
-            ];
-
-            Question::where('id',$request->id)->update($update);
-            DB::commit();
-            Toastr::success('Updated Questions successfully :)','Success');
-            return redirect()->back();
-        } catch(\Exception $e) {
-            DB::rollback();
-            Toastr::error('Update Questions fail :)','Error');
-            return redirect()->back();
-        }
-    }
-
-    /** delete question */
-    public function questionsDelete(Request $request)
-    {
-        try {
-
-            Question::destroy($request->id);
-            Toastr::success('Question deleted successfully :)','Success');
-            return redirect()->back();
-        
-        } catch(\Exception $e) {
-            DB::rollback();
-            Toastr::error('Question delete fail :)','Error');
-            return redirect()->back();
-        }
-    }
-
     /** candidates */
     public function candidatesIndex()
     {
@@ -568,35 +523,42 @@ class JobController extends Controller
     // Add edit candidate method
     public function editCandidate(Request $request)
     {
-        // Validate if candidate_id exists
+        // Add debugging to see what's being received
+        \Log::info('Edit Candidate Request:', $request->all());
+
         if (!$request->has('candidate_id')) {
             Toastr::error('No candidate selected for editing', 'Error');
             return redirect()->back();
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'ic_number' => 'required|string|size:12',
-            'phone_number' => 'required|string|regex:/^[0-9]{10,13}$/',
-            'birth_date' => 'nullable|date',
-            'age' => 'nullable|integer|min:0|max:120',
-            'gender' => 'nullable|string|in:Male,Female,Other',
-            'race' => 'nullable|string|max:50',
-            'highest_education' => 'nullable|string|max:255',
-            'work_experiences' => 'nullable|integer|min:0|max:100',
-        ]);
-
-        DB::beginTransaction();
         try {
-            // Try to find the candidate, handle if not found
-            $candidate = Candidate::find($request->candidate_id);
+            // Try to find the candidate using the primary key
+            $candidate = Candidate::where('id', $request->candidate_id)
+                                ->orWhere('candidate_id', $request->candidate_id)
+                                ->first();
             
+            // If no candidate found, return with message
             if (!$candidate) {
-                DB::rollback();
-                Toastr::error('Candidate not found', 'Error');
+                \Log::error('Candidate not found with ID: ' . $request->candidate_id);
+                Toastr::error('Candidate not found or has been deleted', 'Error');
                 return redirect()->back();
             }
+
+            // Only proceed with validation if we have a candidate
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'ic_number' => 'required|string|size:12',
+                'phone_number' => 'required|string|regex:/^[0-9]{10,13}$/',
+                'birth_date' => 'nullable|date',
+                'age' => 'nullable|integer|min:0|max:120',
+                'gender' => 'nullable|string|in:Male,Female,Other',
+                'race' => 'nullable|string|max:50',
+                'highest_education' => 'nullable|string|max:255',
+                'work_experiences' => 'nullable|integer|min:0|max:100',
+            ]);
+
+            DB::beginTransaction();
             
             $candidate->name = $request->name;
             $candidate->email = $request->email;
@@ -612,10 +574,12 @@ class JobController extends Controller
             $candidate->save();
 
             DB::commit();
+            \Log::info('Candidate updated successfully:', $candidate->toArray());
             Toastr::success('Candidate updated successfully :)', 'Success');
             return redirect()->back();
         } catch(\Exception $e) {
             DB::rollback();
+            \Log::error('Edit Candidate Error: ' . $e->getMessage());
             Toastr::error('Failed to update candidate: ' . $e->getMessage(), 'Error');
             return redirect()->back();
         }
@@ -625,33 +589,6 @@ class JobController extends Controller
     {
         $candidate = Candidate::findOrFail($id);
         return view('job.edit_candidate', compact('candidate'));
-    }
-
-    public function editCandidateSave(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'ic_number' => 'required|string|size:12',
-            'phone_number' => 'required|string',
-            'birth_date' => 'nullable|date',
-            'age' => 'nullable|integer',
-            'gender' => 'nullable|string',
-            'race' => 'nullable|string',
-            'highest_education' => 'nullable|string',
-            'work_experiences' => 'nullable|integer'
-        ]);
-
-        try {
-            $candidate = Candidate::findOrFail($request->id);
-            $candidate->update($request->all());
-            
-            Toastr::success('Candidate updated successfully :)','Success');
-            return redirect()->route('candidates');
-        } catch(\Exception $e) {
-            Toastr::error('Failed to update candidate :)','Error');
-            return redirect()->back();
-        }
     }
 
 }
