@@ -16,10 +16,24 @@ use App\Models\Interviewer;
 class JobController extends Controller
 {
     // job List
-    public function jobList()
+    public function jobList(Request $request)
     {    
-        $job_list = DB::table('add_jobs')->get();
-        return view('job.joblist',compact('job_list'));
+        $query = DB::table('add_jobs');
+
+        // If search parameter exists and not empty
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('job_title', 'LIKE', "%{$search}%");
+        }
+
+        $job_list = $query->get();
+        
+        // If it's an AJAX request
+        if ($request->ajax()) {
+            return response()->json($job_list);
+        }
+
+        return view('job.joblist', compact('job_list'));
     }
     
     // job view
@@ -240,6 +254,7 @@ class JobController extends Controller
             $candidate->work_experiences = $request->work_experiences;
             $candidate->role_name = $request->role_name; 
             $candidate->interview_datetime = $request->interview_datetime; 
+            $candidate->cv_upload = $request->$cv_uploads;
             $candidate->save();
             
             // Save job application data
@@ -274,33 +289,50 @@ class JobController extends Controller
     /** applyJobUpdateRecord */
     public function applyJobUpdateRecord(Request $request)
     {
+        // Validate the request
+        $request->validate([
+            'job_title' => 'required|string',
+            'department' => 'required|string',
+            'job_location' => 'required|string',
+            'no_of_vacancies' => 'required|integer',
+            'experience' => 'required|string',
+            'salary_from' => 'required',
+            'salary_to' => 'required',
+            'job_type' => 'required|string',
+            'status' => 'required|string',
+            'start_date' => 'required|date',
+            'expired_date' => 'required|date',
+            'description' => 'required|string',
+        ]);
+
         DB::beginTransaction();
         try {
             $update = [
-                'id'              => $request->id,
-                'job_title'       => $request->job_title,
-                'ic_number'       => $request->ic_number,
-                'department'      => $request->department,
-                'job_location'    => $request->job_location,
+                'job_title' => $request->job_title,
+                'department' => $request->department,
+                'job_location' => $request->job_location,
+
                 'no_of_vacancies' => $request->no_of_vacancies,
-                'experience'      => $request->experience,
-                'age'             => $request->age,
-                'salary_from'     => $request->salary_from,
-                'salary_to'       => $request->salary_to,
-                'job_type'        => $request->job_type,
-                'status'          => $request->status,
-                'start_date'      => $request->start_date,
-                'expired_date'    => $request->expired_date,
-                'description'     => $request->description,
+                'experience' => $request->experience,
+                'age' => $request->age,
+                'salary_from' => $request->salary_from,
+                'salary_to' => $request->salary_to,
+                'job_type' => $request->job_type,
+                'status' => $request->status,
+                'start_date' => $request->start_date,
+                'expired_date' => $request->expired_date,
+                'description' => $request->description,
             ];
 
-            AddJob::where('id',$request->id)->update($update);
+            AddJob::where('id', $request->id)->update($update);
+            
             DB::commit();
-            Toastr::success('Updated Leaves successfully :)','Success');
+            Toastr::success('Job updated successfully :)', 'Success');
             return redirect()->back();
         } catch(\Exception $e) {
             DB::rollback();
-            Toastr::error('Update Leaves fail :)','Error');
+            \Log::error('Job Update Error: ' . $e->getMessage());
+            Toastr::error('Failed to update job: ' . $e->getMessage(), 'Error');
             return redirect()->back();
         } 
     }
@@ -314,12 +346,6 @@ class JobController extends Controller
                         ->join('apply_for_jobs', 'apply_for_jobs.job_title', 'add_jobs.job_title')
                         ->select('add_jobs.*', 'apply_for_jobs.*')->get();
         return view('job.manageresumes',compact('manageResumes','department','type_job'));
-    }
-
-    /** shortlist candidates */
-    public function shortlistCandidatesIndex()
-    {
-        return view('job.shortlistcandidates');
     }
 
     /**Interviwerer page */
@@ -339,85 +365,12 @@ class JobController extends Controller
         return view('job.interviewquestions',compact('category','department','answer','question'));
     }
 
-    /** interviewQuestions Save */
-    public function categorySave( Request $request)
-    {
-        $request->validate([
-            'category' => 'required|string|max:255',
-        ]);
-
-        DB::beginTransaction();
-        try {
-
-            $save = new Category;
-            $save->category = $request->category;
-            $save->save();
-            
-            DB::commit();
-            Toastr::success('Create new Category successfully :)','Success');
-            return redirect()->back();
-        } catch(\Exception $e) {
-            DB::rollback();
-            Toastr::error('Add Category fail :)','Error');
-            return redirect()->back();
-        }
-    }
-
-    /** save question */
-    public function questionSave(Request $request)
-    {
-        $request->validate([
-            'category'           => 'required|string|max:255',
-            'department'         => 'required|string|max:255',
-            'questions'          => 'required|string|max:255',
-            'option_a'           => 'required|string|max:255',
-            'option_b'           => 'required|string|max:255',
-            'option_c'           => 'required|string|max:255',
-            'option_d'           => 'required|string|max:255',
-            'answer'             => 'required|string|max:255',
-            'code_snippets'      => 'required|string|max:255',
-            'answer_explanation' => 'required|string|max:255',
-            'video_link'         => 'required|url',
-            'image_to_question'  => 'required',
-        ]);
-
-        DB::beginTransaction();
-        try {
-
-            /** upload file */
-            $image_to_questions = time().'.'.$request->image_to_question->extension();  
-            $request->image_to_question->move(public_path('assets/images/question'), $image_to_questions);
-
-            $save = new Question;
-            $save->category   = $request->category;
-            $save->department = $request->department;
-            $save->questions  = $request->questions;
-            $save->option_a = $request->option_a;
-            $save->option_b = $request->option_b;
-            $save->option_c = $request->option_c;
-            $save->option_d = $request->option_d;
-            $save->answer   = $request->answer;
-            $save->code_snippets      = $request->code_snippets;
-            $save->answer_explanation = $request->answer_explanation;
-            $save->video_link         = $request->video_link;
-            $save->image_to_question  = $image_to_questions;
-            $save->save();
-            
-            DB::commit();
-            Toastr::success('Create new Question successfully :)','Success');
-            return redirect()->back();
-        } catch(\Exception $e) {
-            DB::rollback();
-            Toastr::error('Add Question fail :)','Error');
-            return redirect()->back();
-        } 
-    }
-
     /** candidates */
     public function candidatesIndex()
     {
         $candidates = DB::table('candidates')->get();
-        $jobs = DB::table('add_jobs')->get(); // Get available jobs
+        $jobs = DB::table('add_jobs')->get();
+        
         return view('job.candidates', compact('candidates', 'jobs'));
     }
 

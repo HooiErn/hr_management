@@ -24,7 +24,7 @@
             <!-- /Logo -->
             <!-- Header Title -->
             <div class="page-title-box float-left">
-                <h3>Apply Job</h3>
+                <h3><a href="{{ route('form/job/list') }}" class="text-white">Apply for Job</a></h3>
             </div>
             <!-- /Header Title -->
             <!-- Header Menu -->
@@ -50,9 +50,6 @@
                     <div class="dropdown-menu dropdown-menu-right">
                         <a href="javascript:void(0);" class="dropdown-item">
                             <img src="{{ URL::to('assets/img/flags/us.png') }}" alt="" height="16"> English
-                        </a>
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="{{ URL::to('assets/img/flags/kh.png') }}" alt="" height="16"> Khmer 
                         </a>
                     </div>
                 </li>
@@ -115,16 +112,8 @@
                             <div class="job-description">
                                 <p>{{ $job_view[0]->description }}</p>
                             </div>
-                            <div class="job-desc-title"><h4>Job Description</h4></div>
+                            <div class="job-desc-title"></div>
                             <div class="job-description">
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
-                                <ul class="square-list">
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                </ul>
                             </div>
                         </div>
                     </div>
@@ -249,10 +238,10 @@
                                         <div class="form-group form-focus">
                                         <select class="form-control floating" name="race">
                                             <option value="" disabled selected></option>
-                                            <option value="malay">Malay</option>
-                                            <option value="chinese">Chinese</option>
-                                            <option value="indian">Indian</option>
-                                            <option value="others">Others</option>
+                                            <option value="Malay">Malay</option>
+                                            <option value="Chinese">Chinese</option>
+                                            <option value="Indian">Indian</option>
+                                            <option value="Others">Others</option>
                                         </select>
                                         <label class="focus-label">Race</label>
                                     </div>
@@ -281,8 +270,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label>Highest Education</label>
-                                        <select class="form-control @error('highest_education') is-invalid @enderror" name="highest_education">
+                                        <label>Highest Education<span class="text-danger">*</span></label>
+                                        <select class="form-control @error('highest_education') is-invalid @enderror" name="highest_education" required>
                                             <option value="" disabled selected>Select your education</option>
                                             <option value="Secondary" {{ old('highest_education') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
                                             <option value="Foundation" {{ old('highest_education') == 'Foundation ' ? 'selected' : '' }}>Foundation</option>
@@ -294,8 +283,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label>Work Experiences (Years)</label>
-                                        <input class="form-control @error('work_experiences') is-invalid @enderror" type="number" name="work_experiences" value="{{ old('work_experiences') }}" min="0" max="100">
+                                        <label>Work Experiences (Years)<span class="text-danger">*</span></label>
+                                        <input class="form-control @error('work_experiences') is-invalid @enderror" type="number" name="work_experiences" value="{{ old('work_experiences') }}" min="0" max="100" required>
                                         @error('work_experiences')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -306,12 +295,9 @@
                                         <label>Role Name</label>
                                         <input class="form-control @error('role_name') is-invalid @enderror" type="text" name="role_name" value="{{ old('role_name', 'Candidate') }}" readonly>
                                     </div>
-
                                 </div>
                             </div>
-                            // ... existing code ...
 
-                            </div>
                             <div class="form-group">
                                 <label>IC Number <span class="text-danger">*</span></label>
                                 <input class="form-control @error('ic_number') is-invalid @enderror" 
@@ -331,9 +317,9 @@
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <label>Upload your CV</label>
+                                <label>Upload your CV<span class="text-danger">*</span></label>
                                 <div class="custom-file">
-                                    <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload" onchange="updateFileName(this)">
+                                    <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload" onchange="updateFileName(this)" required>
                                     <label class="custom-file-label" for="cv_upload">Choose file</label>
                                 </div>
                             </div>

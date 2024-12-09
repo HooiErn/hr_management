@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 		<meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>Jobs - HRTech admin dashboard</title>
+        <title>Apply for Jobs - HRTech Company</title>
 		<!-- Favicon -->
         <link rel="shortcut icon" type="image/x-icon" href="{{URL::asset('/images/logo-circle.png')}}">
 		<!-- Bootstrap CSS -->
@@ -126,6 +126,29 @@
 
 		.messages_item--error {
 			color: red;
+		}
+		.search-results-container {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: white;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			z-index: 1000;
+			max-height: 300px;
+			overflow-y: auto;
+		}
+
+		.search-result-item {
+			padding: 10px 15px;
+			border-bottom: 1px solid #eee;
+			cursor: pointer;
+		}
+
+		.search-result-item:hover {
+			background-color: #f5f5f5;
 		}
 	<	</style>
 		<script type="importmap">

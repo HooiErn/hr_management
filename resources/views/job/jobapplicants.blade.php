@@ -39,7 +39,23 @@
                                 @foreach ($apply_for_jobs as $key=>$apply )
                                 <tr>
                                     <td>{{ ++$key }}</td>
-                                    <td>{{ $apply->name }}</td>
+                                    <td>
+                                        <a href="#" class="view-candidate" data-toggle="modal" data-target="#view_candidate" 
+                                           data-id="{{ $apply->id }}"
+                                           data-name="{{ $apply->name }}"
+                                           data-email="{{ $apply->email }}"
+                                           data-phone="{{ $apply->phone_number }}"
+                                           data-ic="{{ $apply->ic_number }}"
+                                           data-birth="{{ date('d M Y', strtotime($apply->birth_date)) }}"
+                                           data-age="{{ $apply->age }}"
+                                           data-gender="{{ $apply->gender }}"
+                                           data-race="{{ $apply->race }}"
+                                           data-education="{{ $apply->highest_education }}"
+                                           data-experience="{{ $apply->work_experiences }}"
+                                           data-job-title="{{ $apply->job_title }}">
+                                            {{ $apply->name }}
+                                        </a>
+                                    </td>
                                     <td>{{ $apply->email }}</td>
                                     <td>{{ $apply->phone_number }}</td>
                                     <td>{{ date('d F, Y',strtotime($apply->created_at)) }}</td>
@@ -155,6 +171,133 @@
             </div>
         </div>
         <!-- Interviewed Modal -->
+        <!-- View Candidate Modal -->
+        <div id="view_candidate" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Candidate Profile</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Basic Information -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Basic Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Full Name</label>
+                                            <p class="font-weight-bold" id="view_name"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Applied Position</label>
+                                            <p class="font-weight-bold" id="view_job_title"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Contact Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Email</label>
+                                            <p class="font-weight-bold" id="view_email"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Phone Number</label>
+                                            <p class="font-weight-bold" id="view_phone"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Personal Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">IC Number</label>
+                                            <p class="font-weight-bold" id="view_ic"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Birth Date</label>
+                                            <p class="font-weight-bold" id="view_birth"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="text-muted">Age</label>
+                                            <p class="font-weight-bold" id="view_age"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="text-muted">Gender</label>
+                                            <p class="font-weight-bold" id="view_gender"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="text-muted">Race</label>
+                                            <p class="font-weight-bold" id="view_race"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Professional Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Highest Education</label>
+                                            <p class="font-weight-bold" id="view_education"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Work Experience</label>
+                                            <p class="font-weight-bold" id="view_experience"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /View Candidate Modal -->
         <!-- /Page Content -->
     </div>
     <!-- /Page Wrapper -->
@@ -232,9 +375,37 @@ function rejectCandidate() {
     alert('Candidate has been rejected.');
     $('#rejected_modal').modal('hide');
 }
-
-
-
 </script>
+<!-- View Candidate Modal -->
+<script>
+    $(document).ready(function() {
+    $('.view-candidate').on('click', function() {
+        // Get data from data attributes
+        var name = $(this).data('name');
+        var email = $(this).data('email');
+        var phone = $(this).data('phone');
+        var ic = $(this).data('ic');
+        var birth = $(this).data('birth');
+        var age = $(this).data('age');
+        var gender = $(this).data('gender');
+        var race = $(this).data('race');
+        var education = $(this).data('education');
+        var experience = $(this).data('experience');
+        var jobTitle = $(this).data('job-title');
 
+        // Update modal fields
+        $('#view_name').text(name || 'Not provided');
+        $('#view_job_title').text(jobTitle || 'Not provided');
+        $('#view_email').text(email || 'Not provided');
+        $('#view_phone').text(phone || 'Not provided');
+        $('#view_ic').text(ic || 'Not provided');
+        $('#view_birth').text(birth || 'Not provided');
+        $('#view_age').text(age ? age + ' years' : 'Not provided');
+        $('#view_gender').text(gender || 'Not provided');
+        $('#view_race').text(race || 'Not provided');
+        $('#view_education').text(education || 'Not provided');
+        $('#view_experience').text(experience ? experience + ' years' : 'Not provided');
+    });
+});
+</script>
 @endsection

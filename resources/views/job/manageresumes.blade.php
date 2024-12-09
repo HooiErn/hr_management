@@ -123,10 +123,10 @@
                         <div class="form-group form-focus">
                             <select class="form-control floating" name="race">
                                 <option value="" disabled selected></option>
-                                <option value="malay">Malay</option>
-                                <option value="chinese">Chinese</option>
-                                <option value="indian">Indian</option>
-                                <option value="others">Others</option>
+                                <option value="Malay">Malay</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Others">Others</option>
                             </select>
                             <label class="focus-label">Race</label>
                         </div>
@@ -180,7 +180,9 @@
                                     <td hidden class="age">{{ $items->age }}</td>
                                     <td>
                                         <h2 class="table-avatar">
-                                            <a href="profile.html" class="avatar"><img alt="" src="{{ URL::to('assets/images/profiles/avatar2.jpg')}}"></a>
+                                             <a href="#" class="avatar">
+                                                <img alt="" src="{{ URL::to('assets/images/profiles/' . ($items->gender == 'Female' ? 'avatar4.jpg' : 'avatar2.jpg')) }}">
+                                            </a>
                                             <a href="profile.html">{{ $items->name }} <span>{{ $items->job_title }}</span></a>
                                         </h2>
                                     </td>
@@ -214,7 +216,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="btn btn-sm btn-primary"><i class="fa fa-download mr-1"></i> Download</a></td>
+                                    <td><a href="{{ url('cv/download/'.$items->id) }}" class="btn btn-sm btn-primary"><i class="fa fa-download"></i> Download</a></td>
                                     <td class="text-center">
                                         <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>

@@ -32,7 +32,7 @@
                                     <th>Interviewer ID</th>
                                     <th>Name</th>
                                     <th>Mobile Number</th>
-                                    <th>Email</th>
+                                    <th>Job Applied</th>
                                     <th>Gender</th>
                                     <th>Resume</th>
                                     <th>Schedule DateTime</th>
@@ -45,15 +45,26 @@
                                         <td>{{ $key + 1 }}</td>
                                         <td>{{ $interviewer->candidate_id }}</td>
                                         <td>
-                                            <h2 class="table-avatar">
-                                                <a href="javascript:void(0);" class="avatar">
-                                                    <img alt="" src="{{ asset('assets/images/profiles/avatar-02.jpg') }}">
-                                                </a>
-                                                <a href="javascript:void(0);">{{ $interviewer->name }}</a>
+                                            <h2>
+                                            <a href="#" class="view-interviewer" data-toggle="modal" data-target="#view_interviewer" 
+                                                data-id="{{ $interviewer->id }}"
+                                                data-name="{{ $interviewer->name }}"
+                                                data-email="{{ $interviewer->email }}"
+                                                data-phone="{{ $interviewer->phone_number }}"
+                                                data-ic="{{ $interviewer->ic_number }}"
+                                                data-birth="{{ date('d M Y', strtotime($interviewer->birth_date)) }}"
+                                                data-age="{{ $interviewer->age }}"
+                                                data-gender="{{ $interviewer->gender }}"
+                                                data-race="{{ $interviewer->race }}"
+                                                data-education="{{ $interviewer->highest_education }}"
+                                                data-experience="{{ $interviewer->work_experiences }}"
+                                                data-job-title="{{ $interviewer->job_title }}">
+                                            {{ $interviewer->name }}
+                                            </a>
                                             </h2>
                                         </td>
                                         <td>{{ $interviewer->phone_number }}</td>
-                                        <td>{{ $interviewer->email }}</td>
+                                        <td>{{ $interviewer->job_title }}</td>
                                         <td>{{ $interviewer->gender }}</td>
                                         <td>
                                             @if($interviewer->cv_upload)
@@ -269,6 +280,166 @@
             </div>
         </div>
         <!-- /Delete Job Modal -->
+            <!-- View Interviewer Modal -->
+        <div id="view_interviewer" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Inteviewer Details</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Basic Information -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Basic Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Full Name</label>
+                                            <p class="font-weight-bold" id="view_name"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Applied Position</label>
+                                            <p class="font-weight-bold" id="view_job_title"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Contact Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Email</label>
+                                            <p class="font-weight-bold" id="view_email"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Phone Number</label>
+                                            <p class="font-weight-bold" id="view_phone"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Personal Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">IC Number</label>
+                                            <p class="font-weight-bold" id="view_ic"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Birth Date</label>
+                                            <p class="font-weight-bold" id="view_birth"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="text-muted">Age</label>
+                                            <p class="font-weight-bold" id="view_age"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="text-muted">Gender</label>
+                                            <p class="font-weight-bold" id="view_gender"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="text-muted">Race</label>
+                                            <p class="font-weight-bold" id="view_race"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Professional Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Highest Education</label>
+                                            <p class="font-weight-bold" id="view_education"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Work Experience</label>
+                                            <p class="font-weight-bold" id="view_experience"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /View Interviewer Modal -->
     </div>
     <!-- /Page Wrapper -->
+
+<!-- View Interviewer Modal -->
+<script>
+    $(document).ready(function() {
+    $('.view-interviewer').on('click', function() {
+        // Get data from data attributes
+        var name = $(this).data('name');
+        var email = $(this).data('email');
+        var phone = $(this).data('phone');
+        var ic = $(this).data('ic');
+        var birth = $(this).data('birth');
+        var age = $(this).data('age');
+        var gender = $(this).data('gender');
+        var race = $(this).data('race');
+        var education = $(this).data('education');
+        var experience = $(this).data('experience');
+        var jobTitle = $(this).data('job-title');
+
+        // Update modal fields
+        $('#view_name').text(name || 'Not provided');
+        $('#view_job_title').text(jobTitle || 'Not provided');
+        $('#view_email').text(email || 'Not provided');
+        $('#view_phone').text(phone || 'Not provided');
+        $('#view_ic').text(ic || 'Not provided');
+        $('#view_birth').text(birth || 'Not provided');
+        $('#view_age').text(age ? age + ' years' : 'Not provided');
+        $('#view_gender').text(gender || 'Not provided');
+        $('#view_race').text(race || 'Not provided');
+        $('#view_education').text(education || 'Not provided');
+        $('#view_experience').text(experience ? experience + ' years' : 'Not provided');
+    });
+});
+</script>
 @endsection

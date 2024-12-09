@@ -26,8 +26,8 @@
                         <ul class="job-post-det">
                             <li><i class="fa fa-calendar"></i> Post Date: <span class="text-blue">{{ date('d F, Y',strtotime($job_view_detail[0]->start_date)) }}</span></li>
                             <li><i class="fa fa-calendar"></i> Last Date: <span class="text-blue">{{ date('d F, Y',strtotime($job_view_detail[0]->expired_date)) }}</span></li>
-                            <li><i class="fa fa-user-o"></i> Applications: <span class="text-blue">4</span></li>
-                            <li><i class="fa fa-eye"></i> Views: <span class="text-blue">3806</span></li>
+                            <li><i class="fa fa-user-o"></i> Applications: <span class="text-blue"></span></li>
+                            <li><i class="fa fa-eye"></i> Views: <span class="text-blue"></span></li>
                         </ul>
                     </div>
                     <div class="job-content job-widget">
@@ -35,16 +35,8 @@
                         <div class="job-description">
                             <p>{{ $job_view_detail[0]->description }}</p>
                         </div>
-                        <div class="job-desc-title"><h4>Job Description</h4></div>
+                        <div class="job-desc-title"><h4></h4></div>
                         <div class="job-description">
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
-                            <ul class="square-list">
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -94,7 +86,6 @@
         <!-- Edit Job Modal -->
         <div id="edit_job" class="modal custom-modal fade" role="dialog">
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Edit Job</h5>
@@ -103,25 +94,28 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form action="{{ route('form/apply/job/update') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $job_view_detail[0]->id }}">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Job Title</label>
-                                        <input class="form-control" type="text" value="Web Developer">
+                                        <input class="form-control" type="text" name="job_title" 
+                                               value="{{ $job_view_detail[0]->job_title }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Department</label>
-                                        <select class="select">
-                                            <option>-</option>
-                                            <option selected="">Web Development</option>
-                                            <option>Application Development</option>
-                                            <option>IT Management</option>
-                                            <option>Accounts Management</option>
-                                            <option>Support Management</option>
-                                            <option>Marketing</option>
+                                        <select class="select form-control" name="department">
+                                            <option value="">Select Department</option>
+                                            <option value="Web Development" {{ $job_view_detail[0]->department == 'Web Development' ? 'selected' : '' }}>Web Development</option>
+                                            <option value="Application Development" {{ $job_view_detail[0]->department == 'Application Development' ? 'selected' : '' }}>Application Development</option>
+                                            <option value="IT Management" {{ $job_view_detail[0]->department == 'IT Management' ? 'selected' : '' }}>IT Management</option>
+                                            <option value="Accounts Management" {{ $job_view_detail[0]->department == 'Accounts Management' ? 'selected' : '' }}>Accounts Management</option>
+                                            <option value="Support Management" {{ $job_view_detail[0]->department == 'Support Management' ? 'selected' : '' }}>Support Management</option>
+                                            <option value="Marketing" {{ $job_view_detail[0]->department == 'Marketing' ? 'selected' : '' }}>Marketing</option>
                                         </select>
                                     </div>
                                 </div>
@@ -130,13 +124,15 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Job Location</label>
-                                        <input class="form-control" type="text" value="California">
+                                        <input class="form-control" type="text" name="job_location" 
+                                               value="{{ $job_view_detail[0]->job_location }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>No of Vacancies</label>
-                                        <input class="form-control" type="text" value="5">
+                                        <input class="form-control" type="text" name="no_of_vacancies" 
+                                               value="{{ $job_view_detail[0]->no_of_vacancies }}">
                                     </div>
                                 </div>
                             </div>
@@ -144,13 +140,15 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Experience</label>
-                                        <input class="form-control" type="text" value="2 Years">
+                                        <input class="form-control" type="text" name="experience" 
+                                               value="{{ $job_view_detail[0]->experience }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Age</label>
-                                        <input class="form-control" type="text" value="-">
+                                        <input class="form-control" type="text" name="age" 
+                                               value="{{ $job_view_detail[0]->age }}">
                                     </div>
                                 </div>
                             </div>
@@ -158,13 +156,15 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Salary From</label>
-                                        <input type="text" class="form-control" value="32k">
+                                        <input type="text" class="form-control" name="salary_from" 
+                                               value="{{ $job_view_detail[0]->salary_from }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Salary To</label>
-                                        <input type="text" class="form-control" value="38k">
+                                        <input type="text" class="form-control" name="salary_to" 
+                                               value="{{ $job_view_detail[0]->salary_to }}">
                                     </div>
                                 </div>
                             </div>
@@ -172,23 +172,23 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Job Type</label>
-                                        <select class="select">
-                                            <option selected="">Full Time</option>
-                                            <option>Part Time</option>
-                                            <option>Internship</option>
-                                            <option>Temporary</option>
-                                            <option>Remote</option>
-                                            <option>Others</option>
+                                        <select class="select form-control" name="job_type">
+                                            <option value="Full Time" {{ $job_view_detail[0]->job_type == 'Full Time' ? 'selected' : '' }}>Full Time</option>
+                                            <option value="Part Time" {{ $job_view_detail[0]->job_type == 'Part Time' ? 'selected' : '' }}>Part Time</option>
+                                            <option value="Internship" {{ $job_view_detail[0]->job_type == 'Internship' ? 'selected' : '' }}>Internship</option>
+                                            <option value="Temporary" {{ $job_view_detail[0]->job_type == 'Temporary' ? 'selected' : '' }}>Temporary</option>
+                                            <option value="Remote" {{ $job_view_detail[0]->job_type == 'Remote' ? 'selected' : '' }}>Remote</option>
+                                            <option value="Others" {{ $job_view_detail[0]->job_type == 'Others' ? 'selected' : '' }}>Others</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Status</label>
-                                        <select class="select">
-                                            <option selected="">Open</option>
-                                            <option>Closed</option>
-                                            <option>Cancelled</option>
+                                        <select class="select form-control" name="status">
+                                            <option value="Open" {{ $job_view_detail[0]->status == 'Open' ? 'selected' : '' }}>Open</option>
+                                            <option value="Closed" {{ $job_view_detail[0]->status == 'Closed' ? 'selected' : '' }}>Closed</option>
+                                            <option value="Cancelled" {{ $job_view_detail[0]->status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
                                         </select>
                                     </div>
                                 </div>
@@ -197,13 +197,15 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Start Date</label>
-                                        <input type="text" class="form-control datetimepicker" value="3 Mar 2019">
+                                        <input type="text" class="form-control datetimepicker" name="start_date" 
+                                               value="{{ $job_view_detail[0]->start_date }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Expired Date</label>
-                                        <input type="text" class="form-control datetimepicker" value="31 May 2019">
+                                        <input type="text" class="form-control datetimepicker" name="expired_date" 
+                                               value="{{ $job_view_detail[0]->expired_date }}">
                                     </div>
                                 </div>
                             </div>
@@ -211,12 +213,12 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>Description</label>
-                                        <textarea class="form-control"></textarea>
+                                        <textarea class="form-control" name="description">{{ $job_view_detail[0]->description }}</textarea>
                                     </div>
                                 </div>
                             </div>
                             <div class="submit-section">
-                                <button class="btn btn-primary submit-btn">Save</button>
+                                <button type="submit" class="btn btn-primary submit-btn">Save Changes</button>
                             </div>
                         </form>
                     </div>
