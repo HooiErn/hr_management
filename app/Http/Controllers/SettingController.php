@@ -7,6 +7,8 @@ use App\Models\RolesPermissions;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Models\Company;
 use DB;
+use Twilio\Rest\Client;
+
 class SettingController extends Controller
 {
     // company/settings/page
@@ -119,6 +121,32 @@ class SettingController extends Controller
             DB::rollback();
             Toastr::error('Role Name delete fail :)','Error');
             return redirect()->back();
+        }
+    }
+// get company info
+    public function getCompanyInfo()
+    {
+        try {
+            $settings = DB::table('companies')->first();
+            return response()->json([
+                'success' => true,
+                'company' => [
+                    'company_name' => $settings->company_name,
+                    'address' => $settings->address,
+                    'city' => $settings->city,
+                    'state' => $settings->state,
+                    'postal_code' => $settings->postal_code,
+                    'contact_person' => $settings->contact_person,
+                    'phone' => $settings->phone,
+                    'email' => $settings->email
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching company info: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching company information'
+            ]);
         }
     }
 }

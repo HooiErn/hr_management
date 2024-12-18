@@ -544,4 +544,27 @@ class JobController extends Controller
         return view('job.edit_candidate', compact('candidate'));
     }
 
+    public function videoDashboard()
+    {
+        return view('job.video-dashboard');
+    }
+// public meeting for interviewer
+    public function publicMeeting()
+    {
+        return view('job.public-meeting');
+    }
+
+    public function joinPublicMeeting(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'roomID' => 'required|string'
+        ]);
+
+        return view('job.public-meeting', [
+            'roomID' => $request->roomID,
+            'userName' => $request->name
+        ]);
+    }
+
 }

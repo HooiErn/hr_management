@@ -54,7 +54,7 @@
 @extends('layouts.master')
 @section('content')
     <!-- Page Wrapper -->
-    <div class="page-wrapper">	
+    <div class="page-wrapper">
         <!-- Page Content -->
         <div class="content container-fluid">
             <!-- Page Header -->
@@ -199,18 +199,18 @@
                                                     </a>
                                                     @if($candidates->count() > 0)
                                                         <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
-                                                           data-id="{{ $candidate->id ?? '' }}"
-                                                           data-name="{{ $candidate->name ?? '' }}"
-                                                           data-candidate-id="{{ $candidate->candidate_id ?? '' }}"
-                                                           data-email="{{ $candidate->email ?? '' }}"
-                                                           data-phone="{{ $candidate->phone_number ?? '' }}"
-                                                           data-ic-number="{{ $candidate->ic_number ?? '' }}"
-                                                           data-birth-date="{{ $candidate->birth_date ?? '' }}"
-                                                           data-age="{{ $candidate->age ?? '' }}"
-                                                           data-gender="{{ $candidate->gender ?? '' }}"
-                                                           data-race="{{ $candidate->race ?? '' }}"
-                                                           data-education="{{ $candidate->highest_education ?? '' }}"
-                                                           data-experience="{{ $candidate->work_experiences ?? '' }}">
+                                                           data-id="{{ $candidate->id }}"
+                                                           data-name="{{ $candidate->name }}"
+                                                           data-candidate-id="{{ $candidate->candidate_id }}"
+                                                           data-email="{{ $candidate->email }}"
+                                                           data-phone="{{ $candidate->phone_number }}"
+                                                           data-ic-number="{{ $candidate->ic_number }}"
+                                                           data-birth-date="{{ $candidate->birth_date }}"
+                                                           data-age="{{ $candidate->age }}"
+                                                           data-gender="{{ $candidate->gender }}"
+                                                           data-race="{{ $candidate->race }}"
+                                                           data-education="{{ $candidate->highest_education }}"
+                                                           data-experience="{{ $candidate->work_experiences }}">
                                                             <i class="fa fa-pencil m-r-5"></i> Edit
                                                         </a>
                                                     @else
@@ -300,15 +300,15 @@
                                         <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Birth Date</label>
+                                        <label>Birth Date <span class="text-danger">*</span></label>
                                         <input class="form-control @error('birth_date') is-invalid @enderror" type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}">
                                     </div>
                                     <div class="form-group">
-                                        <label>Age</label>
+                                        <label>Age <span class="text-danger">*</span></label>
                                         <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" id="age" readonly>
                                     </div>
                                     <div class="form-group">
-                                        <label>Race</label>
+                                        <label>Race <span class="text-danger">*</span></label>
                                         <select class="form-control @error('race') is-invalid @enderror" name="race" required>
                                             <option value="" disabled selected>Select Race</option>
                                             <option value="Malay ?? {{ old('Malay') }}">Malay</option>
@@ -320,7 +320,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Gender</label>
+                                        <label>Gender <span class="text-danger">*</span></label>
                                         <select class="form-control @error('gender') is-invalid @enderror" name="gender" required>
                                             <option value="" disabled selected>Select Gender</option>
                                             <option value="Male">Male</option>
@@ -328,8 +328,15 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>Phone <span class="text-danger">*</span></label>
-                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" value="{{ old('phone_number') }}" placeholder="0123456789" required>
+                                        <label>Phone Number <span class="text-danger">*</span></label>
+                                        <input class="form-control @error('phone_number') is-invalid @enderror" 
+                                               type="tel" 
+                                               name="phone_number" 
+                                               placeholder="Enter with country code (e.g., 60123456789)" 
+                                               pattern="^60\d{9,10}$"
+                                               title="Please enter a valid Malaysian phone number starting with 60"
+                                               required>
+                                        <small class="form-text text-muted">(e.g., 60123456789)</small>
                                     </div>
                                     <div class="form-group">
                                         <label>Email <span class="text-danger">*</span></label>
@@ -444,27 +451,27 @@
                                             <input class="form-control" type="text" name="name" id="edit_name" value="{{ old('name', $candidate->name ?? '') }}"required>
                                         </div>
                                         <div class="form-group">
-                                            <label>Birth Date</label>
-                                            <input class="form-control" type="date" name="birth_date" id="edit_birth_date" value="{{ old('birth_date', $candidate->birth_date ?? '') }}">
+                                            <label>Birth Date<span class="text-danger">*</span></label>
+                                            <input class="form-control" type="date" name="birth_date" id="edit_birth_date" value="{{ old('birth_date', $candidate->birth_date ?? '') }}" required>
                                         </div>
                                         <div class="form-group">
-                                            <label>Age</label>
+                                            <label>Age<span class="text-danger">*</span></label>
                                             <input class="form-control" type="number" name="age" id="edit_age" value="{{ old('age', $candidate->age ?? '') }}" readonly>
                                         </div>
                                         <div class="form-group">
-                                            <label>Race</label>
+                                            <label>Race<span class="text-danger">*</span></label>
                                             <select class="form-control" name="race" id="edit_race">
-                                                <option value="">Select Race</option>
-                                                <option value="Malay" {{ old('race', $candidate->race ?? '') == 'Malay' ? 'selected' : '' }}>Malay</option>
-                                                <option value="Chinese" {{ old('race', $candidate->race ?? '') == 'Chinese' ? 'selected' : '' }}>Chinese</option>
-                                                <option value="Indian" {{ old('race', $candidate->race ?? '') == 'Indian' ? 'selected' : '' }}>Indian</option>
-                                                <option value="Others" {{ old('race', $candidate->race ?? '') == 'Others' ? 'selected' : '' }}>Others</option>
+                                            <option value="">Select Race</option>
+                                            <option value="Malay" {{ ($candidate->race ?? '') == 'Malay' ? 'selected' : '' }}>Malay</option>
+                                            <option value="Chinese" {{ ($candidate->race ?? '') == 'Chinese' ? 'selected' : '' }}>Chinese</option>
+                                            <option value="Indian" {{ ($candidate->race ?? '') == 'Indian' ? 'selected' : '' }}>Indian</option>
+                                            <option value="Others" {{ ($candidate->race ?? '') == 'Others' ? 'selected' : '' }}>Others</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Work Experience (Years)</label>
+                                            <label>Work Experience (Years)<span class="text-danger">*</span></label>
                                             <input class="form-control" type="number" name="work_experiences" 
-                                                   id="edit_experience" value="{{ old('work_experiences', $candidate->work_experiences ?? '') }}" min="0" max="100">
+                                                   id="edit_experience" value="{{ old('work_experiences', $candidate->work_experiences ?? '') }}" min="0" max="100" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -480,7 +487,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label>Highest Education</label>
-                                            <select class="form-control" name="highest_education" id="edit_education">
+                                            <select class="form-control" name="highest_education" id="edit_education" required>
                                                 <option value="">Select Education</option>
                                                 <option value="Secondary" {{ old('highest_education', $candidate->highest_education ?? '') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
                                                 <option value="Foundation" {{ old('highest_education', $candidate->highest_education ?? '') == 'Foundation' ? 'selected' : '' }}>Foundation</option>
@@ -492,7 +499,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label>Gender</label>
-                                            <select class="form-control" name="gender" id="edit_gender">
+                                            <select class="form-control" name="gender" id="edit_gender" required>
                                                 <option value="">Select Gender</option>
                                                 <option value="Male" {{ old('gender', $candidate->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
                                                 <option value="Female" {{ old('gender', $candidate->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
@@ -1068,6 +1075,38 @@ $(document).ready(function() {
         $('#view_race').text(race || 'Not provided');
         $('#view_education').text(education || 'Not provided');
         $('#view_experience').text(experience ? experience + ' years' : 'Not provided');
+    });
+});
+</script>
+
+<script>
+$(document).ready(function() {
+    $('.edit-candidate').on('click', function() {
+        // Get data from data attributes
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var email = $(this).data('email');
+        var phone = $(this).data('phone');
+        var ic = $(this).data('ic-number');
+        var birth = $(this).data('birth-date');
+        var age = $(this).data('age');
+        var gender = $(this).data('gender');
+        var race = $(this).data('race');
+        var education = $(this).data('education');
+        var experience = $(this).data('experience');
+
+        // Update modal fields
+        $('#edit_candidate_id').val(id);
+        $('#edit_name').val(name);
+        $('#edit_email').val(email);
+        $('#edit_phone_number').val(phone);
+        $('#edit_ic_number').val(ic);
+        $('#edit_birth_date').val(birth);
+        $('#edit_age').val(age);
+        $('#edit_gender').val(gender);
+        $('#edit_race').val(race);
+        $('#edit_education').val(education);
+        $('#edit_experience').val(experience);
     });
 });
 </script>
