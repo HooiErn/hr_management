@@ -4,173 +4,49 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Candidate;
-use App\Models\ApplyForJob;
+
 
 class ChatController extends Controller
 {
-
     public function handleMessage(Request $request)
     {
         try {
-            $step = $request->input('step', 0);
-            $answer = $request->input('answer', '');
-            $confirm = $request->input('confirm', false);
-            $sessionData = session('chat_data', []);
+            $question = $request->input('question', '');
 
-            if ($confirm) {
-                $this->saveApplication($sessionData);
-                return response()->json([
-                    'message' => 'Your application has been submitted successfully.',
-                    'status' => 'complete'
-                ]);
-            }
-
-            if ($step > 0 && !empty($answer)) {
-                $currentQuestion = $this->getNextQuestion($step - 1);
-                
-                if ($currentQuestion['field'] === 'work_experiences') {
-                    if (!is_numeric($answer) || $answer < 0) {
-                        return response()->json([
-                            'error' => true,
-                            'message' => 'Please enter a valid number for work experience.',
-                            'question' => $currentQuestion['question']
-                        ]);
-                    }
-                    $answer = (int)$answer;
-                }
-
-                $currentField = $currentQuestion['field'];
-                $sessionData[$currentField] = $answer;
-                session(['chat_data' => $sessionData]);
-            }
-
-            $nextQuestion = $this->getNextQuestion($step);
-            
-            if ($nextQuestion) {
-                return response()->json([
-                    'question' => $nextQuestion['question'],
-                    'options' => $nextQuestion['options'] ?? null,
-                    'field' => $nextQuestion['field'],
-                    'type' => $nextQuestion['type'] ?? 'text',
-                    'step' => $step + 1
-                ]);
+            if (stripos($question, 'job responsibilities') !== false) {
+                $answer = $this->getJobResponsibilities($question);
+            } elseif (stripos($question, 'how to apply') !== false) {
+                $answer = "To apply for a job, please visit our careers page and submit your application online.";
+            } elseif (stripos($question, 'interview tips') !== false) {
+                $answer = "Please prepare your CV and profile and carefully review the 
+                           requirements of the job you are applying for to find the right 
+                           fit for yourself. We welcome any talents to join us!";
+            } elseif (stripos($question, 'recommend jobs') !== false) {
+                $answer = $this->recommendJobs($request->input('skills'));
+            } elseif (stripos($question, 'contact customer service') !== false) {
+                $answer = "If you need to contact customer service, please reach out via WhatsApp at [your phone number].";
             } else {
-                $summary = $this->generateSummary($sessionData);
-                return response()->json([
-                    'summary' => $summary,
-                    'needsConfirmation' => true
-                ]);
+                // Check for job title similarity and provide links
+                $relatedJobs = $this->getRelatedJobs($question);
+                if ($relatedJobs) {
+                    $answer = "Here are some related job titles: " . implode(", ", $relatedJobs);
+                } else {
+                    $answer = "I'm sorry, I didn't understand that. Can you please rephrase?";
+                }
             }
+
+            return response()->json(['answer' => $answer]);
         } catch (\Exception $e) {
             \Log::error('Error in ChatController:', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Something went wrong!'], 500);
         }
     }
 
-    private function saveApplication($data)
+    private function getRelatedJobs($title)
     {
-        try {
-            $candidate = new Candidate();
-            $candidate->candidate_id = $this->generateUniqueCandidateId();
-            $candidate->name = $data['name'];
-            $candidate->gender = $data['gender'];
-            $candidate->email = $data['email'];
-            $candidate->job_title = $data['job_title'];
-            $candidate->birth_date = $data['birth_date'];
-            $candidate->age = $data['age'];
-            $candidate->race = $data['race'];
-            $candidate->phone_number = $data['phone_number'];
-            $candidate->highest_education = $data['highest_education'];
-            $candidate->work_experiences = $data['work_experiences'];
-            $candidate->message = $data['message'];
-            $candidate->cv_upload = $data['cv_upload'];
-            $candidate->interview_datetime = $data['interview_datetime'];
-            $candidate->role_name = 'Candidate';
-            $candidate->save();
-
-            $applyForJob = new ApplyForJob();
-            $applyForJob->job_title = $data['job_title'];
-            $applyForJob->name = $data['name'];
-            $applyForJob->age = $data['age'];
-            $applyForJob->race = $data['race'];
-            $applyForJob->gender = $data['gender'];
-            $applyForJob->birth_date = $data['birth_date'];
-            $applyForJob->phone_number = $data['phone_number'];
-            $applyForJob->email = $data['email'];
-            $applyForJob->highest_education = $data['highest_education'];
-            $applyForJob->work_experiences = $data['work_experiences'];
-            $applyForJob->message = $data['message'];
-            $applyForJob->cv_upload = $data['cv_upload'];
-            $applyForJob->interview_datetime = $data['interview_datetime'];
-            $applyForJob->save();
-        } catch (\Exception $e) {
-            \Log::error('Error in ChatController:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Something went wrong!'], 500);
-        }
-    }
-
-    public function uploadCv(Request $request)
-    {
-        // Handle file upload logic
-        $file = $request->file('cv');
-        if ($file) {
-            $path = $file->store('cv_uploads');
-            return response()->json(['message' => 'CV uploaded successfully', 'path' => $path]);
-        }
-
-        return response()->json(['message' => 'No file uploaded'], 400);
-    }
-
-    private function generateUniqueCandidateId()
-    {
-        return 'CAND-' . strtoupper(uniqid());
-    }
-
-    private function getNextQuestion($step)
-    {
-        $questions = [
-            [
-                'field' => 'name',
-                'question' => 'What is your name?'
-            ],
-            [
-                'field' => 'gender',
-                'question' => 'What is your gender?',
-                'options' => ['Male', 'Female', 'Other']
-            ],
-            [
-                'field' => 'email',
-                'question' => 'What is your email address?'
-            ],
-            [
-                'field' => 'phone_number',
-                'question' => 'What is your phone number?(e.g. 0123456789)'
-            ],
-            [
-                'field' => 'birth_date',
-                'question' => 'What is your birth date? (YYYY-MM-DD)'
-            ],
-            [
-                'field' => 'highest_education',
-                'question' => 'What is your highest level of education?',
-                'options' => ['Secondary', 'Foundation', 'Diploma', 'Degree', 'Master', 'PhD']
-            ],
-            [
-                'field' => 'work_experiences',
-                'question' => 'How many years of work experience do you have?',
-                'type' => 'number',
-                'validation' => 'numeric'
-            ]
-        ];
-
-        return $questions[$step] ?? null;
-    }
-
-    private function getFieldNameByStep($step)
-    {
-        $fields = ['name', 'gender', 'email', 'phone_number', 'birth_date', 'highest_education', 'work_experiences'];
-        return $fields[$step] ?? null;
+        // Logic to fetch related job titles from the database
+        // Example: return Job::where('title', 'LIKE', "%$title%")->pluck('title')->toArray();
+        return []; // Placeholder for actual implementation
     }
 }
 

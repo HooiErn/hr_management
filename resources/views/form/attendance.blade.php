@@ -614,3 +614,41 @@
     </div>
     <!-- Page Wrapper -->
 @endsection
+
+<script>
+function punchIn(employeeId) {
+    $.ajax({
+        url: '{{ route("attendance.punchIn") }}', // Define this route in your web.php
+        method: 'POST',
+        data: {
+            employee_id: employeeId,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            alert(response.message);
+            // Optionally refresh the attendance data
+        },
+        error: function(xhr) {
+            alert(xhr.responseJSON.message);
+        }
+    });
+}
+
+function punchOut(employeeId) {
+    $.ajax({
+        url: '{{ route("attendance.punchOut") }}', // Define this route in your web.php
+        method: 'POST',
+        data: {
+            employee_id: employeeId,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            alert(response.message);
+            // Optionally refresh the attendance data
+        },
+        error: function(xhr) {
+            alert(xhr.responseJSON.message);
+        }
+    });
+}
+</script>

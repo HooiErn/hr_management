@@ -8,7 +8,7 @@
                 <div class="col-md-12">
                     <div class="welcome-box">
                         <div class="welcome-img">
-                            <img src="{{ URL::to('/assets/images/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+                            <img src="{{ URL::to('/assets/images/avatar'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
                         </div>
                         <div class="welcome-det">
                             <h3>Welcome, {{ Auth::user()->name }}</h3>

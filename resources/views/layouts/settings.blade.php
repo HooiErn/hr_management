@@ -39,7 +39,7 @@
 				<!-- Header Menu -->
 				<ul class="nav user-menu">
 					<!-- Search -->
-					<li class="nav-item">
+					<!-- <li class="nav-item">
 						<div class="top-nav-search">
 							<a href="javascript:void(0);" class="responsive-search">
 								<i class="fa fa-search"></i>
@@ -49,7 +49,7 @@
 								<button class="btn" type="submit"><i class="fa fa-search"></i></button>
 							</form>
 						</div>
-					</li>
+					</li> -->
 					<!-- /Search -->
 					<!-- Flag -->
                     <li class="nav-item dropdown has-arrow flag-nav">
@@ -256,7 +256,7 @@
                     <li class="nav-item dropdown has-arrow main-drop">
                         <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
                             <span class="user-img">
-                            <img src="{{ URL::to('/assets/images/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+							<img src="{{ URL::to('/assets/images/avatar/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
                             <span class="status online"></span></span>
                             <span>{{ Auth::user()->name }}</span>
                         </a>

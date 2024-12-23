@@ -21,12 +21,12 @@ class AdminSeeder extends Seeder
                 'name' => 'Admin',
                 'user_id' => 'ADMIN001',
                 'email' => 'admin@example.com',
-                'gender' => 'Male',  // Optional
+                'gender' => 'Male',  
                 'join_date' => '2024-10-01',
-                'phone_number' => '1234567890',  // Optional
+                'phone_number' => '60123456789',  
                 'status' => 'active',
                 'role_name' => 'Admin',  // Set role as Admin
-                'avatar' => 'admin.jpg',  // Can be left null
+                'avatar' => 'admin.jpg', 
                 'position' => 'Administrator',
                 'department' => 'HR',
                 'email_verified_at' => now(),

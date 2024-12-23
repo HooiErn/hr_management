@@ -17,7 +17,7 @@
         <div class="header">
             <!-- Logo -->
             <div class="header-left">
-                <a href="{{ route('home') }}" class="logo">
+                <a href="{{ route('form/job/list') }}" class="logo">
                     <img src="{{ URL::to('images/logo-circle.png') }}" width="40" height="40" alt="">
                 </a>
             </div>
@@ -79,10 +79,10 @@
                 <div class="page-header">
                     <div class="row align-items-center">
                         <div class="col">
-                            <h3 class="page-title">Jobs</h3>
+                            <h3 class="page-title">Job Details</h3>
                             <ul class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="{{ route('form/job/list') }}">Dashboard</a></li>
-                                <li class="breadcrumb-item active">Jobs</li>
+                                <li class="breadcrumb-item active">Job Details</li>
                             </ul>
                         </div>
                     </div>
@@ -163,31 +163,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Chatbox Icon -->
-                <div id="chatbox-icon" onclick="toggleChatbox()" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; background: #007bff; color: #fff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 1000;">
-                    <i class="fa fa-comments" style="font-size: 24px;"></i>
-                </div>
-
-                <!-- Chatbox Container -->
-                <div id="chatbox" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 300px; height: 400px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); z-index: 1000;">
-                    <div style="background: #007bff; color: white; padding: 10px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center;">
-                        <span>Chat with Us</span>
-                        <span style="cursor: pointer;" onclick="toggleChatbox()">×</span>
-                    </div>
-                    <div id="chatbox-messages" style="height: 300px; overflow-y: auto; padding: 10px;"></div>
-                    <div style="border-top: 1px solid #ddd; padding: 10px; display: flex; align-items: center;">
-                        <input type="text" id="chatbox-input" 
-                               style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 8px;" 
-                               placeholder="Type your message..." 
-                               onkeypress="handleKeyPress(event)">
-                        <button onclick="sendMessage()" 
-                                style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                            Send
-                        </button>
-                    </div>
-                </div>
-
-                <!-- /Chatbox -->
 
             </div>
             <!-- /Page Content -->
@@ -209,7 +184,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Job Title</label>
-                                        <select class="form-control @error('job_title') is-invalid @enderror" name="job_title" required>
+                                        <select class="form-control @error('job_title') is-invalid @enderror" name="job_title" required readonly>
                                             <option value="" selected disabled>Select Job Title</option>
                                             @foreach($jobs as $job)
                                                 <option value="{{ $job->job_title }}" {{ $job_view[0]->job_title == $job->job_title ? 'selected' : '' }}>
@@ -221,7 +196,7 @@
                                     <input type="hidden" name="interview_datetime" value="{{ old('interview_datetime') }}">
                                     <div class="form-group">
                                         <label>Name <span class="text-danger">*</span></label>
-                                        <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" placeholder="Full name as per IC" required>
+                                        <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" placeholder="Full name as per IC" value="{{ old('name') }}" required>
                                     </div>
                                     <div class="form-group">
                                         <label>Birth Date</label>
@@ -230,7 +205,7 @@
 
                                     <div class="form-group">
                                         <label>Age</label>
-                                        <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" id="age" readonly>
+                                        <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" id="age" value="{{ old('age') }}" readonly>
                                     </div>
 
                                     <div class="form-group">
@@ -238,10 +213,10 @@
                                         <div class="form-group form-focus">
                                         <select class="form-control floating" name="race">
                                             <option value="" disabled selected></option>
-                                            <option value="Malay">Malay</option>
-                                            <option value="Chinese">Chinese</option>
-                                            <option value="Indian">Indian</option>
-                                            <option value="Others">Others</option>
+                                            <option value="Malay"  {{ old(key: 'race') == 'Malay' ? 'selected' : '' }}>Malay</option>
+                                            <option value="Chinese" {{ old(key: 'race') == 'Chinese' ? 'selected' : '' }}">Chinese</option>
+                                            <option value="Indian"{{ old(key: 'race') == 'Indian' ? 'selected' : '' }}">Indian</option>
+                                            <option value="Others" {{ old(key: 'race') == 'Others' ? 'selected' : '' }}">Others</option>
                                         </select>
                                         <label class="focus-label">Race</label>
                                     </div>
@@ -261,12 +236,19 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Phone Number <span class="text-danger">*</span></label>
-                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" placeholder="e.g., 60123456789" required>
+                                        <input class="form-control @error('phone_number') is-invalid @enderror" 
+                                               type="tel" 
+                                               name="phone_number" 
+                                               placeholder="Enter with country code (e.g., 60123456789)" 
+                                               pattern="^60\d{9,10}$"
+                                               title="Please enter a valid Malaysian phone number starting with 60"
+                                               value="{{ old(key: 'phone_number')}}"required>
+                                        <small class="form-text text-muted">Format: 60 + phone number without leading 0 (e.g., 60123456789)</small>
                                     </div>
 
                                     <div class="form-group">
                                         <label>Email <span class="text-danger">*</span></label>
-                                        <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" placeholder="e.g., example@domain.com" required>
+                                        <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" placeholder="e.g., example@domain.com" value="{{ old(key: 'email') }}" required>
                                     </div>
 
                                     <div class="form-group">
@@ -320,7 +302,7 @@
                                 <label>Upload your CV<span class="text-danger">*</span></label>
                                 <div class="custom-file">
                                     <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload" onchange="updateFileName(this)" required>
-                                    <label class="custom-file-label" for="cv_upload">Choose file</label>
+                                    <label class="custom-file-label" for="cv_upload">Choose file (PDF only)</label>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -353,60 +335,7 @@
         <!-- /Page Wrapper -->
     
     <!-- /Main Wrapper -->
-    <!--Chatbox-->
-    <script>
-        // Define global variables
-        const CHAT_HANDLE_URL = "{{ route('chat/handle') }}";
-        const CSRF_TOKEN = "{{ csrf_token() }}";
-        const currentJobTitle = "{{ $job_view[0]->job_title }}";
 
-        // Initialize chat when document is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeChat();
-        });
-
-        function toggleChatbox() {
-            const chatbox = document.getElementById('chatbox');
-            if (!chatbox) return;
-
-            const isHidden = chatbox.style.display === 'none';
-            chatbox.style.display = isHidden ? 'block' : 'none';
-            
-            if (isHidden) {
-                showInitialMessage();
-                const chatInput = document.getElementById('chatbox-input');
-                if (chatInput) chatInput.focus();
-            }
-        }
-
-        function showInitialMessage() {
-            const chatboxMessages = document.getElementById('chatbox-messages');
-            if (!chatboxMessages) return;
-
-            chatboxMessages.innerHTML = `
-                <div class="chat-message bot-message">
-                    Hello! Let's start your job application for <b>${currentJobTitle}</b>.<br>
-                    Type anything to begin...
-                </div>
-            `;
-        }
-
-        function initializeChat() {
-            const chatInput = document.getElementById('chatbox-input');
-            if (chatInput) {
-                chatInput.addEventListener('keypress', handleKeyPress);
-            }
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-    </script>
-    <script src="{{ asset('assets/js/chatbox.js') }}"></script>
-    <!--/Chatbox-->
     <!-- Auto-calculate Age Based on Birth Date -->
     <script>
         document.getElementById('birth_date').addEventListener('change', function() {
@@ -417,7 +346,15 @@
             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
                 age--;
             }
-            document.getElementById('age').value = age;
+
+            // Check if age is less than 0
+            if (age < 17) ||{
+                alert("Invalid birth date. Please select a valid date.");
+                this.value = ''; // Clear the input
+                document.getElementById('age').value = ''; // Clear the age field
+            } else {
+                document.getElementById('age').value = age; // Set the age field
+            }
         });
     </script>
     <!-- /Auto-calculate Age Based on Birth Date -->
@@ -541,4 +478,16 @@
         });
         </script>
 <!--/Validate IC number format-->
+
+@if (session('error'))
+    <script>
+        toastr.error("{{ session('error') }}");
+    </script>
+@endif
+
+@if (session('success'))
+    <script>
+        toastr.success("{{ session('success') }}");
+    </script>
+@endif
 @endsection

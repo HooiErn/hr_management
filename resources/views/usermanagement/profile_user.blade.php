@@ -27,7 +27,7 @@
                                 <div class="profile-img-wrap">
                                     <div class="profile-img">
                                         <a href="#">
-                                            <img src="{{ URL::to('/assets/images/avatar/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+                                        <img src="{{ URL::to('/assets/images/avatar/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
                                         </a>
                                     </div>
                                 </div>
@@ -97,7 +97,7 @@
                                                         <div class="text">
                                                             <div class="avatar-box">
                                                                 <div class="avatar avatar-xs">
-                                                                    <img src="{{ URL::to('/assets/images/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+                                                                <img src="{{ URL::to('/assets/images/avatar/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
                                                                 </div>
                                                             </div>
                                                             <a href="#">

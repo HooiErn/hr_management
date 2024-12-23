@@ -8522,3 +8522,32 @@ ul.comment-list li ul.children {
 	justify-content: center;
 	font-size: 11px;
 }
+
+/* sidebar search */
+.sidebar-search {
+    position: fixed;
+    left: 0;
+    top: 60px; 
+    width: 250px;
+	height: calc(100% - 60px); 
+    background: #f8f9fa; 
+    padding: 15px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: block; 
+    z-index: 1000;
+	overflow-y: auto; 
+}
+
+.sidebar-search input {
+    width: 100%; 
+    margin-bottom: 10px; 
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .sidebar-search {
+        width: 100%; 
+        left: 0; 
+        top: 50px; 
+    }
+}

@@ -7,6 +7,9 @@ use DB;
 use Carbon\Carbon;
 use PDF;
 use App\Models\User;
+use App\Models\ApplyForJob; 
+use App\Models\Company;
+
 class HomeController extends Controller
 {
     /**
@@ -14,10 +17,10 @@ class HomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth');
+    // }
 
     /**
      * Show the application dashboard.
@@ -28,6 +31,15 @@ class HomeController extends Controller
     public function index()
     {
         return view('dashboard.dashboard');
+    }
+
+    public function showHomepage()
+    {
+        // Fetch open positions and company information
+        $jobs = ApplyForJob::all(); 
+        $company = Company::first(); 
+
+        return view('home', compact('jobs', 'company'));
     }
     // employee dashboard
     public function emDashboard()
@@ -47,4 +59,8 @@ class HomeController extends Controller
         // download pdf file
         return $pdf->download('pdfview.pdf');
     }
+
+    
+    
+
 }

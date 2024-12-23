@@ -26,6 +26,7 @@ class CreateEmployeesTable extends Migration
             $table->string('birth_date')->nullable();
             $table->string('gender')->nullable();
             $table->string('employee_id')->nullable();
+            $table->string('salary')->nullable();
             $table->string('company')->nullable();
             $table->string('join_date')->unique();
             $table->string('phone_number')->nullable();
@@ -34,6 +35,8 @@ class CreateEmployeesTable extends Migration
             $table->string('avatar')->nullable();
             $table->string('position')->nullable();
             $table->string('department')->nullable();
+            $table->string('leaves')->nullable();
+            $table->string('contracts')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->timestamps();

@@ -58,12 +58,16 @@
 			padding: 20px;
 		}
 	</style>
-	<!-- Audio file -->
+	<!-- toastr -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+		<script src="http://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+		<script src="http://cdn.bootcss.com/toastr.js/latest/js/toastr.min.js"></script>
+		
+	<!-- Audio file
     <audio id="notificationSound" src="{{ asset('audio/notification.mp3') }}" preload="auto"></audio>
-	
+	 -->
 	<!-- Main Wrapper -->
 	<div class="main-wrapper">
-		
 		<!-- Loader -->
 		<div id="loader-wrapper">
 			<div id="loader">
@@ -87,14 +91,16 @@
 				<span></span>
 			</span>
 		</a>
-
+		<h2 style="margin: 30px; float: left;color:white; font-family:sans-serif;">
+			HRTech
+		</h2>
 		<!-- Mobile Menu Button -->
 		<a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
 
 		<!-- Header Menu -->
 		<ul class="nav user-menu">
 			<!-- Search -->
-			<li class="nav-item" style="margin-right:20px;">
+			<!-- <li class="nav-item" style="margin-right:20px;">
 				<div class="top-nav-search" style="margin-left:20px">
 					<a href="javascript:void(0);" class="responsive-search"><i class="fa fa-search"></i></a>
 					<form action="search.html">
@@ -102,7 +108,7 @@
 						<button class="btn" type="submit"><i class="fa fa-search"></i></button>
 					</form>
 				</div>
-			</li>
+			</li> -->
 			<!-- /Search -->
 
 			<!-- Language Dropdown -->

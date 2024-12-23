@@ -15,13 +15,9 @@ class EmployeeController extends Controller
     // all employee card view
     public function cardAllEmployee(Request $request)
     {
-        $users = DB::table('users')
-                    ->join('employees', 'users.user_id', '=', 'employees.employee_id')
-                    ->select('users.*', 'employees.birth_date', 'employees.gender', 'employees.company')
-                    ->get(); 
-        $userList = DB::table('users')->get();
+        $users = DB::table('employees')->get(); 
         $permission_lists = DB::table('permission_lists')->get();
-        return view('form.allemployeecard',compact('users','userList','permission_lists'));
+        return view('form.allemployeecard',compact('users','permission_lists'));
     }
     // all employee list
     public function listAllEmployee()

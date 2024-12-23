@@ -15,6 +15,12 @@ return new class extends Migration
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
+            $table->date('date');
+            $table->time('punch_in')->nullable();
+            $table->time('punch_out')->nullable();
+            $table->decimal('break_duration', 5, 2)->default(0);
+            $table->decimal('overtime', 5, 2)->default(0);
             $table->timestamps();
         });
     }

@@ -20,7 +20,7 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-cubes"></i></span>
                             <div class="dash-widget-info">
-                                <h3>112</h3> <span>Projects</span>
+                                <h3></h3> <span>Schedule</span>
                             </div>
                         </div>
                     </div>
@@ -29,7 +29,7 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-usd"></i></span>
                             <div class="dash-widget-info">
-                                <h3>44</h3> <span>Clients</span>
+                                <h3></h3> <span>Jobs Offer</span>
                             </div>
                         </div>
                     </div>
@@ -38,7 +38,7 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-diamond"></i></span>
                             <div class="dash-widget-info">
-                                <h3>37</h3> <span>Tasks</span>
+                                <h3></h3> <span>Tasks</span>
                             </div>
                         </div>
                     </div>
@@ -47,13 +47,13 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-user"></i></span>
                             <div class="dash-widget-info">
-                                <h3>218</h3> <span>Employees</span>
+                                <h3>{{}}</h3> <span>Employees</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-md-12">
                     <div class="row">
                         <div class="col-md-6 text-center">
@@ -74,7 +74,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
             <div class="row">
                 <div class="col-md-12">
                     <div class="card-group m-b-30">
@@ -136,7 +136,7 @@
             {{-- message --}}
             {!! Toastr::message() !!}
             <!-- Statistics Widget -->
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-md-12 col-lg-12 col-xl-4 d-flex">
                     <div class="card flex-fill dash-statistics">
                         <div class="card-body">
@@ -248,8 +248,8 @@
                     </div>
                 </div>
             </div>
-            <!-- /Statistics Widget -->
-            <div class="row">
+            <-- /Statistics Widget -->
+            <!-- <div class="row">
                 <div class="col-md-6 d-flex">
                     <div class="card card-table flex-fill">
                         <div class="card-header">
@@ -357,8 +357,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
+            </div> -->
+            <!-- <div class="row">
                 <div class="col-md-6 d-flex">
                     <div class="card card-table flex-fill">
                         <div class="card-header">
@@ -732,7 +732,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <!-- /Page Content -->
     </div>

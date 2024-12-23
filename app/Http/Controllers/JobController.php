@@ -18,24 +18,40 @@ class JobController extends Controller
     // job List
     public function jobList(Request $request)
     {    
-        $query = DB::table('add_jobs');
+        \Log::info('Job List Request:', $request->all()); // Log incoming request parameters
 
-        // If search parameter exists and not empty
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where('job_title', 'LIKE', "%{$search}%");
+        $query = AddJob::query();
+
+        // Apply filters based on request parameters
+        if ($request->filled('job_title')) {
+            $query->where('job_title', 'LIKE', '%' . $request->job_title . '%');
+        }
+        if ($request->filled('salary_from')) {
+            $query->where('salary_from', '>=', $request->salary_from);
+        }
+        if ($request->filled('salary_to')) {
+            $query->where('salary_to', '<=', $request->salary_to);
+        }
+        if ($request->filled('work_experience')) {
+            $query->where('work_experience', '>=', $request->work_experience);
+        }
+        if ($request->filled('job_type')) {
+            $query->where('job_type', $request->job_type);
         }
 
+        // Get the job list
         $job_list = $query->get();
-        
+
         // If it's an AJAX request
         if ($request->ajax()) {
             return response()->json($job_list);
         }
 
+        // For non-AJAX requests, return the view with all jobs
         return view('job.joblist', compact('job_list'));
     }
-    
+
+
     // job view
     public function jobView($id)
     { 
@@ -224,7 +240,7 @@ class JobController extends Controller
             'highest_education' => 'nullable|string|max:255',
             'work_experiences' => 'nullable|integer|min:0|max:100',
             'message' => 'nullable|string|max:1000',
-            'cv_upload' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'cv_upload' => 'nullable|file|mimes:pdf|max:2048',
             'interview_datetime' => 'nullable|date_format:Y-m-d H:i:s'
         ]);
 
@@ -253,8 +269,9 @@ class JobController extends Controller
             $candidate->highest_education = $request->highest_education; 
             $candidate->work_experiences = $request->work_experiences;
             $candidate->role_name = $request->role_name; 
+            $candidate->message   = $request->message;
             $candidate->interview_datetime = $request->interview_datetime; 
-            $candidate->cv_upload = $request->$cv_uploads;
+            $candidate->cv_upload = $cv_uploads;
             $candidate->save();
             
             // Save job application data

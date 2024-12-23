@@ -29,14 +29,13 @@
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Apply Date</th>
-                                    <th>Apply Job</th>
+                                    <th>Schedule DateTime</th>
                                     <th class="text-center">Status</th>
                                     <th>Resume</th>
-                                    <th class="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($apply_for_jobs as $key=>$apply )
+                                @forelse ($apply_for_jobs as $key=>$apply)
                                 <tr>
                                     <td>{{ ++$key }}</td>
                                     <td>
@@ -59,30 +58,50 @@
                                     <td>{{ $apply->email }}</td>
                                     <td>{{ $apply->phone_number }}</td>
                                     <td>{{ date('d F, Y',strtotime($apply->created_at)) }}</td>
-                                    <td><a href="{{ url('job/details/'.$apply->id) }}">{{ $apply->job_title }}</a></td>
+                                    <td>
+                                        @if($apply->interview_datetime)
+                                            {{ Carbon\Carbon::parse($apply->interview_datetime)->format('d M Y h:i A') }}
+                                        @else
+                                            <span class="text-muted">Not Scheduled</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         <div class="dropdown action-label">
                                             <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
-                                                <i class="fa fa-dot-circle-o text-info"></i> New
+                                                @php
+                                                    // Debug output to check the value
+                                                    \Log::info('Interview datetime for ID ' . $apply->id . ': ' . $apply->interview_datetime);
+                                                @endphp
+                                                
+                                                @if(isset($apply->interview_datetime) && !is_null($apply->interview_datetime))
+                                                    <i class="fa fa-dot-circle-o text-warning"></i> Interviewed
+                                                @else
+                                                    <i class="fa fa-dot-circle-o text-info"></i> New
+                                                @endif
                                             </a>
                                             <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#hired_modal"><i class="fa fa-dot-circle-o text-success"></i> Hired</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#rejected_modal"><i class="fa fa-dot-circle-o text-danger"></i> Rejected</a>
-                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#interviewed_modal"><i class="fa fa-dot-circle-o text-warning"></i> Interviewed</a>
+                                                @if(!isset($apply->interview_datetime) || is_null($apply->interview_datetime))
+                                                    <a class="dropdown-item interview-status-link" href="{{ route('page/interviwer') }}" 
+                                                       data-id="{{ $apply->id }}" data-status="interviewed">
+                                                        <i class="fa fa-dot-circle-o text-warning"></i> Interviewed
+                                                    </a>
+                                                @endif
+                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#hired_modal">
+                                                    <i class="fa fa-dot-circle-o text-success"></i> Hired
+                                                </a>
+                                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#rejected_modal">
+                                                    <i class="fa fa-dot-circle-o text-danger"></i> Rejected
+                                                </a>
                                             </div>
                                         </div>
                                     </td>
                                     <td><a href="{{ url('cv/download/'.$apply->id) }}" class="btn btn-sm btn-primary"><i class="fa fa-download"></i> Download</a></td>
-                                    <td class="text-right">
-                                        <div class="dropdown dropdown-action">
-                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#"><i class="fa fa-clock-o m-r-5"></i> Schedule Interview</a>
-                                            </div>
-                                        </div>
-                                    </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">No applications found</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -176,7 +195,7 @@
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Candidate Profile</h5>
+                        <h5 class="modal-title">Profile</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -298,7 +317,6 @@
             </div>
         </div>
         <!-- /View Candidate Modal -->
-        <!-- /Page Content -->
     </div>
     <!-- /Page Wrapper -->
 <script>
@@ -408,4 +426,38 @@ function rejectCandidate() {
     });
 });
 </script>
+<script>
+$(document).ready(function () {
+    // Handle interview status link click
+    $('.interview-status-link').on('click', function (e) {
+        e.preventDefault();
+
+        var link = $(this);
+        var id = link.data('id');
+        var href = link.attr('href');
+        
+        // AJAX call to update the interview status on the server
+        $.ajax({
+            url: href,
+            method: 'POST',
+            data: { id: id, _token: '{{ csrf_token() }}' },
+            success: function (response) {
+                // Update dropdown UI on success
+                var dropdownToggle = link.closest('.dropdown').find('.dropdown-toggle');
+                dropdownToggle.html('<i class="fa fa-dot-circle-o text-warning"></i> Interviewed');
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to update interview status:', error);
+                alert('An error occurred while updating the interview status.');
+            }
+        });
+    });
+});
+
+</script>
+<style>
+.datetimepicker {
+    z-index: 1600 !important; /* Ensures the datepicker shows over the modal */
+}
+</style>
 @endsection

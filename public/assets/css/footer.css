@@ -1,0 +1,14 @@
+/* public/assets/css/footer.css */
+.footer {
+    background-color: black;
+    color: white;
+    padding: 5px 0; 
+    text-align: left; 
+    font-size: 0.9rem; 
+}
+.footer a {
+    color: white;
+}
+.footer a:hover {
+    text-decoration: underline;
+}

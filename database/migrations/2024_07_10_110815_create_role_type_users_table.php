@@ -23,7 +23,8 @@ class CreateRoleTypeUsersTable extends Migration
             ['role_type' => 'Admin'],
             ['role_type' => 'Super Admin'],
             ['role_type' => 'Interviewer'],
-            ['role_type' => 'Candidate']
+            ['role_type' => 'Candidate'],
+            ['role_type' => 'Employee'],
         ]);
     }
 

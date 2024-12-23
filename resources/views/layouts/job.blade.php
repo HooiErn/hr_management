@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 		<meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>Apply for Jobs - HRTech Company</title>
+        <title>Job - HRTech Company</title>
 		<!-- Favicon -->
         <link rel="shortcut icon" type="image/x-icon" href="{{URL::asset('/images/logo-circle.png')}}">
 		<!-- Bootstrap CSS -->
@@ -32,59 +32,69 @@
 			position: fixed;
 			bottom: 20px;
 			right: 20px;
-			background-color: #4CAF50;
+			background: #007bff;
 			color: white;
 			border-radius: 50%;
-			width: 50px;
-			height: 50px;
+			width: 90px;
+			height: 80px;
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			z-index: 1000;
 			cursor: pointer;
-			z-index: 1000; /* Ensures the button is in front */
 		}
 
 		.floating-chatbot i {
-			font-size: 24px;
+			font-size: 32px;
 		}
-
-		.chatbox-container {
+		.chat-message {
+			display: flex; /* 使用 Flexbox */
+			align-items: flex-start; /* 垂直对齐 */
+		}
+		.custom-chatbox-container {
+			display: none;
 			position: fixed;
-			margin: 0 auto;
-			bottom: 70px;
+			bottom: 80px;
 			right: 20px;
-			z-index: 999; /* Ensures chatbox is in front */
-			max-width: 400px;
-			
+			width: 320px;
+			height: 400px;
+			background: white;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+			z-index: 1000;
+			padding:0;
 		}
 
-		.chatbox {
-			border: 1px solid #ccc;
+		.custom-chatbox {
+			border: 1px solid #007bff;
 			border-radius: 5px;
 			overflow: hidden;
+			width: 100%;
+			height: 100%;
 		}
 
-		.chatbox__support {
+		.custom-chatbox__support {
 			display: flex;
 			flex-direction: column;
-			height: 400px;
-			background-color: white;
+			height: 100%;
+			background-color: #f1f1f1;
 		}
 
-		.chatbox__header {
-			background-color: #f1f1f1;
-			padding: 10px;
+		.custom-chatbox__header {
+			background-color: #007bff;
+			color: white;
+			padding: 5px;
 			display: flex;
 			align-items: center;
 		}
 
-		.chatbox__messages {
+		.custom-chatbox__messages {
 			flex-grow: 1;
 			overflow-y: auto;
 			padding: 10px;
 		}
 
-		.chatbox__footer {
+		.custom-chatbox__footer {
 			display: flex;
 			padding: 10px;
 			background-color: #f1f1f1;
@@ -97,8 +107,8 @@
 			border-radius: 3px;
 		}
 
-		.chatbox__send--footer {
-			background-color: #4CAF50;
+		.custom-chatbox__send--footer {
+			background-color: #007bff;
 			color: white;
 			border: none;
 			padding: 5px 10px;
@@ -127,6 +137,7 @@
 		.messages_item--error {
 			color: red;
 		}
+
 		.search-results-container {
 			position: absolute;
 			top: 100%;
@@ -150,97 +161,89 @@
 		.search-result-item:hover {
 			background-color: #f5f5f5;
 		}
-	<	</style>
-		<script type="importmap">
-		{
-			"imports": {
-			"@google/generative-ai": "https://esm.run/@google/generative-ai"
-			}
+
+		.bot-icon {
+			width: 40px; 
+			height: auto;
+			margin-right: 5px; 
 		}
-		</script>
-		<!--Chatbot Button-->
-		<!-- <div class="floating-chatbot">
-			<i class="fa fa-comment" aria-hidden="true"></i>
-		</div> -->
+
+		.custom-chat-message {
+			display: flex; 
+			align-items: flex-start; 
+			margin-bottom: 10px; 
+		}
+
+		.bot-icon {
+			width: 40px; 
+			height: 40px; 
+			margin-right: 10px; 
+			border-radius: 50%;
+			position: relative; 
+			top: 10px; 
+		}
+
+		.bot-message {
+			background-color: #6f42c1; /* Purple background */
+			color: white; 
+			border-radius: 10px; 
+			padding: 10px; 
+			max-width: 80%; 
+			word-wrap: break-word; 
+			position: relative;
+			margin-left: 10px; 
+		}
+
+		.user-message {
+			background-color: #d1e7dd;
+			color: black; 
+			border-radius: 10px; 
+			padding: 10px; 
+			max-width: 80%; 
+			word-wrap: break-word; 
+			margin-left: auto; 
+		}
+
+		.quick-options {
+			display: flex; 
+			flex-direction: column; 
+			margin-top: 10px; 
+			font-size: 12px; 
+			margin-left: 50px; 
+		}
+
+		.quick-options button {
+			background-color: #6f42c1; 
+			color: white;
+			border: none; 
+			border-radius: 5px; 
+			padding: 5px; 
+			margin: 2px 0; 
+			cursor: pointer; 
+		}
+	</style>
+		   <!-- Chatbox Icon -->
+		   <div id="chatbox-icon" onclick="toggleChatbox()" style="position: fixed; bottom: 20px; right: 20px; cursor: pointer; background: #007bff; color: #fff; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <i class="fa fa-comments" style="font-size: 24px;"></i>
+                </div>
+
 		<!-- Chatbox -->
-		<div class="container chatbox-container" style="display: none;">
-			<div class="chatbox">
-				<div class="chatbox__support">
-					<div class="chatbox__header">
-						<div class="chatbox__content--header">
-							<h4 class="chatbox__heading--header">Gemini AI Chat Support</h4>
-							<p class="chatbox__description--header">Ask me anything!</p>
-						</div>
+		<div class="container custom-chatbox-container">
+			<div class="custom-chatbox">
+				<div class="custom-chatbox__support">
+					<div class="custom-chatbox__header">
+						<h4>AI Chat Support</h4>
 					</div>
-					<div class="chatbox__messages" id="content-box"></div>
-					<div class="chatbox__footer">
-						<input type="text" id="chat-input" placeholder="Write a message...">
-						<p class="chatbox__send--footer" id="send-button">Send</p>
+					<div class="custom-chatbox__messages" id="content-box" style="padding: 10px; overflow-y: auto; height: 300px;"></div>
+					<div class="custom-chatbox__footer" style="padding: 10px; display: flex;">
+						<input type="text" id="chat-input" placeholder="Write a message..." style="flex-grow: 1; padding: 5px; border: 1px solid #ccc; border-radius: 3px;">
+						<button id="send-button" style="background-color: #007bff; color: white; border: none; padding: 5px 10px; margin-left: 5px; border-radius: 3px; cursor: pointer;">Send</button>
 					</div>
 				</div>
 			</div>
 		</div>
-
-		<!--/ChatBot Button-->
-		<script type="module">
-			import { GoogleGenerativeAI } from "@google/generative-ai";
-
-			// Replace with your actual API key
-			const API_KEY = "AIzaSyCoEN_2dHW-weRCCC5xx9Q56361AqoBp0o";
-			const genAI = new GoogleGenerativeAI(API_KEY);
-			const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-			async function sendMessage() {
-				const input = document.getElementById('chat-input');
-				const message = input.value;
-
-				if (message.trim() === '') return;
-
-				const contentBox = document.getElementById('content-box');
-				const visitorMessage = document.createElement('div');
-				visitorMessage.className = 'messages_item messages_item--visitor';
-				visitorMessage.textContent = message;
-				contentBox.appendChild(visitorMessage);
-				contentBox.scrollTop = contentBox.scrollHeight;
-
-				input.value = '';
-
-				try {
-					const result = await model.generateContent(message);
-					const response = result.response.text();
-
-					const operatorMessage = document.createElement('div');
-					operatorMessage.className = 'messages_item messages_item--operator';
-					operatorMessage.textContent = response;
-					contentBox.appendChild(operatorMessage);
-					contentBox.scrollTop = contentBox.scrollHeight;
-				} catch (error) {
-					console.error('Error:', error);
-					const errorMessage = document.createElement('div');
-					errorMessage.className = 'messages_item messages_item--error';
-					errorMessage.textContent = 'Error: ' + error.message;
-					contentBox.appendChild(errorMessage);
-					contentBox.scrollTop = contentBox.scrollHeight;
-				}
-			}
-
-			// Add event listeners after the DOM is fully loaded
-			document.addEventListener('DOMContentLoaded', () => {
-				document.getElementById('send-button').addEventListener('click', sendMessage);
-				document.getElementById('chat-input').addEventListener('keypress', function(event) {
-					if (event.key === 'Enter') {
-						sendMessage();
-					}
-				});
-
-				// Toggle chatbox visibility
-				document.querySelector('.floating-chatbot').addEventListener('click', () => {
-					const chatboxContainer = document.querySelector('.chatbox-container');
-					chatboxContainer.style.display = chatboxContainer.style.display === 'none' ? 'block' : 'none';
-				});
-			});
-		</script>
-		<!-- /Chatbox -->
+		<script src="{{ asset('assets/js/chatbox.js') }}"></script>
+		<!--/Chatbox-->
 		<!-- Main Wrapper -->
         @yield('content')
 		<!-- /Main Wrapper -->
@@ -263,5 +266,21 @@
 		<!-- Custom JS -->
 		<script src="{{ URL::to('assets/js/app.js') }}"></script>
 		@yield('script')
+
+		<!--Chatbox-->
+		<script>
+			function toggleChatbox() {
+				const chatboxContainer = document.querySelector('.custom-chatbox-container');
+				chatboxContainer.style.display = chatboxContainer.style.display === 'none' ? 'block' : 'none';
+			}
+
+			// Ensure the chatbox is hidden initially
+			document.addEventListener('DOMContentLoaded', () => {
+				document.querySelector('.custom-chatbox-container').style.display = 'none';
+			});
+		</script>
+		<script>
+			const botIconUrl = "{{ asset('images/logo-circle.png') }}";
+		</script>
     </body>
 </html>

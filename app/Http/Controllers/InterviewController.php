@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Notifications\InterviewScheduled;
 use Twilio\Rest\Client;
+use App\Mail\HiredNotification;
+use App\Mail\RejectedNotification;
 
 class InterviewController extends Controller
 {
@@ -36,8 +38,14 @@ class InterviewController extends Controller
                 'interview_type' => $request->interview_type
             ];
 
-            // Send notifications
-            $this->sendNotifications($interviewer, $interviewData);
+            // Generate a room ID
+            $roomID = mt_rand(1000, 9999);
+
+            // Send email with room ID
+            \Mail::to($interviewer->email)->send(new InterviewScheduled($interviewer, $roomID));
+
+            // Save the room ID in the database if needed
+            // ...
 
             $applyForJob = ApplyForJob::where('ic_number', $interviewer->ic_number)->first();
             if ($applyForJob) {
@@ -48,7 +56,8 @@ class InterviewController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Interview scheduled and notifications sent'
+                'message' => 'Interview scheduled and notifications sent',
+                'roomID' => $roomID,
             ]);
 
         } catch (\Exception $e) {
@@ -60,33 +69,33 @@ class InterviewController extends Controller
         }
     }
 
-    public function sendNotifications($interviewer, $interviewData)
-    {
-        // Send email notification
-        //$interviewer->notify(new InterviewScheduled($interviewData));
+    // public function sendNotifications($interviewer, $interviewData)
+    // {
+    //     // Send email notification
+    //     //$interviewer->notify(new InterviewScheduled($interviewData));
 
-        // Send WhatsApp notification (you can implement this function)
-        $this->sendWhatsAppNotification($interviewer, $interviewData);
-    }
+    //     // Send WhatsApp notification (you can implement this function)
+    //     $this->sendWhatsAppNotification($interviewer, $interviewData);
+    // }
 
-//Whatsapp notification
-    public function sendWhatsAppNotification($interviewer, $interviewData)
-    {
-        $sid = env('TWILIO_SID');
-        $token = env('TWILIO_AUTH_TOKEN');
-        $twilio = new Client($sid, $token);
+// //Whatsapp notification
+//     public function sendWhatsAppNotification($interviewer, $interviewData)
+//     {
+//         $sid = env('TWILIO_SID');
+//         $token = env('TWILIO_AUTH_TOKEN');
+//         $twilio = new Client($sid, $token);
         
-        $message = "Hello {$interviewData['name']}, your interview is scheduled on {$interviewData['interview_datetime']} as a {$interviewData['interview_type']} interview. Please be available.";
-        dd(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'), env('TWILIO_WHATSAPP_FROM'));
-        try {
-            $twilio->messages->create("whatsapp:{$interviewer->phone_number}", [
-                'from' => 'whatsapp:'. env('TWILIO_WHATSAPP_FROM'),
-                'body' => $message
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error sending WhatsApp message: ' . $e->getMessage());
-        }
-    }
+//         $message = "Hello {$interviewData['name']}, your interview is scheduled on {$interviewData['interview_datetime']} as a {$interviewData['interview_type']} interview. Please be available.";
+//         dd(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'), env('TWILIO_WHATSAPP_FROM'));
+//         try {
+//             $twilio->messages->create("whatsapp:{$interviewer->phone_number}", [
+//                 'from' => 'whatsapp:'. env('TWILIO_WHATSAPP_FROM'),
+//                 'body' => $message
+//             ]);
+//         } catch (\Exception $e) {
+//             \Log::error('Error sending WhatsApp message: ' . $e->getMessage());
+//         }
+//     }
 
     public function update(Request $request)
     {
@@ -173,5 +182,48 @@ class InterviewController extends Controller
 
         return view('job.interviewer', compact('interviewers'));
     }
+
+    public function showResume($id)
+    {
+        $interviewer = Interviewer::findOrFail($id); // Find the corresponding interviewer record
+
+        // Get the file path for the resume
+        $filePath = public_path('assets/cv/' . $interviewer->cv_upload);
+
+        // Check if the file exists
+        if (file_exists($filePath)) {
+            return response()->file($filePath); // Return the file to be opened in the browser
+        } else {
+            return abort(404); // File does not exist, return a 404 error
+        }
+    }
+    //hired or rejected interviewer
+    public function bulkAction(Request $request)
+    {
+        \Log::info('Bulk action request:', $request->all()); // Log incoming request
+    
+        $request->validate([
+            'action' => 'required|in:hired,rejected',
+            'interviewers' => 'required|array',
+            'interviewers.*' => 'exists:interviewers,id',
+        ]);
+    
+        foreach ($request->interviewers as $interviewerId) {
+            $interviewer = Interviewer::findOrFail($interviewerId);
+    
+            if ($request->action === 'hired') {
+                // Send Hired email
+                \Mail::to($interviewer->email)->send(new HiredNotification($interviewer));
+                \Log::info('Hired email sent to: ' . $interviewer->email);
+            } elseif ($request->action === 'rejected') {
+                // Send Rejected email
+                \Mail::to($interviewer->email)->send(new RejectedNotification($interviewer));
+                \Log::info('Rejected email sent to: ' . $interviewer->email);
+            }
+        }
+    
+        return redirect()->back()->with('success', 'Action applied successfully.');
+    }
+    
 }
 

@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\PhotosController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -11,18 +10,14 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LockScreen;
-use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\JobController;
-use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\CalenderController;
 use App\Http\Controllers\LeavesController;
 use App\Http\Controllers\ExpenseReportsController;
-use App\Http\Controllers\PerformanceController;
-use App\Http\Controllers\TrainingController;
-use App\Http\Controllers\TrainersController;
-use App\Http\Controllers\TrainingTypeController;
-use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PersonalInformationController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\InterviewController;
+use App\Http\Controllers\AttendanceController;
 
 
 /*
@@ -47,8 +42,9 @@ if (!function_exists('set_active')) {
     }
 }
 
+Route::get('/', [HomeController::class, 'showHomepage'])->name('homepage');
 
-Route::get('/', function () {
+Route::get('/hr', function () {
     return view('auth.login');
 });
 
@@ -56,11 +52,11 @@ Route::group(['middleware'=>'auth'],function()
 {
     Route::get('home',function()
     {
-        return view('home');
+        return view('auth.login');
     });
     Route::get('home',function()
     {
-        return view('home');
+        return view('auth.login');
     });
 });
 
@@ -80,6 +76,7 @@ Route::controller(SettingController::class)->group(function () {
     Route::post('roles/permissions/save', 'addRecord')->middleware('auth')->name('roles/permissions/save');
     Route::post('roles/permissions/update', 'editRolesPermissions')->middleware('auth')->name('roles/permissions/update');
     Route::post('roles/permissions/delete', 'deleteRolesPermissions')->middleware('auth')->name('roles/permissions/delete');
+    Route::get('get/company/info', 'getCompanyInfo')->name('get.company.info');
 });
 
 // -----------------------------login----------------------------------------//
@@ -156,17 +153,16 @@ Route::controller(JobController::class)->group(function () {
     Route::get('user/dashboard/archived/jobs', 'userDashboardArchived')->middleware('auth')->name('user/dashboard/archived/jobs');
     Route::get('jobs', 'Jobs')->middleware('auth')->name('jobs');
     Route::post('/jobs/delete',  'JobsDeleteRecord')->middleware('auth')->name('jobs/delete');
-    Route::get('job/applicants/{job_title}', 'jobApplicants')->middleware('auth');
+    Route::get('job/applicants/{job_title}', 'jobApplicants')->middleware('auth')->name('job/application');
     Route::get('job/details/{id}', 'jobDetails')->middleware('auth');
     Route::get('cv/download/{id}', 'downloadCV')->middleware('auth');
-    
+    Route::get('/jobs/filter', 'filter')->middleware('auth')->name('jobs/filter');
     Route::post('form/jobs/save', 'JobsSaveRecord')->name('form/jobs/save');
     Route::post('form/apply/job/save', 'applyJobSaveRecord')->name('form/apply/job/save');
     Route::post('form/apply/job/update', 'applyJobUpdateRecord')->name('form/apply/job/update');
 
     Route::get('page/manage/resumes', 'manageResumesIndex')->middleware('auth')->name('page/manage/resumes');
     Route::post('all/resumes/search', 'employeeSearch')->name('all/resumes/search');
-    Route::get('page/interview/questions', 'interviewQuestionsIndex')->middleware('auth')->name('page/interview/questions'); // view page
 
     Route::get('page/candidates', 'candidatesIndex')->middleware('auth')->name('page/candidates');
     Route::post('candidates/search', [JobController::class, 'search'])->middleware('auth')->name('candidates/search');
@@ -176,6 +172,16 @@ Route::controller(JobController::class)->group(function () {
     Route::post('candidate/approve', 'approveCandidate')->middleware('auth')->name('candidate/approve');
     Route::post('candidate/edit', 'editCandidate')->middleware('auth')->name('candidate/edit');
 
+    Route::get('video/dashboard', [JobController::class, 'videoDashboard'])->name('video.dashboard');
+});
+
+// ----------------------------- Interviewer  ------------------------------//
+Route::controller(InterviewController::class)->group(function () {
+    Route::post('schedule/interview', 'scheduleInterview')->middleware('auth')->name('schedule.interview');
+    Route::post('interviewer/update', 'update')->name('interviewer/update');
+    Route::delete('interviewer/delete', 'destroy')->name('interviewer/delete');
+    Route::get('/resume/{id}', 'showResume')->middleware('auth')->name('resume');
+    Route::post('interviewer/bulkAction', 'bulkAction')->middleware('auth')->name('interviewer/bulkAction');
 });
 
 // ----------------------------- chatbox candidates ------------------------------//
@@ -221,11 +227,11 @@ Route::controller(EmployeeController::class)->group(function () {
     Route::get('employee/profile/{user_id}', 'profileEmployee')->middleware('auth');
 });
 
-// ----------------------------- form holiday ------------------------------//
-Route::controller(HolidayController::class)->group(function () {
-    Route::get('form/holidays/new', 'holiday')->middleware('auth')->name('form/holidays/new');
-    Route::post('form/holidays/save', 'saveRecord')->middleware('auth')->name('form/holidays/save');
-    Route::post('form/holidays/update', 'updateRecord')->middleware('auth')->name('form/holidays/update');    
+// ----------------------------- form calender ------------------------------//
+Route::controller(CalenderController::class)->group(function () {
+    Route::get('form/calender/new', 'calender')->middleware('auth')->name('form/calender/new');
+    Route::post('form/calender/save', 'saveRecord')->middleware('auth')->name('form/calender/save');
+    Route::post('form/calender/update', 'updateRecord')->middleware('auth')->name('form/calender/update');    
 });
 
 // ----------------------------- form leaves ------------------------------//
@@ -252,10 +258,23 @@ Route::controller(ExpenseReportsController::class)->group(function () {
     Route::get('form/leave/reports/page','leaveReport')->middleware('auth')->name('form/leave/reports/page');
 });
 
+// ----------------------------- Attendance  ------------------------------//
+Route::controller(AttendanceController::class)->group(function () {
+    Route::post('/attendance/punch-in', 'punchIn')->middleware('auth')->name('attendance.punchIn');
+    Route::post('/attendance/punch-out', 'punchOut')->middleware('auth')->name('attendance.punchOut');
+    Route::get('/attendance', 'viewAttendance')->middleware('auth')->name('attendance.view');
+
+});
 
 
 // ----------------------------- training type  ------------------------------//
 Route::controller(PersonalInformationController::class)->group(function () {
     Route::post('user/information/save', 'saveRecord')->middleware('auth')->name('user/information/save');
 });
+
+// Public meeting routes (no auth required)
+Route::get('public/meeting', [JobController::class, 'publicMeeting'])->name('public.meeting');
+Route::post('public/meeting/join', [JobController::class, 'joinPublicMeeting'])->name('public.meeting.join');
+
+
 

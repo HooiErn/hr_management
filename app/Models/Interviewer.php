@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Interviewer extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
     protected $fillable = [
         'job_title',
         'candidate_id',
@@ -23,5 +24,6 @@ class Interviewer extends Model
         'cv_upload',
         'interview_datetime',
         'ic_number',
+        'interview_type',
     ];
 }

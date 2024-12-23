@@ -363,15 +363,13 @@
                             
                             <div class="form-group">
                                 <label>IC Number <span class="text-danger">*</span></label>
-                                <input class="form-control @error('ic_number') is-invalid @enderror" 
-                                       type="text" 
-                                       name="ic_number" 
-                                       id="ic_number" 
-                                       pattern="\d{12}" 
-                                       maxlength="12"
-                                       placeholder="Enter IC number without dashes (e.g., 991231121234)" 
-                                       value="{{ old('ic_number') }}" 
-                                       required>
+                                <input class="form-control @error('phone_number') is-invalid @enderror" 
+                                               type="tel" 
+                                               name="phone_number" 
+                                               placeholder="Enter with country code (e.g., 60123456789)" 
+                                               pattern="^60\d{9,10}$"
+                                               title="Please enter a valid Malaysian phone number starting with 60"
+                                               value="{{ old(key: 'phone_number')}}"required>
                                 <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
                                 @error('ic_number')
                                     <span class="invalid-feedback" role="alert">
@@ -383,7 +381,7 @@
                                 <label>Upload CV  <span class="text-danger">*</span></label>
                                 <div class="custom-file">
                                     <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload" onchange="updateFileName(this)">
-                                    <label class="custom-file-label" for="cv_upload">Choose file</label>
+                                    <label class="custom-file-label" for="cv_upload">Choose file (PDF only)</label>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -561,107 +559,6 @@
         </div>
         <!-- /Delete Job Modal -->
 
-        <!-- Apply Job Modal -->
-        <div class="modal custom-modal fade" id="apply_job" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Candidate Details</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="{{ route('form/apply/job/save') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <input type="hidden" name="interview_datetime" value="{{ old('interview_datetime') }}">
-                                    <div class="form-group">
-                                        <label>Name</label>
-                                        <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}">
-                                        <small class="form-text text-muted">*Fullname in NRIC</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Birth Date</label>
-                                        <input class="form-control @error('birth_date') is-invalid @enderror" type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Age</label>
-                                        <input class="form-control @error('age') is-invalid @enderror" type="number" name="age" id="age" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Race</label>
-                                        <select class="form-control @error('race') is-invalid @enderror" name="race">
-                                            <option value="" disabled selected></option>
-                                            <option value="Malay">Malay</option>
-                                            <option value="Chinese">Chinese</option>
-                                            <option value="Indian">Indian</option>
-                                            <option value="Others">Others</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Gender</label>
-                                        <select class="form-control @error('gender') is-invalid @enderror" name="gender">
-                                            <option value="" disabled selected></option>
-                                            <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
-                                            <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
-                                            <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Phone</label>
-                                        <input class="form-control @error('phone_number') is-invalid @enderror" type="tel" name="phone_number" id="phone_number" placeholder="Enter phone number with country code" pattern="[0-9]{10,13}" value="{{ old('phone_number') }}">
-                                        <small class="form-text text-muted">e.g., 60123456789 for Malaysia</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Email Address</label>
-                                        <input class="form-control @error('email') is-invalid @enderror" type="email" name="email" value="{{ old('email') }}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Highest Education</label>
-                                        <select class="form-control @error('highest_education') is-invalid @enderror" name="highest_education">
-                                            <option value="" disabled selected>Select your education</option>
-                                            <option value="Secondary" {{ old('highest_education') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
-                                            <option value="Foundation" {{ old('highest_education') == 'Foundation ' ? 'selected' : '' }}>Foundation</option>
-                                            <option value="Diploma" {{ old('highest_education') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
-                                            <option value="Degree" {{ old('highest_education') == 'Degree' ? 'selected' : '' }}>Degree</option>
-                                            <option value="Master" {{ old('highest_education') == 'Master' ? 'selected' : '' }}>Master</option>
-                                            <option value="PhD" {{ old('highest_education') == 'PhD' ? 'selected' : '' }}>PhD</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Work Experiences (Years)</label>
-                                        <input class="form-control @error('work_experiences') is-invalid @enderror" type="number" name="work_experiences" value="{{ old('work_experiences') }}" min="0" max="100">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Role Name</label>
-                                        <input class="form-control @error('role_name') is-invalid @enderror" type="text" name="role_name" value="{{ old('role_name', 'Candidate') }}" readonly>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Upload your CV</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input @error('cv_upload') is-invalid @enderror" id="cv_upload" name="cv_upload" onchange="updateFileName(this)">
-                                    <label class="custom-file-label" for="cv_upload">Choose file</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Message (short intro)</label>
-                                <textarea class="form-control @error('message') is-invalid @enderror" name="message" id="message" placeholder="Max 20 words">{{ old('message') }}</textarea>
-                                <small class="form-text text-muted" id="word-count">0/20 words</small>
-                            </div>
-                            <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Submit</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- View Candidate Modal -->
         <div id="view_candidate" class="modal custom-modal fade" role="dialog">
