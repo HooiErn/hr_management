@@ -53,6 +53,8 @@
 </style>
 @extends('layouts.master')
 @section('content')
+  {{-- message --}}
+  {!! Toastr::message() !!}
     <!-- Page Wrapper -->
     <div class="page-wrapper">
         <!-- Page Content -->
@@ -108,7 +110,12 @@
                 <div class="row filter-row" id="advanced-search" style="display: none;">
                     <div class="col-sm-6 col-md-3">
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="job_title" id="search-job-title">
+                            <select class="form-control floating" name="job_title" id="search-job-title">
+                                <option value="">Select Job Title</option>
+                                @foreach($jobTitles as $jobTitle)
+                                    <option value="{{ $jobTitle }}">{{ $jobTitle }}</option>
+                                @endforeach
+                            </select>
                             <label class="focus-label">Job Title</label>
                         </div>
                     </div>
@@ -182,6 +189,7 @@
                                                    data-experience="{{ $candidate->work_experiences }}"
                                                    data-job-title="{{ $candidate->job_title }}">
                                                     {{ $candidate->name }}
+
                                                 </a>
                                             </h2>
                                         </td>
@@ -272,7 +280,7 @@
 
         <!-- Add Candidate Modal -->
         <div class="modal custom-modal fade" id="add_candidate" role="dialog">
-            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Add New Candidate</h5>
@@ -300,8 +308,25 @@
                                         <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" value="{{ old('name') }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Birth Date <span class="text-danger">*</span></label>
-                                        <input class="form-control @error('birth_date') is-invalid @enderror" type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}">
+                                        <label>IC Number <span class="text-danger">*</span></label>
+                                        <input class="form-control @error('ic_number') is-invalid @enderror" 
+                                            type="text" 
+                                            name="ic_number" 
+                                            id="ic_number" 
+                                            pattern="\d{12}" 
+                                            maxlength="12"
+                                            placeholder="Enter IC number without dashes (e.g., 991231121234)" 
+                                            value="{{ old('ic_number') }}" 
+                                            required>
+                                        <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
+                                        @error('ic_number')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control @error('birth_date') is-invalid @enderror" type="hidden" name="birth_date" id="birth_date" value="{{ old('birth_date') }}">
                                     </div>
                                     <div class="form-group">
                                         <label>Age <span class="text-danger">*</span></label>
@@ -361,22 +386,6 @@
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label>IC Number <span class="text-danger">*</span></label>
-                                <input class="form-control @error('phone_number') is-invalid @enderror" 
-                                               type="tel" 
-                                               name="phone_number" 
-                                               placeholder="Enter with country code (e.g., 60123456789)" 
-                                               pattern="^60\d{9,10}$"
-                                               title="Please enter a valid Malaysian phone number starting with 60"
-                                               value="{{ old(key: 'phone_number')}}"required>
-                                <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
-                                @error('ic_number')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
                             <div class="form-group">
                                 <label>Upload CV  <span class="text-danger">*</span></label>
                                 <div class="custom-file">
@@ -748,12 +757,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                        data-education="${candidate.highest_education}"
                                        data-experience="${candidate.work_experiences}"
                                        data-job-title="${candidate.job_title}">
-                                        {{$candidate->name}}
+                                        ${candidate.name}
                                     </a>
                                 </h2>
                             </td>
                             <td>${candidate.candidate_id || ''}</td>
-                            <td>${candidate.gender || ''}</td>
+                            <td>${candidate.job_title || ''}</td>
                             <td>${candidate.phone_number || ''}</td>
                             <td>${candidate.email || ''}</td>
                             <td>${candidate.work_experiences ? candidate.work_experiences + ' years' : ''}</td>
@@ -801,20 +810,105 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-    <!-- Auto-calculate Age Based on Birth Date -->
-    <script>
-        document.getElementById('birth_date').addEventListener('change', function() {
-            const birthDate = new Date(this.value);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
+  <!-- Auto-calculate Age Based on Birth Date -->
+  <script>
+    document.getElementById('birth_date').addEventListener('change', function() {
+        const birthDate = new Date(this.value);  // Get the birth date
+        const today = new Date();  // Get today's date
+        let age = today.getFullYear() - birthDate.getFullYear();  
+        const monthDiff = today.getMonth() - birthDate.getMonth();  
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;  // Adjust age if the birthday hasn't occurred yet this year
+        }
+
+        // Check if age is less than 17
+        if (age < 17) {
+            alert("Invalid birth date. Please select a valid date.");  // Alert the user
+            this.value = '';  // Clear the birth date input
+            document.getElementById('age').value = '';  // Clear the age field
+        } else {
+            document.getElementById('age').value = age;  // Set the age field if valid
+        }
+    });
+</script>
+    <!-- /Auto-calculate Age Based on Birth Date -->
+    <!--Validate IC number format-->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const icNumberInput = document.getElementById('ic_number');
+            const birthDateInput = document.getElementById('birth_date');
+            
+            if (icNumberInput) {
+                icNumberInput.addEventListener('input', function(e) {
+                    // Remove non-digit characters
+                    let value = this.value.replace(/[^\d]/g, '');
+                    
+                    // Limit to 12 digits
+                    if (value.length > 12) {
+                        value = value.slice(0, 12);
+                    }
+                    
+                    this.value = value;
+                    
+                    // Validation for IC number length (must be exactly 12 digits)
+                    if (value.length === 12) {
+                        // Extract birth date from IC number (first 6 digits: YYMMDD)
+                        const yearPrefix = value.substring(0, 2);  // First two digits of year
+                        const month = value.substring(2, 4);
+                        const day = value.substring(4, 6);
+
+                        // Determine if the year is from 1900s or 2000s
+                        let year = parseInt(yearPrefix);
+                        const currentYear = new Date().getFullYear();
+                        const currentCentury = Math.floor(currentYear / 100); // Get the current century (20 for 2023)
+                        
+                        // If the yearPrefix is greater than the current year, it's from the 1900s
+                        if (year > currentYear % 100) {
+                            year += 1900; // If it’s larger than the current year, it’s from the 1900s
+                        } else {
+                            year += 2000; // Otherwise, it's from the 2000s
+                        }
+
+                        // Format the birth date as YYYY-MM-DD
+                        const birthDate = `${year}-${month}-${day}`;
+
+                        // Set the birth date in the hidden field
+                        birthDateInput.value = birthDate;
+
+                        // Calculate and set age based on the birth date
+                        const birthDateObj = new Date(birthDate);
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDateObj.getFullYear();
+                        const monthDiff = today.getMonth() - birthDateObj.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+                            age--;
+                        }
+                        
+                        // Display the age in a separate field or use the value for further actions
+                        document.getElementById('age').value = age;  // Assume you have an 'age' field
+
+                        // Visual feedback for valid IC number
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                    } else {
+                        // Provide feedback for invalid IC number
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                    }
+                });
+                
+                // Add blur event for additional validation
+                icNumberInput.addEventListener('blur', function() {
+                    if (this.value.length > 0 && this.value.length < 12) {
+                        this.classList.add('is-invalid');
+                        this.setCustomValidity('IC number must be exactly 12 digits');
+                    }
+                });
             }
-            document.getElementById('age').value = age;
         });
     </script>
-    <!-- /Auto-calculate Age Based on Birth Date -->
+    <!--/Validate IC number format-->
+
     <!--  Message Field with Word Limit -->
     <script>
         document.getElementById('message').addEventListener('input', function() {
@@ -943,69 +1037,74 @@ document.addEventListener('DOMContentLoaded', function() {
          });
      });
      </script>
-<script>
-$(document).ready(function() {
-    // Handle click on candidate name
-    $('.view-candidate').on('click', function() {
-        // Get data from data attributes
-        var name = $(this).data('name');
-        var email = $(this).data('email');
-        var job_title = $(this).data('job-title');
-        var phone = $(this).data('phone');
-        var ic = $(this).data('ic');
-        var birth = $(this).data('birth');
-        var age = $(this).data('age');
-        var gender = $(this).data('gender');
-        var race = $(this).data('race');
-        var education = $(this).data('education');
-        var experience = $(this).data('experience');
 
-        // Update modal fields
-        $('#view_name').text(name);
-        $('#view_email').text(email || 'Not provided');
-        $('#view_job_title').text(job_title || 'Not provided');
-        $('#view_phone').text(phone || 'Not provided');
-        $('#view_ic').text(ic || 'Not provided');
-        $('#view_birth').text(birth || 'Not provided');
-        $('#view_age').text(age ? age + ' years' : 'Not provided');
-        $('#view_gender').text(gender || 'Not provided');
-        $('#view_race').text(race || 'Not provided');
-        $('#view_education').text(education || 'Not provided');
-        $('#view_experience').text(experience ? experience + ' years' : 'Not provided');
+    <!--View Candidates Model-->
+    <script>
+    $(document).ready(function() {
+        // Delegate the click event to the parent container (the table)
+        $(document).on('click', '.view-candidate', function() {
+            // Get data from data attributes
+            var name = $(this).data('name');
+            var email = $(this).data('email');
+            var phone = $(this).data('phone');
+            var ic = $(this).data('ic');
+            var birth = $(this).data('birth');
+            var age = $(this).data('age');
+            var gender = $(this).data('gender');
+            var race = $(this).data('race');
+            var education = $(this).data('education');
+            var experience = $(this).data('experience');
+            var jobTitle = $(this).data('job-title');
+            var message = $(this).data('message'); // Added message data attribute
+            
+            // Handle Missing Data and fill modal fields
+            $('#view_name').text(name || 'Not provided');
+            $('#view_job_title').text(jobTitle || 'Not provided');
+            $('#view_email').text(email || 'Not provided');
+            $('#view_phone').text(phone || 'Not provided');
+            $('#view_ic').text(ic || 'Not provided');
+            $('#view_birth').text(birth || 'Not provided');
+            $('#view_age').text(age ? age + ' years' : 'Not provided');
+            $('#view_gender').text(gender || 'Not provided');
+            $('#view_race').text(race || 'Not provided');
+            $('#view_education').text(education || 'Not provided');
+            $('#view_experience').text(experience ? experience + ' years' : 'Not provided');
+            $('#view_message').text(message || 'Not provided');
+        });
     });
-});
-</script>
+    </script>
 
-<script>
-$(document).ready(function() {
-    $('.edit-candidate').on('click', function() {
-        // Get data from data attributes
-        var id = $(this).data('id');
-        var name = $(this).data('name');
-        var email = $(this).data('email');
-        var phone = $(this).data('phone');
-        var ic = $(this).data('ic-number');
-        var birth = $(this).data('birth-date');
-        var age = $(this).data('age');
-        var gender = $(this).data('gender');
-        var race = $(this).data('race');
-        var education = $(this).data('education');
-        var experience = $(this).data('experience');
 
-        // Update modal fields
-        $('#edit_candidate_id').val(id);
-        $('#edit_name').val(name);
-        $('#edit_email').val(email);
-        $('#edit_phone_number').val(phone);
-        $('#edit_ic_number').val(ic);
-        $('#edit_birth_date').val(birth);
-        $('#edit_age').val(age);
-        $('#edit_gender').val(gender);
-        $('#edit_race').val(race);
-        $('#edit_education').val(education);
-        $('#edit_experience').val(experience);
+    <script>
+    $(document).ready(function() {
+        $('.edit-candidate').on('click', function() {
+            // Get data from data attributes
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            var email = $(this).data('email');
+            var phone = $(this).data('phone');
+            var ic = $(this).data('ic-number');
+            var birth = $(this).data('birth-date');
+            var age = $(this).data('age');
+            var gender = $(this).data('gender');
+            var race = $(this).data('race');
+            var education = $(this).data('education');
+            var experience = $(this).data('experience');
+
+            // Update modal fields
+            $('#edit_candidate_id').val(id);
+            $('#edit_name').val(name);
+            $('#edit_email').val(email);
+            $('#edit_phone_number').val(phone);
+            $('#edit_ic_number').val(ic);
+            $('#edit_birth_date').val(birth);
+            $('#edit_age').val(age);
+            $('#edit_gender').val(gender);
+            $('#edit_race').val(race);
+            $('#edit_education').val(education);
+            $('#edit_experience').val(experience);
+        });
     });
-});
-</script>
+    </script>
 @endsection
 

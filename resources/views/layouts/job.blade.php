@@ -232,7 +232,7 @@
 			<div class="custom-chatbox">
 				<div class="custom-chatbox__support">
 					<div class="custom-chatbox__header">
-						<h4>AI Chat Support</h4>
+						<h4>Customer Support</h4>
 					</div>
 					<div class="custom-chatbox__messages" id="content-box" style="padding: 10px; overflow-y: auto; height: 300px;"></div>
 					<div class="custom-chatbox__footer" style="padding: 10px; display: flex;">

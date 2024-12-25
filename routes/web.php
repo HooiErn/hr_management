@@ -182,6 +182,7 @@ Route::controller(InterviewController::class)->group(function () {
     Route::delete('interviewer/delete', 'destroy')->name('interviewer/delete');
     Route::get('/resume/{id}', 'showResume')->middleware('auth')->name('resume');
     Route::post('interviewer/bulkAction', 'bulkAction')->middleware('auth')->name('interviewer/bulkAction');
+    Route::post('/interviewers/search',  'search')->name('interviewers/search');
 });
 
 // ----------------------------- chatbox candidates ------------------------------//
@@ -198,8 +199,17 @@ Route::controller(EmployeeController::class)->group(function () {
     Route::get('all/employee/view/edit/{employee_id}', 'viewRecord');
     Route::post('all/employee/update', 'updateRecord')->middleware('auth')->name('all/employee/update');
     Route::get('all/employee/delete/{employee_id}', 'deleteRecord')->middleware('auth');
-    Route::post('all/employee/search', 'employeeSearch')->name('all/employee/search');
-    Route::post('all/employee/list/search', 'employeeListSearch')->name('all/employee/list/search');
+    
+    //search
+    Route::post('employees/search', 'search')->middleware('auth')->name('employees/search');
+    Route::get('employees/searchbydepartment', 'SearchByDepartment')->middleware('auth')->name('employees/searchByDepartment');
+    
+    Route::get('employees/list', 'employeeList')->middleware('auth')->name('employees/list');
+    Route::get('employees/department/{department}', 'showByDepartment')->middleware('auth')->name('employees/byDepartment');
+
+    //resign
+    Route::get('/resign/{employeeId}',  'resign')->middleware('auth')->name('employee.resign');
+    Route::get('/pastEmployee',  'pastEmployeePage')->middleware('auth')->name('employee/past');
 
     Route::get('form/departments/page', 'index')->middleware('auth')->name('form/departments/page');    
     Route::post('form/departments/save', 'saveRecordDepartment')->middleware('auth')->name('form/departments/save');    
@@ -225,6 +235,8 @@ Route::controller(EmployeeController::class)->group(function () {
 // ----------------------------- profile employee ------------------------------//
 Route::controller(EmployeeController::class)->group(function () {
     Route::get('employee/profile/{user_id}', 'profileEmployee')->middleware('auth');
+  
+
 });
 
 // ----------------------------- form calender ------------------------------//
@@ -241,13 +253,16 @@ Route::controller(LeavesController::class)->group(function () {
     Route::post('form/leaves/save', 'saveRecord')->middleware('auth')->name('form/leaves/save');
     Route::post('form/leaves/edit', 'editRecordLeave')->middleware('auth')->name('form/leaves/edit');
     Route::post('form/leaves/edit/delete','deleteLeave')->middleware('auth')->name('form/leaves/edit/delete');    
+    
+    Route::get('/leaves/report', 'leaveReport')->middleware('auth')->name('leaves.report');
+
+    //search employee id
+    Route::post('leaves/employees/search', [LeavesController::class, 'searchEmployee'])->middleware('auth')->name('leaves.employees.search');
 });
 
 // ----------------------------- form attendance  ------------------------------//
 Route::controller(LeavesController::class)->group(function () {
     Route::get('form/leavesettings/page', 'leaveSettings')->middleware('auth')->name('form/leavesettings/page');
-    Route::get('attendance/page', 'attendanceIndex')->middleware('auth')->name('attendance/page');
-    Route::get('attendance/employee/page', 'AttendanceEmployee')->middleware('auth')->name('attendance/employee/page');
     Route::get('form/shiftscheduling/page', 'shiftScheduLing')->middleware('auth')->name('form/shiftscheduling/page');
     Route::get('form/shiftlist/page', 'shiftList')->middleware('auth')->name('form/shiftlist/page');    
 });
@@ -262,8 +277,9 @@ Route::controller(ExpenseReportsController::class)->group(function () {
 Route::controller(AttendanceController::class)->group(function () {
     Route::post('/attendance/punch-in', 'punchIn')->middleware('auth')->name('attendance.punchIn');
     Route::post('/attendance/punch-out', 'punchOut')->middleware('auth')->name('attendance.punchOut');
-    Route::get('/attendance', 'viewAttendance')->middleware('auth')->name('attendance.view');
-
+    Route::get('attendance/page', 'attendanceIndex')->middleware('auth')->name('attendance/page');
+    Route::get('attendance/employee/page', 'viewAttendance')->middleware('auth')->name('attendance/employee/page');
+    Route::post('/attendance/check-today', 'checkToday')->middleware('auth')->name('attendance.checkToday');
 });
 
 
@@ -275,6 +291,7 @@ Route::controller(PersonalInformationController::class)->group(function () {
 // Public meeting routes (no auth required)
 Route::get('public/meeting', [JobController::class, 'publicMeeting'])->name('public.meeting');
 Route::post('public/meeting/join', [JobController::class, 'joinPublicMeeting'])->name('public.meeting.join');
+
 
 
 

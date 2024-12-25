@@ -1,4 +1,3 @@
-
 @extends('layouts.master')
 @section('content')
     <!-- Page Wrapper -->
@@ -25,25 +24,25 @@
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Today Presents</h6>
-                        <h4>12 / 60</h4>
+                        <h4>0</h4>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Planned Leaves</h6>
-                        <h4>8 <span>Today</span></h4>
+                        <h4><span>Today</span></h4>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Unplanned Leaves</h6>
-                        <h4>0 <span>Today</span></h4>
+                        <h4><span>Today</span></h4>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Pending Requests</h6>
-                        <h4>12</h4>
+                        <h4>0</h4>
                     </div>
                 </div>
             </div>
@@ -138,7 +137,9 @@
                                             <td hidden class="to_date">{{$items->to_date}}</td>
                                             <td>{{date('d F, Y',strtotime($items->to_date)) }}</td>
                                             <td class="day">{{$items->day}} Day</td>
-                                            <td class="leave_reason">{{$items->leave_reason}}</td>
+                                            <td class="leave_reason" data-reason="{{ $items->leave_reason }}" style="cursor: pointer;">
+                                                {{ Str::limit($items->leave_reason, 30, '...') }}
+                                            </td>
                                             <td class="text-center">
                                                 <div class="dropdown action-label">
                                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
@@ -183,33 +184,43 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('form/leaves/save') }}" method="POST">
+                        <form id="addLeaveForm" action="{{ route('form/leaves/save') }}" method="POST">
                             @csrf
                             <div class="form-group">
-                                <label>Leave Type <span class="text-danger">*</span></label>
-                                <select class="select" id="leaveType" name="leave_type">
-                                    <option selected disabled>Select Leave Type</option>
-                                    <option value="Casual Leave 12 Days">Casual Leave 12 Days</option>
-                                    <option value="Medical Leave">Medical Leave</option>
-                                    <option value="Loss of Pay">Loss of Pay</option>
+                                <label>Employee ID <span class="text-danger">*</span></label>
+                                <select class="select" id="employeeSelect" name="user_id" required>
+                                    <option value="">Select Employee</option>
+                                    <!-- Options will be populated via AJAX -->
                                 </select>
                             </div>
-                            <input type="hidden" class="form-control" id="user_id" name="user_id" value="{{ Auth::user()->user_id }}">
+                            <div class="form-group">
+                                <label>Leave Type <span class="text-danger">*</span></label>
+                                <select class="select" id="leaveType" name="leave_type" required>
+                                    <option>Select Leave Type</option>
+                                    <option>Casual Leave</option>
+                                    <option>Medical Leave</option>
+                                    <option>Loss of Pay</option>
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label>From <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input type="text" class="form-control datetimepicker" id="from_date" name="from_date">
+                                    <input class="form-control datetimepicker" type="text" id="fromDate" name="from_date" required>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>To <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input type="text" class="form-control datetimepicker" id="to_date" name="to_date">
+                                    <input class="form-control datetimepicker" type="text" id="toDate" name="to_date" required>
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label>Number of days <span class="text-danger">*</span></label>
+                                <input class="form-control" readonly type="text" id="numberOfDays" name="number_of_days">
+                            </div>
+                            <div class="form-group">
                                 <label>Leave Reason <span class="text-danger">*</span></label>
-                                <textarea rows="4" class="form-control" id="leave_reason" name="leave_reason"></textarea>
+                                <textarea rows="4" class="form-control" id="leaveReason" name="leave_reason" required></textarea>
                             </div>
                             <div class="submit-section">
                                 <button type="submit" class="btn btn-primary submit-btn">Submit</button>
@@ -327,6 +338,23 @@
             </div>
         </div>
         <!-- /Delete Leave Modal -->
+
+        <!-- Full Reason Modal -->
+        <div id="fullReasonModal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Leave Reason</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="fullReasonText"></p> <!-- This will hold the full reason text -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- /Page Wrapper -->
     @section('script')
@@ -355,6 +383,63 @@
         {
             var _this = $(this).parents('tr');
             $('.e_id').val(_this.find('.id').text());
+        });
+    </script>
+    {{-- full reason modal --}}
+    <script>
+        $(document).on('click', '.leave_reason', function() {
+            var reasonText = $(this).data('reason'); // Get the leave reason from data attribute
+            $('#fullReasonText').text(reasonText); // Set it in the modal
+            $('#fullReasonModal').modal('show'); // Show the modal
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Function to fetch employees for the select input
+            $('#employeeSelect').select2({
+                ajax: {
+                    url: '/leaves/employees/search', 
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function(data) {
+                        return {
+                            results: $.map(data, function(item) {
+                                return {
+                                    id: item.employee_id, // Use employee_id as the unique identifier
+                                    text: item.name // Display name
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1 // Minimum characters to start searching
+            });
+
+            // Function to calculate the number of days
+            function calculateDays() {
+                var fromDate = $('#fromDate').val();
+                var toDate = $('#toDate').val();
+
+                if (fromDate && toDate) {
+                    var startDate = new Date(fromDate);
+                    var endDate = new Date(toDate);
+                    var timeDiff = endDate - startDate; // Difference in milliseconds
+                    var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // Convert to days and include start date
+
+                    if (daysDiff < 0) {
+                        daysDiff = 0; // Ensure no negative days
+                    }
+
+                    $('#numberOfDays').val(daysDiff); // Update the number of days input
+                } else {
+                    $('#numberOfDays').val(''); // Clear if dates are not set
+                }
+            }
+
+            // Event listeners for date changes
+            $('#fromDate').on('change', calculateDays);
+            $('#toDate').on('change', calculateDays);
         });
     </script>
     @endsection

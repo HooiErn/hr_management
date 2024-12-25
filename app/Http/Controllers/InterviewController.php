@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Interviewer;
 use App\Models\ApplyForJob;
+use App\Models\AddJob; 
+use App\Models\Employee;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Notifications\InterviewScheduled;
-use Twilio\Rest\Client;
 use App\Mail\HiredNotification;
 use App\Mail\RejectedNotification;
+use App\Models\Candidate;
 
 class InterviewController extends Controller
 {
@@ -39,10 +42,11 @@ class InterviewController extends Controller
             ];
 
             // Generate a room ID
-            $roomID = mt_rand(1000, 9999);
+            $roomID = $interviewData['interview_type'] === 'online' ? mt_rand(1000, 9999) : null;
 
-            // Send email with room ID
-            \Mail::to($interviewer->email)->send(new InterviewScheduled($interviewer, $roomID));
+           // Send notification (this will trigger both the email and WhatsApp channels)
+            $interviewer->notify(new InterviewScheduled($interviewData, $roomID));
+
 
             // Save the room ID in the database if needed
             // ...
@@ -203,27 +207,130 @@ class InterviewController extends Controller
         \Log::info('Bulk action request:', $request->all()); // Log incoming request
     
         $request->validate([
-            'action' => 'required|in:hired,rejected',
-            'interviewers' => 'required|array',
-            'interviewers.*' => 'exists:interviewers,id',
+            'action' => 'required|in:hired,rejected', 
+            'interviewers' => 'required|array', 
+            'interviewers.*' => 'exists:interviewers,id', 
+            'salary' => 'required_if:action,hired|numeric|min:0', // Validate salary if the action is hired
         ]);
     
-        foreach ($request->interviewers as $interviewerId) {
-            $interviewer = Interviewer::findOrFail($interviewerId);
+        try {
+            foreach ($request->interviewers as $interviewerId) {
+                $interviewer = Interviewer::findOrFail($interviewerId); // Find the interviewer by ID
     
-            if ($request->action === 'hired') {
-                // Send Hired email
-                \Mail::to($interviewer->email)->send(new HiredNotification($interviewer));
-                \Log::info('Hired email sent to: ' . $interviewer->email);
-            } elseif ($request->action === 'rejected') {
-                // Send Rejected email
-                \Mail::to($interviewer->email)->send(new RejectedNotification($interviewer));
-                \Log::info('Rejected email sent to: ' . $interviewer->email);
+                if ($request->action === 'hired') {
+                    // Send Hired email with contract attachment
+                    Mail::to($interviewer->email)->send(new HiredNotification($interviewer));
+                    \Log::info('Hired email with contract sent to: ' . $interviewer->email);
+    
+                    // Fetch job details based on the job_title
+                    $job = AddJob::where('job_title', $interviewer->job_title)->first();
+    
+                    if ($job) {
+                        // Transfer interviewer data to the employee table
+                        $employee = new Employee();
+                        $employee->name = $interviewer->name;
+                        $employee->email = $interviewer->email;
+                        $employee->age = $interviewer->age;
+                        $employee->race = $interviewer->race;
+                        $employee->highest_education = $interviewer->highest_education;
+                        $employee->work_experiences = $interviewer->work_experiences;
+                        $employee->ic_number = $interviewer->ic_number;
+                        $employee->cv_upload = $interviewer->cv_upload;
+                        $employee->birth_date = $interviewer->birth_date;
+                        $employee->gender = $interviewer->gender;
+                        $employee->phone_number = $interviewer->phone_number;
+                        $employee->status = 'Pending';  
+                        $employee->role_name = 'Staff';  
+                        $employee->position = $job->job_title;  
+                        $employee->department = $job->department;  
+                        $employee->salary = $request->salary; // Set salary for the hired employees
+                        $employee->job_type = $job->job_type;
+                        $employee->company = env('APP_NAME');  
+                        $employee->join_date = now(); 
+                        $employee->password = bcrypt('12345678');  
+                        $employee->save();
+    
+                        \Log::info('Employee record created for: ' . $interviewer->name);
+                    } else {
+                        \Log::warning('No matching job found for the job title: ' . $interviewer->job_title);
+                        return redirect()->back()->with('error', 'No matching job found for some interviewers.');
+                    }
+    
+                } elseif ($request->action === 'rejected') {
+                    // Move interviewer data back to candidates table
+                    $candidate = new Candidate();
+                    $candidate->candidate_id = $interviewer->candidate_id;
+                    $candidate->ic_number = $interviewer->ic_number;
+                    $candidate->name = $interviewer->name;
+                    $candidate->age = $interviewer->age; 
+                    $candidate->race = $interviewer->race; 
+                    $candidate->gender = $interviewer->gender; 
+                    $candidate->phone_number = $interviewer->phone_number; 
+                    $candidate->email = $interviewer->email;
+                    $candidate->birth_date = $interviewer->birth_date; 
+                    $candidate->job_title = $interviewer->job_title;
+                    $candidate->highest_education = $interviewer->highest_education; 
+                    $candidate->work_experiences = $interviewer->work_experiences;
+                    $candidate->role_name = 'Candidate'; // Default role
+                    $candidate->message = $interviewer->message;
+                    $candidate->interview_datetime = ''; 
+                    $candidate->cv_upload = $interviewer->cv_uploads;
+                    $candidate->save();
+    
+                    // Send Rejected email
+                    Mail::to($interviewer->email)->send(new RejectedNotification($interviewer));
+                    \Log::info('Rejected email sent to: ' . $interviewer->email);
+    
+                    // Delete the interviewer record
+                    $interviewer->delete();
+                    \Log::info('Interviewer record deleted for: ' . $interviewer->name);
+                }
             }
-        }
     
-        return redirect()->back()->with('success', 'Action applied successfully.');
+            return redirect()->back()->with('success', 'Action applied successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error applying bulk action: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while processing the action. Please try again.');
+        }
     }
     
+          /*Search Interviewer*/
+          public function search(Request $request)
+          {
+              $query = Interviewer::query();
+          
+              // Basic Search
+              if ($request->filled('name')) {
+                  $query->where('name', 'LIKE', '%' . $request->name . '%');
+              }
+              if ($request->filled('email')) {
+                  $query->where('email', 'LIKE', '%' . $request->email . '%');
+              }
+              if ($request->filled('candidate_id')) {
+                  $query->where('candidate_id', 'LIKE', '%' . $request->candidate_id . '%');
+              }
+          
+              // Advanced Search
+              if ($request->filled('job_title')) {
+                  $query->where('job_title', 'LIKE', '%' . $request->job_title . '%');
+              }
+              if ($request->filled('gender')) {
+                  $query->where('gender', $request->gender);
+              }
+              if ($request->filled('experience')) {
+                  $query->where('work_experiences', '>=', $request->experience);
+              }
+              if ($request->filled('race')) {
+                  $query->where('race', $request->race);
+              }
+          
+              // Log the query for debugging
+              \Log::info('Search Query:', ['query' => $query->toSql(), 'bindings' => $query->getBindings()]);
+          
+              $interviewers = $query->get();
+              return response()->json(['interviewers' => $interviewers]);
+          }
+          
+
 }
 

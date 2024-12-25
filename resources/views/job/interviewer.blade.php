@@ -35,7 +35,60 @@
                 </div>
             </div>
             <!-- /Page Header -->
-            
+            <!-- Search Filter -->
+            <form id="search-form">
+                @csrf
+                <div class="row filter-row">
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="name" id="search-name" placeholder="Search by Name">
+                            <label class="focus-label">Name</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="email" id="search-email" placeholder="Search by Email">
+                            <label class="focus-label">Email</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3"> 
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="candidate_id" id="search-candidate-id" placeholder="Search by Candidate ID">
+                            <label class="focus-label">Imterviewer ID</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <button type="button" class="btn btn-secondary btn-block" id="toggle-advanced">Advanced Search</button>
+                    </div>
+                </div>
+
+                <!-- Advanced Search Fields -->
+                <div class="row filter-row" id="advanced-search" style="display: none;">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="gender" id="search-gender">
+                                <option value=""></option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                            <label class="focus-label">Gender</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="form-group form-focus">
+                            <select class="form-control floating" name="race" id="search-race">
+                                <option value=""></option>
+                                <option value="Malay">Malay</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <label class="focus-label">Race</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- /Search Filter -->
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
@@ -49,7 +102,7 @@
                                     <th>Mobile Number</th>
                                     <th>Job Applied</th>
                                     <th>Gender</th>
-                                    <th>Resume</th>
+                                    <th>Email</th>
                                     <th>Schedule DateTime</th>
                                     <th class="text-center">Action</th>
                                 </tr>
@@ -69,13 +122,14 @@
                                                    data-email="{{ $interviewer->email }}"
                                                    data-phone="{{ $interviewer->phone_number }}"
                                                    data-ic="{{ $interviewer->ic_number }}"
-                                                   data-birth="{{ date('d M Y', strtotime($interviewer->birth_date)) }}"
+                                                   data-birth="{{$interviewer->birth_date }}"
                                                    data-age="{{ $interviewer->age }}"
                                                    data-gender="{{ $interviewer->gender }}"
                                                    data-race="{{ $interviewer->race }}"
                                                    data-education="{{ $interviewer->highest_education }}"
                                                    data-experience="{{ $interviewer->work_experiences }}"
-                                                   data-job-title="{{ $interviewer->job_title }}">
+                                                   data-job-title="{{ $interviewer->job_title }}"
+                                                   data-message="{{ $interviewer->message }}">
                                                     {{ $interviewer->name }}
                                                 </a>
                                             </h2>
@@ -87,15 +141,7 @@
                                             </a>
                                         </td>
                                         <td>{{ $interviewer->gender }}</td>
-                                        <td>
-                                            @if($interviewer->cv_upload)
-                                                <a href="{{ asset('assets/cv/' . $interviewer->cv_upload) }}" class="btn btn-sm btn-primary" target="_blank">
-                                                    <i class="fa fa-download"></i> Download
-                                                </a>
-                                            @else
-                                                <span class="text-muted">No Resume</span>
-                                            @endif
-                                        </td>
+                                        <td>{{ $interviewer->email }}</td>
                                         <td>
                                             <a href="#" class="schedule-datetime" data-toggle="modal" data-target="#schedule_interview" 
                                                data-candidate-id="{{ $interviewer->id }}">
@@ -385,6 +431,21 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Short Intro</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="text-muted">Message (short intro)</label>
+                                            <p class="font-weight-bold" id="view_message"></p>
+                                        </div>
+                                    </div>                                  
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -427,11 +488,12 @@
                             <div class="submit-section">
                                 <button type="submit" class="btn btn-primary submit-btn">Schedule</button>
                             </div>
-                            <!-- <div class="send-notification" style="text-align:center; border-radius:50px; margin-top:15px;">
-                            <button type="button" class="btn btn-success" id="sendWhatsApp" disabled>
-                                Send WhatsApp Notification
-                            </button>
-                            </div> -->
+                            <div id="loadingSpinner" style="display: none; text-align: center; margin-top: 15px;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <span> Processing...</span>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -441,11 +503,166 @@
          
     </div>
     <!-- /Page Wrapper -->
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Action</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmationMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmAction">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Confirmation Modal -->
 
+    <!-- Salary Input Modal -->
+    <div id="salaryInputModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enter Salary</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="salaryForm">
+                        <div class="form-group">
+                            <label for="salary">Salary</label>
+                            <input type="number" class="form-control" id="salary" name="salary" required>
+                        </div>
+                        <input type="hidden" id="selectedInterviewers" name="interviewers">
+                        <div class="submit-section">
+                            <button type="submit" class="btn btn-primary">Submit Salary</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Salary Input Modal -->
+
+
+<!--Advanced Search Filter-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('search-form');
+    const advancedSearch = document.getElementById('advanced-search');
+    const toggleButton = document.getElementById('toggle-advanced');
+    let debounceTimer;
+
+    // Toggle Advanced Search
+    toggleButton.addEventListener('click', function() {
+        const isHidden = advancedSearch.style.display === 'none' || advancedSearch.style.display === '';
+        advancedSearch.style.display = isHidden ? 'flex' : 'none';
+        this.textContent = isHidden ? 'Hide Advanced Search' : 'Advanced Search';
+    });
+
+    // Function to perform AJAX search with debounce
+    function performSearch() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const formData = new FormData(searchForm);
+            const queryParams = Object.fromEntries(formData);
+
+            // Check if all fields are empty (i.e., show all interviewers)
+            if (Object.values(queryParams).every(val => !val)) {
+                queryParams['reset'] = true; // Add a custom flag to indicate a reset request
+            }
+
+            fetch("{{ route('interviewers/search') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(queryParams)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('.table tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+
+                if (data.interviewers.length > 0) {
+                    data.interviewers.forEach((interviewer, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><input type="checkbox" name="interviewers[]" value="${interviewer.id}"></td>
+                            <td>${index + 1}</td>
+                            <td onclick="window.open('{{ route('resume', ['id' => $interviewer->id]) }}', '_blank')" style="color:blue">
+                                {{ $interviewer->candidate_id }}</td>
+                           <td>
+                                <h2>
+                                    <a href="#" class="view-interviewer" data-toggle="modal" data-target="#view_interviewer" 
+                                        data-id="${interviewer.id}"
+                                        data-name="${interviewer.name}"
+                                        data-email="${interviewer.email}"
+                                        data-phone="${interviewer.phone_number}"
+                                        data-ic="${interviewer.ic_number}"
+                                        data-birth="{{$interviewer->birth_date }}"
+                                        data-age="${interviewer.age}"
+                                        data-gender="${interviewer.gender}"
+                                        data-race="${interviewer.race}"
+                                        data-education="${interviewer.highest_education}"
+                                        data-experience="${interviewer.work_experiences}"
+                                        data-job-title="${interviewer.job_title}"
+                                        data-message="${interviewer.message}">
+                                        ${interviewer.name}
+                                    </a>
+                                </h2>
+                            </td>
+                            <td>${interviewer.phone_number}</td>
+                            <td>${interviewer.job_title}</td>
+                            <td>${interviewer.gender}</td>
+                            <td>${interviewer.email}</td>
+                            <td>
+                                <a href="#" class="schedule-datetime" data-toggle="modal" data-target="#schedule_interview" 
+                                   data-candidate-id="${interviewer.id}">
+                                    ${interviewer.interview_datetime || 'Not Scheduled'}
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown dropdown-action">
+                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_interviewer" data-id="${interviewer.id}"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_interviewer" data-id="${interviewer.id}"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="10" class="text-center">No interviewers found.</td>';
+                    tableBody.appendChild(row);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }, 300);  // Debounce timeout set to 300ms
+    }
+
+    // Attach input event listeners to search fields
+    searchForm.addEventListener('input', performSearch);
+});
+</script>
 <!-- View Interviewer Modal -->
 <script>
-    $(document).ready(function() {
-    $('.view-interviewer').on('click', function() {
+$(document).ready(function() {
+    // Delegate the click event to the parent container (the table)
+    $(document).on('click', '.view-interviewer', function() {
         // Get data from data attributes
         var name = $(this).data('name');
         var email = $(this).data('email');
@@ -458,8 +675,9 @@
         var education = $(this).data('education');
         var experience = $(this).data('experience');
         var jobTitle = $(this).data('job-title');
-
-        // Update modal fields
+        var message = $(this).data('message'); // Added message data attribute
+        
+        // Handle Missing Data and fill modal fields
         $('#view_name').text(name || 'Not provided');
         $('#view_job_title').text(jobTitle || 'Not provided');
         $('#view_email').text(email || 'Not provided');
@@ -471,28 +689,15 @@
         $('#view_race').text(race || 'Not provided');
         $('#view_education').text(education || 'Not provided');
         $('#view_experience').text(experience ? experience + ' years' : 'Not provided');
+        $('#view_message').text(message || 'Not provided');
     });
-
-    // $('#sendWhatsApp').on('click', function() {
-    //     var phoneNumber = $('#candidate_phone').val().replace(/[^0-9]/g, '');
-    //     var interviewDateTime = $('#interview_datetime').val();
-    //     var interviewType = $('#interview_type').val();
-    //     var roomID = Math.floor(Math.random() * 10000); // Generate room ID
-        
-    //     // Validate inputs
-    //     if (!phoneNumber || !interviewDateTime || !interviewType) {
-    //         toastr.error('Please ensure all fields are filled');
-    //         return;
-    //     }
-
- 
 });
-    })
 </script>
+
 
 <!-- Schedule Interview JavaScript -->
 <script>
-$(document).ready(function() {
+    $(document).ready(function() {
     // Initialize datetimepicker with fixed time selection
     $('.datetimepicker').datetimepicker({
         format: 'YYYY-MM-DD HH:mm',  
@@ -529,7 +734,10 @@ $(document).ready(function() {
             interview_type: $('#interview_type').val(),
             _token: $('input[name="_token"]').val()
         };
-
+            // Show loading spinner and hide submit button
+            $('#loadingSpinner').show();
+            $('.submit-btn').prop('disabled', true); 
+            
         $.ajax({
             url: '{{ route("schedule.interview") }}',
             type: 'POST',
@@ -539,12 +747,16 @@ $(document).ready(function() {
             },
             success: function(response) {
                 console.log("Response:", response); // Log the actual server response
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+                $('.submit-btn').prop('disabled', false); 
+
                 if (response.success) {
                     $('#schedule_interview').modal('hide');
                     toastr.success('Interview scheduled successfully');
                     setTimeout(function() {
                         location.reload();
-                    }, 1500);
+                    }, 1500); // Reload page after 1.5 seconds
                 } else {
                     toastr.error('Unexpected response format. Please check the server response.');
                 }
@@ -555,6 +767,10 @@ $(document).ready(function() {
                 console.error('Error:', error);
                 console.error('Response:', xhr.responseText); // This will show the actual error message
                 toastr.error('Error scheduling interview. Please check console for details.');
+            
+                // Hide loading spinner and re-enable the submit button
+                $('#loadingSpinner').hide();
+                $('.submit-btn').prop('disabled', false); 
             }
         });
     });
@@ -585,60 +801,9 @@ $(document).ready(function() {
         }
     });
 
-    // When edit button is clicked
-    $(document).on('click', '.dropdown-item', function() {
-        if ($(this).data('target') === '#edit_job') {
-            var id = $(this).data('id');
-            var name = $(this).data('name');
-            var email = $(this).data('email');
-            var phone = $(this).data('phone_number');
-            var jobTitle = $(this).data('job-title');
-            var gender = $(this).data('gender');
-            var ic = $(this).data('ic');
-
-            // Set the values in the edit form
-            $('#edit_id').val(id);
-            $('#edit_name').val(name);
-            $('#edit_email').val(email);
-            $('#edit_phone').val(phone);
-            $('#edit_job_title').val(jobTitle);
-            $('#edit_gender').val(gender);
-            $('#edit_ic').val(ic);
-        }
-    });
-
-    // Add form submission handler
-    $('#edit_job form').on('submit', function(e) {
-        e.preventDefault();
-        
-        $.ajax({
-            url: $(this).attr('action'),
-            method: 'POST',
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#edit_job').modal('hide');
-                toastr.success('Interviewer updated successfully!');
-                setTimeout(function() {
-                    location.reload();
-                }, 1500);
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-                toastr.error('Error updating interviewer. Please try again.');
-            }
-        });
-    });
-
-    // Update the WhatsApp button to be initially disabled
-    $('#schedule_interview .modal-body').find('.send-notification').html(`
-        <button type="button" class="btn btn-success" id="sendWhatsApp" disabled>
-            Send WhatsApp Notification
-        </button>
-    `);
-
-    // Add listener for interview type selection
-    $('#interview_type').on('change', function() {
-        const interviewType = $(this).val();
+    // Enable/disable WhatsApp notification button based on form selection
+    $('#interview_type, #interview_datetime').on('change', function() {
+        const interviewType = $('#interview_type').val();
         const interviewDateTime = $('#interview_datetime').val();
         
         // Enable/disable WhatsApp button based on selections
@@ -649,19 +814,7 @@ $(document).ready(function() {
         }
     });
 
-    // Add listener for datetime selection
-    $('#interview_datetime').on('change', function() {
-        const interviewDateTime = $(this).val();
-        const interviewType = $('#interview_type').val();
-        
-        // Enable/disable WhatsApp button based on selections
-        if (interviewType && interviewDateTime) {
-            $('#sendWhatsApp').prop('disabled', false);
-        } else {
-            $('#sendWhatsApp').prop('disabled', true);
-        }
-    });
-
+    // Handle WhatsApp notification button click
     $('#sendWhatsApp').on('click', function() {
         var phoneNumber = $('#candidate_phone').val().replace(/[^0-9]/g, '');
         var interviewDateTime = $('#interview_datetime').val();
@@ -683,7 +836,7 @@ $(document).ready(function() {
                     const companyAddress = response.company.address;
                     const companyCity = response.company.city;
                     const companyState = response.company.state;
-                    const companyPostalC =response.company.postal_code;
+                    const companyPostalC = response.company.postal_code;
                     
                     // Format the message with company information
                     var message = "Dear candidate,\n\n"
@@ -693,9 +846,15 @@ $(document).ready(function() {
                     
                     // Add location information for face-to-face interviews
                     if (interviewType === 'f2f') {
-                        message += "Location: " + companyAddress + "," + companyPostalC +" "+ companyState
-                         + "," + companyCity  + "\n" +
-                         "Please arrive 15 minutes before the scheduled time.\n";
+                        message += "Location: " + companyAddress + ", " + companyPostalC + " " + companyState 
+                                    + ", " + companyCity + "\n";
+                        message += "Please bring the following documents with you for the interview:\n";
+                        message += "- A copy of your IC (Identity Card), both front and back.\n";
+                        message += "- A copy of your highest educational certificate.\n";
+                        message += "- Any relevant work experience certificates (if applicable).\n";
+                        message += "- Proof of previous employment (if applicable).\n";
+                        message += "- Any other personal identification documents required by the company.\n";
+                        message += "Please arrive 15 minutes before the scheduled time.\n";
                     }
                     
                     message += "\nPlease confirm your attendance.\n"
@@ -725,45 +884,152 @@ $(document).ready(function() {
         });
     });
 });
+
 </script>
-<script>
-    // Select all checkboxes
-    document.getElementById('select-all').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('input[name="interviewers[]"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+    <script>
+        // Select all checkboxes
+        document.getElementById('select-all').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="interviewers[]"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
         });
-    });
 
-    // Handle bulk action
-    document.getElementById('apply-action').addEventListener('click', function() {
-        const action = document.getElementById('bulk-action').value;
-        const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
+        // Handle bulk action
+        document.getElementById('apply-action').addEventListener('click', function () {
+            const action = document.getElementById('bulk-action').value;
+            const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
 
-        if (action && selectedInterviewers.length > 0) {
-            // Perform AJAX request to handle bulk action
-            $.ajax({
-                url: '{{ route("interviewer/bulkAction") }}',
+            if (action && selectedInterviewers.length > 0) {
+                const interviewerEmails = selectedInterviewers.map(id => {
+                    const row = document.querySelector(`input[name="interviewers[]"][value="${id}"]`).closest('tr');
+                    return row.querySelector('td:nth-child(8)').textContent.trim(); // Get email from the 8th column
+                }).join(', ');
+
+                const confirmationMessage = action === 'hired'
+                    ? `Are you sure you want to hire the selected interviewers? Emails: ${interviewerEmails}.`
+                    : `Are you sure you want to reject the selected interviewers? Emails: ${interviewerEmails}.`;
+
+                document.getElementById('confirmationMessage').innerText = confirmationMessage;
+
+                // Show the confirmation modal using Bootstrap's modal API
+                $('#confirmationModal').modal('show');
+            } else {
+                alert('Please select at least one interviewer and choose an action.');
+            }
+        });
+
+        $('#confirmationModal').on('shown.bs.modal', function () {
+        $('#confirmationModal').removeAttr('aria-hidden'); // REMOVE THIS
+        });
+
+        $('#confirmationModal').on('hidden.bs.modal', function () {
+            $('#confirmationModal').attr('aria-hidden', 'true'); // REMOVE THIS
+        });
+        // Handle confirmation action
+        document.getElementById('confirmAction').addEventListener('click', function () {
+            const action = document.getElementById('bulk-action').value;
+
+            if (action === 'hired') {
+                // Show salary input modal
+                $('#confirmationModal').modal('hide');
+                $('#salaryInputModal').modal('show');
+            } else if (action === 'rejected') {
+                // Process rejection directly
+                processBulkAction('rejected');
+            }
+        });
+
+        // Handle salary form submission
+        document.getElementById('salaryForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const salary = document.getElementById('salary').value;
+            const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
+
+            if (!salary || salary <= 0) {
+                alert('Please enter a valid salary.');
+                return;
+            }
+
+            // Process hiring with salary
+            processBulkAction('hired', salary);
+        });
+
+        // Function to process bulk actions
+        function processBulkAction(action, salary = null) {
+            const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
+
+            // Send data to the server via AJAX
+            fetch('/bulk-action', {
                 method: 'POST',
-                data: {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
                     action: action,
                     interviewers: selectedInterviewers,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    toastr.success('Action applied successfully.');
-                    location.reload(); // Reload the page to see changes
-                },
-                error: function(xhr) {
-                    toastr.error('Error applying action. Please try again.');
-                    console.error(xhr);  // Debug AJAX error
-                }
-            });
-        } else {
-            toastr.warning('Please select an action and at least one interviewer.');
+                    salary: salary
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Action applied successfully.');
+                        location.reload(); // Reload the page to reflect changes
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred.');
+                });
+
+            // Hide modals
+            $('#confirmationModal').modal('hide');
+            $('#salaryInputModal').modal('hide');
         }
-    });
-</script>
+    </script>
+
+
+<!-- Handle salary form submission
+<script>
+    document.getElementById('salaryForm').onsubmit = function(e) {
+        e.preventDefault();
+
+        const salary = document.getElementById('salary').value;
+        const interviewers = document.getElementById('selectedInterviewers').value.split(',');
+
+        // Perform AJAX request to handle bulk action with salary
+        $.ajax({
+            url: '{{ route("interviewer/bulkAction") }}',
+            method: 'POST',
+            data: {
+                action: 'hired',
+                interviewers: interviewers,
+                salary: salary,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                toastr.success('Action applied successfully.');
+                location.reload(); // Reload the page to see changes
+            },
+            error: function(xhr) {
+                toastr.error('Error applying action. Please try again.');
+                console.error(xhr);  // Debug AJAX error
+            }
+        });
+
+        // Close the salary input modal
+        $('#salaryInputModal').modal('hide');
+    };
+</script> -->
+
+
+
+
 <style>
 /* Enhanced styles for time picker */
 .bootstrap-datetimepicker-widget .timepicker {
@@ -832,6 +1098,7 @@ $(document).ready(function() {
     border-color: #128c7e;
 }
 </style>
+
 
 
 @endsection

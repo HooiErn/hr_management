@@ -164,7 +164,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Job Location</label>
-                                        <textarea class="form-control @error('job_location') is-invalid @enderror" name="job_location" style="height: 44px;">{{ old('job_location') }}</textarea>
+                                        <textarea class="form-control @error('job_location') is-invalid @enderror" name="job_location" style="height: 44px;">{{ $company->company_name }}</textarea>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -178,7 +178,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Experience</label>
-                                        <input class="form-control @error('experience') is-invalid @enderror" type="text" name="experience" value="{{ old('experience') }}">
+                                        <input class="form-control @error('experience') is-invalid @enderror" type="number" name="experience" value="{{ old('experience') }}" min="0" max='99'>
                                     </div>
                                 </div>
                                 <div class="col-md-6">

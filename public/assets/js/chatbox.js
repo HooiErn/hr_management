@@ -48,7 +48,7 @@ async function sendMessage(userMessage, fromQuickOption = false) {
             if (typingIndicator) typingIndicator.remove();
             addMessageToChatbox('Bot', response);
             return; // Return directly
-        } else if (lowerCaseMessage.includes("company info")) {
+        } else if (lowerCaseMessage.includes("intro your company")) {
             const response = predefinedResponses["intro your company"];
             if (typingIndicator) typingIndicator.remove();
             addMessageToChatbox('Bot', response);
@@ -111,7 +111,7 @@ async function sendMessage(userMessage, fromQuickOption = false) {
         if (typingIndicator) typingIndicator.remove(); // Remove typing indicator
 
         if (data.error) {
-            addMessageToChatbox('Bot', data.message || 'Sorry, something went wrong. Please try again.');
+            addMessageToChatbox('Bot', data.message || 'Sorry, something went wrong. Please try again later. If the issue persists, it may be due to maintenance.');
             return;
         }
 
@@ -119,7 +119,7 @@ async function sendMessage(userMessage, fromQuickOption = false) {
     } catch (error) {
         if (typingIndicator) typingIndicator.remove();
         console.error('Error:', error);
-        addMessageToChatbox('Bot', 'Sorry, something went wrong. Please try again.');
+        addMessageToChatbox('Bot', 'Sorry, something went wrong. Please try again later. If the issue persists, it may be due to maintenance.');
     }
 }
 

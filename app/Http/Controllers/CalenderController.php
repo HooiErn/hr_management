@@ -11,8 +11,8 @@ class CalenderController extends Controller
 {
     public function calender()
     {
-        $event = Event::all();
-        return view('form.calender',compact('event'));
+        
+        return view('form.calender');
     }
     // save record
     public function saveRecord(Request $request)

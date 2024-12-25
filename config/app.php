@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'HRTech'),
 
     /*
     |--------------------------------------------------------------------------
@@ -171,6 +171,7 @@ return [
         /*
          * Application Service Providers...
          */
+        Barryvdh\DomPDF\ServiceProvider::class,
         Brian2694\Toastr\ToastrServiceProvider::class,
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
@@ -192,6 +193,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'PDF' => Barryvdh\DomPDF\Facade\Pdf::class, 
         'Toastr'  => Brian2694\Toastr\Facades\Toastr::class,
     ])->toArray(),
 

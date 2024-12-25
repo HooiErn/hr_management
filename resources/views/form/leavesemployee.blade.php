@@ -1,4 +1,3 @@
-
 @extends('layouts.master')
 @section('content')
     <!-- Page Wrapper -->
@@ -145,10 +144,10 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
+                        <form id="addLeaveForm">
                             <div class="form-group">
                                 <label>Leave Type <span class="text-danger">*</span></label>
-                                <select class="select">
+                                <select class="select" id="leaveType">
                                     <option>Select Leave Type</option>
                                     <option>Casual Leave 12 Days</option>
                                     <option>Medical Leave</option>
@@ -158,18 +157,18 @@
                             <div class="form-group">
                                 <label>From <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text">
+                                    <input class="form-control datetimepicker" type="text" id="fromDate">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>To <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text">
+                                    <input class="form-control datetimepicker" type="text" id="toDate">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Number of days <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly type="text">
+                                <input class="form-control" readonly type="text" id="numberOfDays">
                             </div>
                             <div class="form-group">
                                 <label>Remaining Leaves <span class="text-danger">*</span></label>
@@ -177,10 +176,10 @@
                             </div>
                             <div class="form-group">
                                 <label>Leave Reason <span class="text-danger">*</span></label>
-                                <textarea rows="4" class="form-control"></textarea>
+                                <textarea rows="4" class="form-control" id="leaveReason"></textarea>
                             </div>
                             <div class="submit-section">
-                                <button class="btn btn-primary submit-btn">Submit</button>
+                                <button type="button" class="btn btn-primary submit-btn" id="submitLeave">Submit</button>
                             </div>
                         </form>
                     </div>
@@ -269,4 +268,42 @@
 
     </div>
     <!-- /Page Wrapper -->
+
+<script>
+    $(document).ready(function() {
+        // Function to calculate the number of days
+        function calculateDays() {
+            var fromDate = $('#fromDate').val();
+            var toDate = $('#toDate').val();
+
+            if (fromDate && toDate) {
+                var startDate = new Date(fromDate);
+                var endDate = new Date(toDate);
+                var timeDiff = endDate - startDate; // Difference in milliseconds
+                var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // Convert to days and include start date
+
+                if (daysDiff < 0) {
+                    daysDiff = 0; // Ensure no negative days
+                }
+
+                $('#numberOfDays').val(daysDiff); // Update the number of days input
+            } else {
+                $('#numberOfDays').val(''); // Clear if dates are not set
+            }
+        }
+
+        // Event listeners for date changes
+        $('#fromDate').on('change', calculateDays);
+        $('#toDate').on('change', calculateDays);
+
+        // Submit leave request
+        $('#submitLeave').on('click', function() {
+            // Here you can add your AJAX call to submit the leave request
+            // For example:
+            // $.post('/form/leaves/save', $('#addLeaveForm').serialize(), function(response) {
+            //     // Handle response
+            // });
+        });
+    });
+</script>
 @endsection

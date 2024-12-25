@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\department;
 use App\Models\User;
 use App\Models\module_permission;
+use App\Models\PastEmployee;
 
 class EmployeeController extends Controller
 {
@@ -22,13 +23,8 @@ class EmployeeController extends Controller
     // all employee list
     public function listAllEmployee()
     {
-        $users = DB::table('users')
-                    ->join('employees', 'users.user_id', '=', 'employees.employee_id')
-                    ->select('users.*', 'employees.birth_date', 'employees.gender', 'employees.company')
-                    ->get();
-        $userList = DB::table('users')->get();
-        $permission_lists = DB::table('permission_lists')->get();
-        return view('form.employeelist',compact('users','userList','permission_lists'));
+        $users = Employee::all(); // Fetch all employees
+        return view('form.employee_list', compact('users'));
     }
 
     // save data employee
@@ -170,7 +166,7 @@ class EmployeeController extends Controller
             return redirect()->back();
         }
     }
-    // employee search
+    // allemployeecard search
     public function employeeSearch(Request $request)
     {
         $users = DB::table('users')
@@ -251,6 +247,7 @@ class EmployeeController extends Controller
          }
         return view('form.allemployeecard',compact('users','userList','permission_lists'));
     }
+
     public function employeeListSearch(Request $request)
     {
         $users = DB::table('users')
@@ -348,6 +345,40 @@ class EmployeeController extends Controller
         return view('form.employeeprofile',compact('user','users'));
     }
 
+    //resigned employee
+    public function resign($employeeId)
+{
+    // Get the employee record
+    $employee = Employee::find($employeeId);
+
+    if ($employee) {
+        // Transfer the employee data to the past_employees table
+        PastEmployee::create([
+            'name' => $employee->name,
+            'email' => $employee->email,
+            'department' => $employee->department,
+            'role_name' => $employee->role_name,
+            'phone_number' => $employee->phone_number,
+            'status' => 'resigned',  // Mark status as resigned
+            'resignation_date' => now(),  
+            'resignation_reason' => 'Voluntary resignation', 
+        ]);
+
+        // Delete the employee record from employees table
+        $employee->delete();
+
+        // Optionally, return a success message or redirect
+        return redirect()->back()->with('success', 'Employee resigned successfully and moved to past employees.');
+    }
+
+    return redirect()->back()->with('error', 'Employee not found.');
+}
+
+    public function pastEmployeePage(){
+        $pastEmployees = PastEmployee::all();
+        return view('form.past_employee_list', compact('pastEmployees'));
+    }
+
     /** page departments */
     public function index()
     {
@@ -442,6 +473,75 @@ class EmployeeController extends Controller
     public function overTimeIndex()
     {
         return view('form.overtime');
+    }
+
+    public function search(Request $request)
+    {
+        $query = Employee::query();
+
+        if ($request->has('name') && $request->name != '') {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+        if ($request->has('department') && $request->department != '') {
+            $query->where('department', 'like', '%' . $request->department . '%');
+        }
+        if ($request->has('role_name') && $request->role_name != '') {
+            $query->where('role_name', 'like', '%' . $request->role_name . '%');
+        }
+        if ($request->has('employee_id') && $request->employee_id != '') {
+            $query->where('employee_id', 'like', '%' . $request->employee_id . '%');
+        }
+
+        $employees = $query->get();
+
+        return response()->json(['employees' => $employees]);
+    }
+
+    public function showByDepartment($department)
+    {
+        $employees = Employee::where('department', $department)->get();
+
+        if ($employees->isEmpty()) {
+            return view('form.department_employee_list', [
+                'employees' => $employees,
+                'department' => $department,
+                'message' => 'No employees found in this department.'
+            ]);
+        }
+
+        return view('form.department_employee_list', compact('employees', 'department'));
+    }
+
+    public function destroy($id)
+    {
+        $employee = Employee::findOrFail($id);
+        
+        // Move employee data to past employees table (you need to create this table and model)
+        PastEmployee::create($employee->toArray());
+        
+        // Delete the employee
+        $employee->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function searchByDepartment(Request $request, $department)
+    {
+        $query = Employee::where('department', $department);
+
+        if ($request->has('employee_id') && $request->employee_id != '') {
+            $query->where('employee_id', 'like', '%' . $request->employee_id . '%');
+        }
+        if ($request->has('name') && $request->name != '') {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+        if ($request->has('role_name') && $request->role_name != '') {
+            $query->where('role_name', 'like', '%' . $request->role_name . '%');
+        }
+
+        $employees = $query->get();
+
+        return response()->json(['employees' => $employees]);
     }
 
 }

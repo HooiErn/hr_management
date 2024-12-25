@@ -31,21 +31,20 @@
                     </li>
                 @endif
                 <li class="menu-title"> <span>Employees</span> </li>
-                <li class="{{set_active(['all/employee/list','all/employee/list','all/employee/card','form/calender/new','form/leaves/new',
-                    'form/leavesettings/page','attendance/page','form/departments/page',
+                <li class="{{set_active(['all/employee/list','all/employee/list','all/employee/card','/pastEmployee','form/calender/new','form/leaves/new'
+                    ,'form/leavesemployee/new','attendance/page','form/departments/page',
                     'form/timesheet/page','form/shiftscheduling/page','form/overtime/page'])}} submenu">
                     <a href="#" class="{{ set_active(['all/employee/list','all/employee/card','form/calender/new','form/leaves/new',
-                    'form/leavesettings/page','attendance/page','attendance/employee/page','form/departments/page',
+                    'form/leavesemployee/new','attendance/page','attendance/employee/page','form/departments/page',
                     'form/timesheet/page','form/shiftscheduling/page','form/overtime/page']) ? 'noti-dot' : '' }}">
                         <i class="la la-user"></i> <span> Employees</span> <span class="menu-arrow"></span>
                     </a>
                     <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }}">
                         <li><a class="{{set_active(['all/employee/list','all/employee/card'])}}" href="{{ route('all/employee/card') }}">All Employees</a></li>
+                        <li><a class="{{set_active(['/pastEmployee','/pastEmployee'])}}" href="{{ route('employee/past') }}">Past Employees</a></li>
                         <li><a class="{{set_active(['form/calender/new'])}}" href="{{ route('form/calender/new') }}">Calender</a></li>
-                        <li><a class="{{set_active(['form/leaves/new'])}}" href="{{ route('form/leaves/new') }}">Leaves (Admin) 
-                            <span class="badge badge-pill bg-primary float-right">1</span></a>
-                        </li>
-                        <li><a class="{{set_active(['form/leavesettings/page'])}}" href="{{ route('form/leavesettings/page') }}">Leave Settings</a></li>
+                        <li><a class="{{set_active(['form/leaves/new'])}}" href="{{ route('form/leaves/new') }}">Leaves (Admin) </a></li>
+                        <li><a class="{{set_active(['form/leavesemployee/new'])}}" href="{{ route('form/leavesemployee/new') }}">Leaves (Employee)</a> </li>
                         <li><a class="{{set_active(['attendance/page'])}}" href="{{ route('attendance/page') }}">Attendance (Admin)</a></li>
                         <li><a class="{{set_active(['attendance/employee/page'])}}" href="{{ route('attendance/employee/page') }}">Attendance (Employee)</a></li>
                         <li><a class="{{set_active(['form/departments/page'])}}" href="{{ route('form/departments/page') }}">Departments</a></li>
@@ -55,8 +54,8 @@
                     </ul>
                 </li>
                 <li class="menu-title"> <span>Administration</span> </li>
-                <li class="{{set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/applied/jobs','user/dashboard/interviewing','user/dashboard/offered/jobs','user/dashboard/visited/jobs','user/dashboard/archived/jobs','user/dashboard/save','jobs','job/applicants','job/details','page/manage/resumes','page/candidates','page/schedule/timing','video/dashboard','public/meeting'])}} submenu">
-                    <a href="#" class="{{ set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/save','jobs','job/applicants','job/details']) ? 'noti-dot' : '' }}"><i class="la la-briefcase"></i>
+                <li class="{{set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/applied/jobs','user/dashboard/interviewing','user/dashboard/offered/jobs','user/dashboard/visited/jobs','user/dashboard/archived/jobs','user/dashboard/save','jobs','job/applicants','job/details','page/manage/resumes','page/candidates','video/dashboard','public/meeting'])}} submenu">
+                    <a href="#" class="{{ set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/save','jobs','job/applicants','job/details','page/candidates','video/dashboard','public/meeting']) ? 'noti-dot' : '' }}"><i class="la la-briefcase"></i>
                         <span> Jobs </span> <span class="menu-arrow"></span>
                     </a>
                     <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }} {{ (request()->is('job/applicants/*')) ? 'display: block;' : 'display: none;' }}">
@@ -64,8 +63,8 @@
                         <li><a class="{{set_active(['jobs','job/applicants','job/details'])}} {{ (request()->is('job/applicants/*')) ? 'active' : '' }}" href="{{ route('jobs') }} "> Manage Jobs </a></li>
                         <li><a class="{{set_active(['page/manage/resumes'])}}" href="{{ route('page/manage/resumes') }}"> Manage Resumes </a></li>
                         <li><a class="{{set_active(['page/candidates'])}}" href="{{ route('page/candidates') }}"> Candidates List </a></li>
-                        <li><a class="{{set_active(['page/interviwer'])}}" href="{{ route('page/interviwer') }}"> Schedule Interviewer List </a></li>
-                        <li><a class="{{set_active(['page/schedule/timing'])}}" href="{{ route('page/schedule/timing') }}"> Create Meeting </a></li>
+                        <li><a class="{{set_active(['page/interviwer'])}}" href="{{ route('page/interviwer') }}"> Interviewer List(Schedule) </a></li>
+                        <!-- <li><a class="{{set_active(['page/schedule/timing'])}}" href="{{ route('page/schedule/timing') }}"> Create Meeting </a></li> -->
                         <li><a class="{{set_active(['video/dashboard'])}}" href="{{ route('video.dashboard') }}"> Join Meeting </a></li>
                         <li><a class="{{set_active(['public/meeting'])}}" href="{{ route('public.meeting') }}"> Join Meeting(Interviewer) </a></li>
                     </ul>

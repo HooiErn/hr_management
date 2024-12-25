@@ -62,7 +62,7 @@
                                         @if($apply->interview_datetime)
                                             {{ Carbon\Carbon::parse($apply->interview_datetime)->format('d M Y h:i A') }}
                                         @else
-                                            <span class="text-muted">Not Scheduled</span>
+                                            <span>Not Scheduled</span>
                                         @endif
                                     </td>
                                     <td class="text-center">

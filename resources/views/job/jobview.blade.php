@@ -29,19 +29,6 @@
             <!-- /Header Title -->
             <!-- Header Menu -->
             <ul class="nav user-menu">
-                <!-- Search -->
-                <li class="nav-item">
-                    <div class="top-nav-search">
-                        <a href="javascript:void(0);" class="responsive-search">
-                            <i class="fa fa-search"></i>
-                        </a>
-                        <form action="search.html">
-                            <input class="form-control" type="text" placeholder="Search here">
-                            <button class="btn" type="submit"><i class="fa fa-search"></i></button>
-                        </form>
-                    </div>
-                </li>
-                <!-- /Search -->
                 <!-- Flag -->
                 <li class="nav-item dropdown has-arrow flag-nav">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button">
@@ -91,15 +78,15 @@
                 <div class="row">
                     <div class="col-md-8">
                         <div class="job-info job-widget">
-                            <h3 class="job-title">{{ $job_view[0]->job_title }}</h3>
-                            <span class="job-dept">{{ $job_view[0]->department }}</span>
+                            <h3 class="job-title">{{ $job_view -> job_title }}</h3>
+                            <span class="job-dept">{{ $job_view-> department }}</span>
                             <ul class="job-post-det">
-                                <li><i class="fa fa-calendar"></i> Post Date: <span class="text-blue">{{ date('d F, Y',strtotime($job_view[0]->start_date)) }}</span></li>
-                                <li><i class="fa fa-calendar"></i> Last Date: <span class="text-blue">{{ date('d F, Y',strtotime($job_view[0]->expired_date)) }}</span></li>
+                                <li><i class="fa fa-calendar"></i> Post Date: <span class="text-blue">{{ date('d F, Y',strtotime($job_view->start_date)) }}</span></li>
+                                <li><i class="fa fa-calendar"></i> Last Date: <span class="text-blue">{{ date('d F, Y',strtotime($job_view->expired_date)) }}</span></li>
                                 <li><i class="fa fa-user-o"></i> Applications: <span class="text-blue">4</span></li>
                                 <li><i class="fa fa-eye"></i> Views: <span class="text-blue">
-                                    @if (!empty($job_view[0]->count))
-                                        {{ $job_view[0]->count }}
+                                    @if (!empty($job_view->count))
+                                        {{ $job_view->count }}
                                         @else
                                         0
                                     @endif
@@ -110,7 +97,7 @@
                         <div class="job-content job-widget">
                             <div class="job-desc-title"><h4>Job Description</h4></div>
                             <div class="job-description">
-                                <p>{{ $job_view[0]->description }}</p>
+                                <p>{{ $job_view->description }}</p>
                             </div>
                             <div class="job-desc-title"></div>
                             <div class="job-description">
@@ -123,40 +110,46 @@
                             <div class="info-list">
                                 <span><i class="fa fa-bar-chart"></i></span>
                                 <h5>Job Type</h5>
-                                <p>{{ $job_view[0]->job_type }}</p>
+                                <p>{{ $job_view->job_type }}</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-money"></i></span>
                                 <h5>Salary</h5>
-                                <p>RM{{ $job_view[0]->salary_from }} - RM{{ $job_view[0]->salary_to }}</p>
+                                <p>RM{{ $job_view->salary_from }} - RM{{ $job_view->salary_to }}</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-suitcase"></i></span>
                                 <h5>Experience</h5>
-                                <p>{{ $job_view[0]->experience }}</p>
+                                <p>{{ $job_view->experience }}</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-user"></i></span>
                                 <h5>Age</h5>
-                                <p>{{ $job_view[0]->age }} above</p>
+                                <p>{{ $job_view->age }} above</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-ticket"></i></span>
                                 <h5>Vacancy</h5>
-                                <p>{{ $job_view[0]->no_of_vacancies }}</p>
+                                <p>{{ $job_view->no_of_vacancies }}</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-map-signs"></i></span>
                                 <h5>Location</h5>
-                                <p>{{ $job_view[0]->job_location }}</p>
+                                <p>{{ $job_view->job_location }}</p>
                             </div>
                             <div class="info-list">
                                 <p class="text-truncate"> 096-566-666
-                                <br> <a href="https://www.example.com" title="@example.com">HRTech@example.com</a>
+                                <br> <a href="{{route('homepage')}}" title="@example.com">www.HRTechInc.com</a>
                                 </p>
                             </div>
                             <div class="info-list text-center">
-                                <a class="app-ends" href="#">Application ends in 2d 7h 6m</a>
+                                @if ($now->greaterThanOrEqualTo($expired_date))  <!-- Check if expired -->
+                                    <p style="color: red;">Job is expired.</p>
+                                @else
+                                    <a class="app-ends" href="#">
+                                    Application ends in {{ $diff }}
+                                    </a>
+                                @endif
                             </div>
                 
                             </div>
@@ -169,7 +162,7 @@
 
             <!-- Apply Job Modal -->
             <div class="modal custom-modal fade" id="apply_job" role="dialog">
-                <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Add Your Details</h5>
@@ -183,15 +176,9 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Job Title</label>
-                                        <select class="form-control @error('job_title') is-invalid @enderror" name="job_title" required readonly>
-                                            <option value="" selected disabled>Select Job Title</option>
-                                            @foreach($jobs as $job)
-                                                <option value="{{ $job->job_title }}" {{ $job_view[0]->job_title == $job->job_title ? 'selected' : '' }}>
-                                                    {{ $job->job_title }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                        <label>Job Title</label>                       
+                                        <input class="form-control @error('job_title') is-invalid @enderror" name="job_title" 
+                                        value="{{ $job_view->job_title }}" required readonly>                                      
                                     </div>
                                     <input type="hidden" name="interview_datetime" value="{{ old('interview_datetime') }}">
                                     <div class="form-group">
@@ -199,8 +186,25 @@
                                         <input class="form-control @error('name') is-invalid @enderror" type="text" name="name" placeholder="Full name as per IC" value="{{ old('name') }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Birth Date</label>
-                                        <input class="form-control @error('birth_date') is-invalid @enderror" type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}">
+                                        <label>IC Number <span class="text-danger">*</span></label>
+                                        <input class="form-control @error('ic_number') is-invalid @enderror" 
+                                            type="text" 
+                                            name="ic_number" 
+                                            id="ic_number" 
+                                            pattern="\d{12}" 
+                                            maxlength="12"
+                                            placeholder="Enter IC number without dashes (e.g., 991231121234)" 
+                                            value="{{ old('ic_number') }}" 
+                                            required>
+                                        <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
+                                        @error('ic_number')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control @error('birth_date') is-invalid @enderror" type="hidden" name="birth_date" id="birth_date" value="">
                                     </div>
 
                                     <div class="form-group">
@@ -278,25 +282,7 @@
                                         <input class="form-control @error('role_name') is-invalid @enderror" type="text" name="role_name" value="{{ old('role_name', 'Candidate') }}" readonly>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>IC Number <span class="text-danger">*</span></label>
-                                <input class="form-control @error('ic_number') is-invalid @enderror" 
-                                       type="text" 
-                                       name="ic_number" 
-                                       id="ic_number" 
-                                       pattern="\d{12}" 
-                                       maxlength="12"
-                                       placeholder="Enter IC number without dashes (e.g., 991231121234)" 
-                                       value="{{ old('ic_number') }}" 
-                                       required>
-                                <small class="form-text text-muted">Format: YYMMDDPPXXXX (12 digits without dashes)</small>
-                                @error('ic_number')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                
                             </div>
                             <div class="form-group">
                                 <label>Upload your CV<span class="text-danger">*</span></label>
@@ -338,25 +324,25 @@
 
     <!-- Auto-calculate Age Based on Birth Date -->
     <script>
-        document.getElementById('birth_date').addEventListener('change', function() {
-            const birthDate = new Date(this.value);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
+    document.getElementById('birth_date').addEventListener('change', function() {
+        const birthDate = new Date(this.value);  // Get the birth date
+        const today = new Date();  // Get today's date
+        let age = today.getFullYear() - birthDate.getFullYear();  
+        const monthDiff = today.getMonth() - birthDate.getMonth();  
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;  // Adjust age if the birthday hasn't occurred yet this year
+        }
 
-            // Check if age is less than 0
-            if (age < 17) ||{
-                alert("Invalid birth date. Please select a valid date.");
-                this.value = ''; // Clear the input
-                document.getElementById('age').value = ''; // Clear the age field
-            } else {
-                document.getElementById('age').value = age; // Set the age field
-            }
-        });
-    </script>
+        // Check if age is less than 17
+        if (age < 17) {
+            alert("Invalid birth date. Please select a valid date.");  // Alert the user
+            this.value = '';  // Clear the birth date input
+            document.getElementById('age').value = '';  // Clear the age field
+        } else {
+            document.getElementById('age').value = age;  // Set the age field if valid
+        }
+    });
+</script>
     <!-- /Auto-calculate Age Based on Birth Date -->
     <!--  Message Field with Word Limit -->
     <script>
@@ -394,89 +380,81 @@
      <!--/Show CV filename when Upload-->
      <!--Validate IC number format-->
      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const icNumberInput = document.getElementById('ic_number');
-            
-            if (icNumberInput) {
-                icNumberInput.addEventListener('input', function(e) {
-                    // Remove any non-digits and dashes
-                    let value = this.value.replace(/[^\d]/g, '');
-                    
-                    // Limit to 12 digits
-                    if (value.length > 12) {
-                        value = value.slice(0, 12);
-                    }
-                    
-                    this.value = value;
-                    
-                    // Validation
-                    if (value.length === 12) {
-                        const year = parseInt(value.substring(0, 2));
-                        const month = parseInt(value.substring(2, 4));
-                        const day = parseInt(value.substring(4, 6));
-                        
-                        let isValid = true;
-                        let errorMessage = '';
-                        
-                        // Validate month (01-12)
-                        if (month < 1 || month > 12) {
-                            isValid = false;
-                            errorMessage = 'Invalid month in IC number';
-                        }
-                        
-                        // Validate day (01-31)
-                        if (day < 1 || day > 31) {
-                            isValid = false;
-                            errorMessage = 'Invalid day in IC number';
-                        }
-                        
-                        // Additional validation for specific months
-                        if (isValid) {
-                            if (month === 2) {
-                                // February
-                                const isLeapYear = (year % 4 === 0);
-                                if (day > (isLeapYear ? 29 : 28)) {
-                                    isValid = false;
-                                    errorMessage = 'Invalid day for February';
-                                }
-                            } else if ([4, 6, 9, 11].includes(month) && day > 30) {
-                                // Months with 30 days
-                                isValid = false;
-                                errorMessage = 'Invalid day for this month';
-                            }
-                        }
-                        
-                        this.setCustomValidity(errorMessage);
-                        
-                        // Visual feedback
-                        if (isValid) {
-                            this.classList.remove('is-invalid');
-                            this.classList.add('is-valid');
-                        } else {
-                            this.classList.remove('is-valid');
-                            this.classList.add('is-invalid');
-                        }
-                    } else {
-                        this.setCustomValidity('IC number must be exactly 12 digits');
-                        this.classList.remove('is-valid');
-                        if (value.length > 0) {
-                            this.classList.add('is-invalid');
-                        } else {
-                            this.classList.remove('is-invalid');
-                        }
-                    }
-                });
+     document.addEventListener('DOMContentLoaded', function() {
+        const icNumberInput = document.getElementById('ic_number');
+        const birthDateInput = document.getElementById('birth_date');
+        
+        if (icNumberInput) {
+            icNumberInput.addEventListener('input', function(e) {
+                // Remove non-digit characters
+                let value = this.value.replace(/[^\d]/g, '');
                 
-                // Add blur event for additional validation
-                icNumberInput.addEventListener('blur', function() {
-                    if (this.value.length > 0 && this.value.length < 12) {
-                        this.classList.add('is-invalid');
-                        this.setCustomValidity('IC number must be exactly 12 digits');
+                // Limit to 12 digits
+                if (value.length > 12) {
+                    value = value.slice(0, 12);
+                }
+                
+                this.value = value;
+                
+                // Validation for IC number length (must be exactly 12 digits)
+                if (value.length === 12) {
+                    // Extract birth date from IC number (first 6 digits: YYMMDD)
+                    const yearPrefix = value.substring(0, 2);  // First two digits of year
+                    const month = value.substring(2, 4);
+                    const day = value.substring(4, 6);
+
+                    // Determine if the year is from 1900s or 2000s
+                    let year = parseInt(yearPrefix);
+                    const currentYear = new Date().getFullYear();
+                    const currentCentury = Math.floor(currentYear / 100); // Get the current century (20 for 2023)
+                    
+                    // If the yearPrefix is greater than the current year, it's from the 1900s
+                    if (year > currentYear % 100) {
+                        year += 1900; // If it’s larger than the current year, it’s from the 1900s
+                    } else {
+                        year += 2000; // Otherwise, it's from the 2000s
                     }
-                });
-            }
-        });
-        </script>
+
+                    // Format the birth date as YYYY-MM-DD
+                    const birthDate = `${year}-${month}-${day}`;
+
+                    // Set the birth date in the hidden field
+                    birthDateInput.value = birthDate;
+
+                    // Calculate and set age based on the birth date
+                    const birthDateObj = new Date(birthDate);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDateObj.getFullYear();
+                    const monthDiff = today.getMonth() - birthDateObj.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+                        age--;
+                    }
+                    
+                    // Display the age in a separate field or use the value for further actions
+                    document.getElementById('age').value = age;  // Assume you have an 'age' field
+
+                    // Visual feedback for valid IC number
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    // Provide feedback for invalid IC number
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            });
+            
+            // Add blur event for additional validation
+            icNumberInput.addEventListener('blur', function() {
+                if (this.value.length > 0 && this.value.length < 12) {
+                    this.classList.add('is-invalid');
+                    this.setCustomValidity('IC number must be exactly 12 digits');
+                }
+            });
+        }
+    });
+</script>
+
+
 <!--/Validate IC number format-->
 
 @if (session('error'))

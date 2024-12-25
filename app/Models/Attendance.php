@@ -16,5 +16,6 @@ class Attendance extends Model
         'break_duration',
         'overtime',
         'date', 
+        'session_id',
     ];
 }

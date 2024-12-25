@@ -1,6 +1,13 @@
-
 @extends('layouts.master')
 @section('content')
+<style>
+    .leave-reason {
+        max-width: 200px; 
+        overflow: hidden; 
+        text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+        white-space: nowrap; 
+    }
+</style>
     {{-- message --}}
     {!! Toastr::message() !!}
     <!-- Page Wrapper -->
@@ -17,95 +24,69 @@
                             <li class="breadcrumb-item active">Leave Report</li>
                         </ul>
                     </div>
-                    <div class="col-auto">
-                        <a href="#" class="btn btn-primary">PDF</a>
-                    </div>
                 </div>
             </div>
             <!-- /Page Header -->
             
-            <!-- Search Filter -->
-            <div class="row filter-row mb-4">
-                <div class="col-sm-6 col-md-3">  
-                    <div class="form-group form-focus">
-                        <input class="form-control floating" type="text">
-                        <label class="focus-label">Employee</label>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-3">  
-                    <div class="form-group form-focus">
-                        <div class="cal-icon">
-                            <input class="form-control floating datetimepicker" type="text">
-                        </div>
-                        <label class="focus-label">From</label>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-3">  
-                    <div class="form-group form-focus">
-                        <div class="cal-icon">
-                            <input class="form-control floating datetimepicker" type="text">
-                        </div>
-                        <label class="focus-label">To</label>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-3">  
-                    <a href="#" class="btn btn-success btn-block"> Search </a>  
-                </div>     
-            </div>
-            <!-- /Search Filter -->
-            
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
-                        <table class="table table-striped custom-table mb-0 datatable">
+                        <table class="table table-striped custom-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Employee</th>
-                                    <th>Date</th>
-                                    <th>Department</th>
+                                    <th>Employee Name</th>
                                     <th>Leave Type</th>
-                                    <th>No.of Days</th>
-                                    <th>Remaining Leave</th>
-                                    <th>Total Leaves</th>
-                                    <th>Total Leave Taken</th>
-                                    <th>Leave Carry Forward</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>No of Days</th>
+                                    <th class="leave-reason">Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($leaves as $items)
+                                @if($leaves->isEmpty())
                                     <tr>
-                                        <td>
-                                            <h2 class="table-avatar">
-                                                <a href="profile.html" class="avatar"><img alt="{{ $items->avatar }}" src="{{ URL::to('/assets/images/'. $items->avatar) }}"></a>
-                                                <a href="profile.html">{{ $items->name }} <span>{{ $items->user_id }}</span></a>
-                                            </h2>
-                                        </td>
-                                        <td>{{ $items->join_date }}</td>
-                                        <td>{{ $items->department }}</td>
-                                        <td class="text-center">
-                                            @if ($items->leave_type == 'Loss of Pay')
-                                            <button class="btn btn-outline-info btn-sm">{{ $items->leave_type }}</button>
-                                            @elseif ($items->leave_type=='Medical Leave')
-                                            <button class="btn btn-outline-danger btn-sm">{{ $items->leave_type }}</button>
-                                            @else
-                                            <button class="btn btn-outline-success btn-sm">{{ $items->leave_type }}</button>
-                                            @endif
-                                        </td>
-                                        <td class="text-center"><span class="btn btn-danger btn-sm">{{$items->day}} Day</span></td>
-                                        <td class="text-center"><span class="btn btn-warning btn-sm"><b>08</b></span></td>
-                                        <td class="text-center"><span class="btn btn-success btn-sm"><b>20</b></span></td>
-                                        <td class="text-center">12</td>
-                                        <td class="text-center">08</td>
+                                        <td colspan="6" class="text-center">No leaves found.</td>
                                     </tr>
-                                @endforeach
+                                @else
+                                    @foreach ($leaves as $leave)
+                                        <tr>
+                                            <td>{{ $leave->name }}</td>
+                                            <td>{{ $leave->leave_type }}</td>
+                                            <td>{{ date('d F, Y', strtotime($leave->from_date)) }}</td>
+                                            <td>{{ date('d F, Y', strtotime($leave->to_date)) }}</td>
+                                            <td>{{ $leave->day }} Day(s)</td>
+                                            <td class="leave-reason" data-reason="{{ $leave->leave_reason }}" style="cursor: pointer;">{{ $leave->leave_reason }}</td>
+                                        </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- /Page Content -->
     </div>
-    <!-- /Page Wrapper -->
-
+    <script>
+        $(document).on('click', '.leave-reason', function() {
+            var reasonText = $(this).text(); // Get the leave reason text
+            $('#fullReasonText').text(reasonText); // Set it in the modal
+            $('#fullReasonModal').modal('show'); // Show the modal
+        });
+    </script>
+    <!-- Full Reason Modal -->
+    <div id="fullReasonModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Leave Reason</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="fullReasonText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

@@ -1,4 +1,3 @@
-
 @extends('layouts.master')
 @section('content')
    
@@ -35,7 +34,8 @@
                                 </div>
                             </div>
                             <div class="punch-btn-section">
-                                <button type="button" class="btn btn-primary punch-btn">Punch Out</button>
+                                <button type="button" class="btn btn-primary punch-btn" id="punchInBtn">Punch In</button>
+                                <button type="button" class="btn btn-danger punch-btn" id="punchOutBtn" style="display: none;">Punch Out</button>
                             </div>
                             <div class="statistics">
                                 <div class="row">
@@ -100,48 +100,26 @@
                         <div class="card-body">
                             <h5 class="card-title">Today Activity</h5>
                             <ul class="res-activity-list">
-                                <li>
-                                    <p class="mb-0">Punch In at</p>
-                                    <p class="res-activity-time">
-                                        <i class="fa fa-clock-o"></i>
-                                        10.00 AM.
-                                    </p>
-                                </li>
-                                <li>
-                                    <p class="mb-0">Punch Out at</p>
-                                    <p class="res-activity-time">
-                                        <i class="fa fa-clock-o"></i>
-                                        11.00 AM.
-                                    </p>
-                                </li>
-                                <li>
-                                    <p class="mb-0">Punch In at</p>
-                                    <p class="res-activity-time">
-                                        <i class="fa fa-clock-o"></i>
-                                        11.15 AM.
-                                    </p>
-                                </li>
-                                <li>
-                                    <p class="mb-0">Punch Out at</p>
-                                    <p class="res-activity-time">
-                                        <i class="fa fa-clock-o"></i>
-                                        1.30 PM.
-                                    </p>
-                                </li>
-                                <li>
-                                    <p class="mb-0">Punch In at</p>
-                                    <p class="res-activity-time">
-                                        <i class="fa fa-clock-o"></i>
-                                        2.00 PM.
-                                    </p>
-                                </li>
-                                <li>
-                                    <p class="mb-0">Punch Out at</p>
-                                    <p class="res-activity-time">
-                                        <i class="fa fa-clock-o"></i>
-                                        7.30 PM.
-                                    </p>
-                                </li>
+                                @foreach($attendances as $attendance)
+                                    @if($attendance->punch_in)
+                                        <li>
+                                            <p class="mb-0">Punch In at</p>
+                                            <p class="res-activity-time">
+                                                <i class="fa fa-clock-o"></i>
+                                                {{ \Carbon\Carbon::parse($attendance->punch_in)->format('h:i A') }}.
+                                            </p>
+                                        </li>
+                                    @endif
+                                    @if($attendance->punch_out)
+                                        <li>
+                                            <p class="mb-0">Punch Out at</p>
+                                            <p class="res-activity-time">
+                                                <i class="fa fa-clock-o"></i>
+                                                {{ \Carbon\Carbon::parse($attendance->punch_out)->format('h:i A') }}.
+                                            </p>
+                                        </li>
+                                    @endif
+                                @endforeach
                             </ul>
                         </div>
                     </div>
@@ -246,5 +224,71 @@
     </div>
     <!-- /Page Wrapper -->
     @section('script')
-    @endsection
+    <script>
+        const employeeId = {{ auth()->user()->id }}; // Get the authenticated user's ID
+
+        // Check if the user has already punched in today
+        fetch('{{ route("attendance.checkToday") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ employee_id: employeeId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.hasPunchedIn) {
+                document.getElementById('punchInBtn').style.display = 'none';
+                document.getElementById('punchOutBtn').style.display = 'block';
+            } else {
+                document.getElementById('punchInBtn').style.display = 'block';
+                document.getElementById('punchOutBtn').style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+
+        document.getElementById('punchInBtn').addEventListener('click', function() {
+            fetch('{{ route("attendance.punchIn") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    employee_id: employeeId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                // Update UI
+                document.getElementById('punchInBtn').style.display = 'none';
+                document.getElementById('punchOutBtn').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('punchOutBtn').addEventListener('click', function() {
+            fetch('{{ route("attendance.punchOut") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    employee_id: employeeId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                // Update UI
+                document.getElementById('punchOutBtn').style.display = 'none';
+                document.getElementById('punchInBtn').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+@endsection
 @endsection

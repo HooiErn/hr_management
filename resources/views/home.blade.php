@@ -4,8 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{{URL::asset('/images/logo-circle.png')}}">
+    <!--Css-->
     <link rel="stylesheet" href="{{ asset('assets/css/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/footer.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,500,700,800|Poppins:300,400,700">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}" id="main-styles-link">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -19,15 +25,54 @@
             z-index: 1000; /* Ensure it stays on top */
         }
         .hero {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            padding: 120px 0;
+            background-image: url('{{ asset('assets/images/background.png') }}');
+            background-size: cover;          /* Ensure the image covers the section */
+            padding: 130px 0;
+            font-weight: bold;
             text-align: center;
+            position: relative;              /* This ensures we can add an overlay if needed */
+            color: white;     
+            overflow: hidden;               
+
         }
+        /* Add a pseudo-element for the blur effect */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('{{ asset('assets/images/background.png') }}') no-repeat center center; 
+    background-size: cover;
+    filter: blur(2px); /* Apply the blur effect */
+    z-index: 1;  /* Make sure the blurred background is below the text */
+}
+
+/* Dark overlay to ensure readability */
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);  /* Dark semi-transparent overlay */
+    z-index: 2;  /* Place the overlay above the blurred background */
+}
+
         .hero h1 {
+            position: relative;
+            z-index: 3;
             font-size: 2.5rem;
+            margin-bottom: 20px;             
         }
+
         .hero p {
+            position: relative;
+            z-index: 3;
             font-size: 1.2rem;
+            margin-bottom: 30px;             
         }
         .company-values {
             background: rgba(255, 255, 255, 0.9);
@@ -53,6 +98,8 @@
             color: black;
         }
         .apply-job-btn {
+            position: relative;
+            z-index: 3;
             color: white;
             background-color: black;
         }
@@ -72,7 +119,7 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="{{ route('homepage') }}">HRTech Inc.</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

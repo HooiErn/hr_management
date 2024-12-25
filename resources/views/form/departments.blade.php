@@ -1,4 +1,3 @@
-
 @extends('layouts.master')
 @section('content')
    
@@ -40,7 +39,11 @@
                                 <tr>
                                     <td>{{ ++$key }}</td>
                                     <td hidden class="id">{{ $items->id }}</td>
-                                    <td class="department">{{ $items->department }}</td>
+                                    <td>
+                                        <a href="{{ route('employees/byDepartment', $items->department) }}">
+                                            {{ $items->department }}
+                                        </a>
+                                    </td>
                                     <td class="text-right">
                                     <div class="dropdown dropdown-action">
                                             <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>

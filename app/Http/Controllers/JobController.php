@@ -7,8 +7,7 @@ use DB;
 use App\Models\AddJob;
 use App\Models\ApplyForJob;
 use App\Models\Candidate;
-use App\Models\Category;
-use App\Models\Question;
+use App\Models\Company;
 use Carbon\Carbon;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Models\Interviewer;
@@ -62,9 +61,17 @@ class JobController extends Controller
 
         // Get all jobs for the dropdown
         $jobs = DB::table('add_jobs')->get();
+        $job_view = DB::table('add_jobs')->where('id',$id)->first();
+
+         // Get the current date and time
+        $now = Carbon::now();
+         // Parse the expired date
+        $expired_date = Carbon::parse($job_view->expired_date);
+    
+        // Calculate the difference
+        $diff = $now->diffForHumans($expired_date, true); // true for a shorter format
         
-        $job_view = DB::table('add_jobs')->where('id',$id)->get();
-        return view('job.jobview', compact('job_view', 'jobs'));
+        return view('job.jobview', compact('job_view', 'jobs','diff','now','expired_date'));
     }
 
     /** users dashboard index */
@@ -127,7 +134,10 @@ class JobController extends Controller
         $department = DB::table('departments')->get();
         $type_job   = DB::table('type_jobs')->get();
         $job_list   = DB::table('add_jobs')->get();
-        return view('job.jobs',compact('department','type_job','job_list','jobs'));
+        
+        $company = Company::first();  
+
+        return view('job.jobs',compact('department','type_job','job_list','jobs', 'company'));
     }
 
     /** job save record */
@@ -254,53 +264,87 @@ class JobController extends Controller
             // Generate a unique candidate ID
             $candidate_id = $this->generateUniqueCandidateId(); // Call the method
 
-            // Save candidate data
-            $candidate = new Candidate;
-            $candidate->candidate_id = $candidate_id;
-            $candidate->ic_number = $request->ic_number;
-            $candidate->name = $request->name;
-            $candidate->age = $request->age; 
-            $candidate->race = $request->race; 
-            $candidate->gender = $request->gender; 
-            $candidate->phone_number = $request->phone_number; 
-            $candidate->email = $request->email;
-            $candidate->birth_date = $request->birth_date; 
-            $candidate->job_title = $request->job_title;
-            $candidate->highest_education = $request->highest_education; 
-            $candidate->work_experiences = $request->work_experiences;
-            $candidate->role_name = $request->role_name; 
-            $candidate->message   = $request->message;
-            $candidate->interview_datetime = $request->interview_datetime; 
-            $candidate->cv_upload = $cv_uploads;
-            $candidate->save();
-            
-            // Save job application data
-            $apply_job = new ApplyForJob;
-            $apply_job->job_title          = $request->job_title;
-            $apply_job->name               = $request->name;
-            $apply_job->ic_number          = $request->ic_number;
-            $apply_job->age                = $request->age; 
-            $apply_job->race               = $request->race; 
-            $apply_job->gender             = $request->gender; 
-            $apply_job->birth_date         = $request->birth_date; 
-            $apply_job->phone_number       = $request->phone_number;
-            $apply_job->email              = $request->email;
-            $apply_job->highest_education  = $request->highest_education;
-            $apply_job->work_experiences   = $request->work_experiences; 
-            $apply_job->message            = $request->message;
-            $apply_job->cv_upload          = $cv_uploads;
-            $apply_job->interview_datetime = $request->interview_datetime;
-            $apply_job->save();
+            // Check if the job requirements are met
+            $job = AddJob::where('job_title', $request->job_title)->first();
+            if ($job) {
+                // Check if candidate meets the requirements
+                if ($request->work_experiences >= $job->experience && $request->age >= $job->age) {
+                    // Save candidate data directly to the interviewers table
+                    $interviewer = new Interviewer;
+                    $interviewer->candidate_id = $candidate_id;
+                    $interviewer->ic_number = $request->ic_number;
+                    $interviewer->name = $request->name;
+                    $interviewer->age = $request->age; 
+                    $interviewer->race = $request->race; 
+                    $interviewer->gender = $request->gender; 
+                    $interviewer->phone_number = $request->phone_number; 
+                    $interviewer->email = $request->email;
+                    $interviewer->birth_date = $request->birth_date; 
+                    $interviewer->job_title = $request->job_title;
+                    $interviewer->highest_education = $request->highest_education; 
+                    $interviewer->work_experiences = $request->work_experiences;
+                    $interviewer->message   = $request->message;
+                    $interviewer->interview_datetime = $request->interview_datetime; 
+                    $interviewer->cv_upload = $cv_uploads;
+                    $interviewer->status = 'Approved'; // Set status as needed
+                    $interviewer->save();
 
-            DB::commit();
-            Toastr::success('Apply job successfully :)','Success');
-            return redirect()->back();
-            
-        } catch(\Exception $e) {
-            DB::rollback();
-            Toastr::error('Apply Job fail :)','Error');
-            return redirect()->back();
-        } 
+                    DB::commit();
+
+                    Toastr::success('Apply job successfully', 'Success');
+                    Toastr::success('Candidate has been successfully sent to the interviewer.', 'Success');
+
+                    return redirect()->back();
+                }
+            }
+
+                    // If not meeting the requirements, save to candidates table
+                    $candidate = new Candidate;
+                    $candidate->candidate_id = $candidate_id;
+                    $candidate->ic_number = $request->ic_number;
+                    $candidate->name = $request->name;
+                    $candidate->age = $request->age; 
+                    $candidate->race = $request->race; 
+                    $candidate->gender = $request->gender; 
+                    $candidate->phone_number = $request->phone_number; 
+                    $candidate->email = $request->email;
+                    $candidate->birth_date = $request->birth_date; 
+                    $candidate->job_title = $request->job_title;
+                    $candidate->highest_education = $request->highest_education; 
+                    $candidate->work_experiences = $request->work_experiences;
+                    $candidate->role_name = 'Candidate'; // Default role
+                    $candidate->message = $request->message;
+                    $candidate->interview_datetime = $request->interview_datetime; 
+                    $candidate->cv_upload = $cv_uploads;
+                    $candidate->save();
+                    
+                    // Save job application data
+                    $apply_job = new ApplyForJob;
+                    $apply_job->job_title          = $request->job_title;
+                    $apply_job->name               = $request->name;
+                    $apply_job->ic_number          = $request->ic_number;
+                    $apply_job->age                = $request->age; 
+                    $apply_job->race               = $request->race; 
+                    $apply_job->gender             = $request->gender; 
+                    $apply_job->birth_date         = $request->birth_date; 
+                    $apply_job->phone_number       = $request->phone_number;
+                    $apply_job->email              = $request->email;
+                    $apply_job->highest_education  = $request->highest_education;
+                    $apply_job->work_experiences   = $request->work_experiences; 
+                    $apply_job->message            = $request->message;
+                    $apply_job->cv_upload          = $cv_uploads;
+                    $apply_job->interview_datetime = $request->interview_datetime;
+                    $apply_job->save();
+
+                    DB::commit();
+                    Toastr::success('Apply job successfully :)','Success');
+                    return redirect()->back();
+                    
+                } catch(\Exception $e) {
+                    DB::rollback();
+                    Toastr::error('Apply Job fail :)','Error');
+                    return redirect()->back();
+                } 
     }
 
     /** applyJobUpdateRecord */
@@ -387,8 +431,9 @@ class JobController extends Controller
     {
         $candidates = DB::table('candidates')->get();
         $jobs = DB::table('add_jobs')->get();
+        $jobTitles = Interviewer::distinct()->pluck('job_title');
         
-        return view('job.candidates', compact('candidates', 'jobs'));
+        return view('job.candidates', compact('candidates', 'jobs','jobTitles'));
     }
 
     /*Search Candidates*/

@@ -5,6 +5,8 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 	<title>Dashboard - HRTech</title>
+	<!-- Favicon -->
+	<link rel="shortcut icon" type="image/x-icon" href="{{URL::asset('/images/logo-circle.png')}}">
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/bootstrap.min.css') }}">
 	<!-- Include Bootstrap 4 or 5 and DateTimePicker dependencies -->
@@ -12,6 +14,8 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/tempus-dominus/5.39.0/js/tempus-dominus.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+
 	<!-- Fontawesome CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/font-awesome.min.css') }}">
 	<!-- Lineawesome CSS -->
@@ -128,7 +132,7 @@
 			<li class="nav-item dropdown">
 				<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
 					<i class="fa fa-bell-o"></i>
-					<span class="badge badge-pill">3</span> 
+					<span class="badge badge-pill"></span> 
 				</a>
 				<div class="dropdown-menu notifications">
 					<div class="topnav-dropdown-header">
@@ -146,7 +150,7 @@
 			<!-- Messages -->
 			<li class="nav-item dropdown">
 				<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-					<i class="fa fa-comment-o"></i> <span class="badge badge-pill">8</span>
+					<i class="fa fa-comment-o"></i> <span class="badge badge-pill"></span>
 				</a>
 				<div class="dropdown-menu notifications">
 					<div class="topnav-dropdown-header">

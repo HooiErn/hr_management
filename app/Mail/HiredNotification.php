@@ -5,7 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Barryvdh\DomPDF\Facade as PDF;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class HiredNotification extends Mailable
 {
@@ -24,7 +24,7 @@ class HiredNotification extends Mailable
      // Generate the contract PDF
      $contractData = [
          'name' => $this->interviewer->name,
-         'position' => $this->interviewer->position,  // Add this property as needed
+         'position' => $this->interviewer->position,  
          'start_date' => now()->addWeek()->toFormattedDateString(),
          'salary' => $this->interviewer->salary,  // Add this property as needed
      ];

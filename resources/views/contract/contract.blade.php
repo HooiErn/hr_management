@@ -15,7 +15,19 @@
         <li><strong>Salary:</strong> ${{ $salary }}</li>
         <!-- Add other contract details here -->
     </ul>
-    <p>By signing below, you confirm that you agree to the terms of the contract:</p>
+
+    <h2>Employee Benefits</h2>
+    <ul>
+        <li><strong>Health Insurance:</strong> {{ $health_insurance }}</li>
+        <li><strong>Bonus:</strong> {{ $bonus }}</li>
+        <li><strong>Paid Time Off:</strong> {{ $paid_time_off }} days per year</li>
+        <li><strong>Retirement Fund:</strong> {{ $retirement_fund }}</li>
+        <li><strong>Other Benefits:</strong> {{ $other_benefits }}</li>
+    </ul>
+
+    <h2>Declaration of Understanding</h2>
+    <p>By signing below, you confirm that you have read and understood the terms and conditions of your employment contract, including the salary, benefits, and other terms mentioned above. You also acknowledge that you agree to abide by the company's rules and policies.</p>
+    
     <p>_______________________</p>
     <p>Signed, {{ config('app.name') }} Team</p>
 </body>

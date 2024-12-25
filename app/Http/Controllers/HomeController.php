@@ -9,6 +9,7 @@ use PDF;
 use App\Models\User;
 use App\Models\ApplyForJob; 
 use App\Models\Company;
+use App\Models\Employee;
 
 class HomeController extends Controller
 {
@@ -30,7 +31,8 @@ class HomeController extends Controller
     // main dashboard
     public function index()
     {
-        return view('dashboard.dashboard');
+        $employeeCount = Employee::count();
+        return view('dashboard.dashboard', compact('employeeCount'));
     }
 
     public function showHomepage()
