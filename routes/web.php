@@ -253,11 +253,12 @@ Route::controller(LeavesController::class)->group(function () {
     Route::post('form/leaves/save', 'saveRecord')->middleware('auth')->name('form/leaves/save');
     Route::post('form/leaves/edit', 'editRecordLeave')->middleware('auth')->name('form/leaves/edit');
     Route::post('form/leaves/edit/delete','deleteLeave')->middleware('auth')->name('form/leaves/edit/delete');    
-    
+    Route::get('/getRemainingLeaveDays/{userId}','getRemainingLeaveDays')->middleware('auth');
+
     Route::get('/leaves/report', 'leaveReport')->middleware('auth')->name('leaves.report');
 
     //search employee id
-    Route::post('leaves/employees/search', [LeavesController::class, 'searchEmployee'])->middleware('auth')->name('leaves.employees.search');
+    Route::get('leaves/employees/search',  'searchEmployee')->middleware('auth')->name('leaves.employees.search');
 });
 
 // ----------------------------- form attendance  ------------------------------//

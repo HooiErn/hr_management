@@ -25,18 +25,17 @@
                         </a>
                         <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }}">
                             <li><a class="{{set_active(['search/user/list','userManagement'])}}" href="{{ route('userManagement') }}">All User</a></li>
-                            <li><a class="{{set_active(['activity/log'])}}" href="{{ route('activity/log') }}">Activity Log</a></li>
                             <li><a class="{{set_active(['activity/login/logout'])}}" href="{{ route('activity/login/logout') }}">Activity User</a></li>
                         </ul>
                     </li>
                 @endif
                 <li class="menu-title"> <span>Employees</span> </li>
                 <li class="{{set_active(['all/employee/list','all/employee/list','all/employee/card','/pastEmployee','form/calender/new','form/leaves/new'
-                    ,'form/leavesemployee/new','attendance/page','form/departments/page',
-                    'form/timesheet/page','form/shiftscheduling/page','form/overtime/page'])}} submenu">
-                    <a href="#" class="{{ set_active(['all/employee/list','all/employee/card','form/calender/new','form/leaves/new',
-                    'form/leavesemployee/new','attendance/page','attendance/employee/page','form/departments/page',
-                    'form/timesheet/page','form/shiftscheduling/page','form/overtime/page']) ? 'noti-dot' : '' }}">
+                    ,'attendance/page','form/departments/page',
+                    'form/timesheet/page'])}} submenu">
+                    <a href="#" class="{{ set_active(['all/employee/list','all/employee/card','/pastEmployee','form/calender/new','form/leaves/new',
+                    'attendance/page','attendance/employee/page','form/departments/page',
+                    'form/timesheet/page',]) ? 'noti-dot' : '' }}">
                         <i class="la la-user"></i> <span> Employees</span> <span class="menu-arrow"></span>
                     </a>
                     <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }}">
@@ -44,13 +43,10 @@
                         <li><a class="{{set_active(['/pastEmployee','/pastEmployee'])}}" href="{{ route('employee/past') }}">Past Employees</a></li>
                         <li><a class="{{set_active(['form/calender/new'])}}" href="{{ route('form/calender/new') }}">Calender</a></li>
                         <li><a class="{{set_active(['form/leaves/new'])}}" href="{{ route('form/leaves/new') }}">Leaves (Admin) </a></li>
-                        <li><a class="{{set_active(['form/leavesemployee/new'])}}" href="{{ route('form/leavesemployee/new') }}">Leaves (Employee)</a> </li>
                         <li><a class="{{set_active(['attendance/page'])}}" href="{{ route('attendance/page') }}">Attendance (Admin)</a></li>
                         <li><a class="{{set_active(['attendance/employee/page'])}}" href="{{ route('attendance/employee/page') }}">Attendance (Employee)</a></li>
                         <li><a class="{{set_active(['form/departments/page'])}}" href="{{ route('form/departments/page') }}">Departments</a></li>
                         <li><a class="{{set_active(['form/timesheet/page'])}}" href="{{ route('form/timesheet/page') }}">Timesheet</a></li>
-                        <li><a class="{{set_active(['form/shiftscheduling/page'])}}" href="{{ route('form/shiftscheduling/page') }}">Shift & Schedule</a></li>
-                        <li><a class="{{set_active(['form/overtime/page'])}}" href="{{ route('form/overtime/page') }}">Overtime</a></li>
                     </ul>
                 </li>
                 <li class="menu-title"> <span>Administration</span> </li>
@@ -71,12 +67,12 @@
                 </li>
                 <li class="menu-title"> <span>HR</span> </li>
                
-                <li class="{{set_active(['form/expense/reports/page','form/invoice/reports/page','form/leave/reports/page','form/daily/reports/page'])}} submenu">
-                    <a href="#" class="{{ set_active(['form/expense/reports/page','form/invoice/reports/page','form/leave/reports/page','form/daily/reports/page']) ? 'noti-dot' : '' }}"><i class="la la-pie-chart"></i>
+                <li class="{{set_active(['form/leave/reports/page'])}} submenu">
+                    <a href="#" class="{{ set_active(['form/leave/reports/page']) ? 'noti-dot' : '' }}"><i class="la la-pie-chart"></i>
                     <span> Reports </span> <span class="menu-arrow"></span></a>
                     <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }}">
                         <li><a class="{{set_active(['form/leave/reports/page'])}}" href="{{ route('form/leave/reports/page') }}"> Leave Report </a></li>
-                        <li><a class="{{set_active(['form/daily/reports/page'])}}" href="{{ route('form/daily/reports/page') }}"> Daily Report </a></li>
+                      
                     </ul>
                 </li>
                

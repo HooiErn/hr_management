@@ -49,7 +49,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('form/holidays/save') }}" method="POST">
+                        <form action="" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label>Holiday Name <span class="text-danger">*</span></label>
@@ -82,7 +82,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('form/holidays/update') }}" method="POST">
+                        <form action="" method="POST">
                             @csrf
                             <input type="hidden" name="id" id="e_id" value="">
                             <div class="form-group">
@@ -146,7 +146,7 @@
                 },
                 events: [
                     // Holidays
-                    @foreach($holiday as $item)
+                    @foreach($events as $item)
                     {
                         title: '🎉 ' + '{{ $item->name_holiday }}',
                         start: '{{ $item->date_holiday }}',

@@ -15,5 +15,7 @@ class LeavesAdmin extends Model
         'to_date',
         'day',
         'leave_reason',
+        'leave_status',
+        'remaining_days'
     ];
 }

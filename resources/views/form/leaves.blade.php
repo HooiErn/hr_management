@@ -1,5 +1,10 @@
 @extends('layouts.master')
 @section('content')
+<!-- Include Select2 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<!-- Include Select2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
     <!-- Page Wrapper -->
     <div class="page-wrapper">
         <!-- Page Content -->
@@ -101,7 +106,6 @@
             <!-- /Search Filter -->
 
 			<!-- /Page Header -->
-            {{-- message --}}
             {!! Toastr::message() !!}
             <div class="row">
                 <div class="col-md-12">
@@ -121,46 +125,31 @@
                             </thead>
 
                             <tbody>
-                                @if(!empty($leaves))
-                                    @foreach ($leaves as $items )  
+                                @if($leaves->isEmpty())
+                                    <tr>
+                                        <td colspan="8" class="text-center">No leaves found.</td>
+                                    </tr>
+                                @else
+                                    @foreach ($leaves as $leave)
                                         <tr>
                                             <td>
                                                 <h2 class="table-avatar">
-                                                    <a href="{{ url('employee/profile/'.$items->user_id) }}" class="avatar"><img alt="" src="{{ URL::to('/assets/images/'. $items->avatar) }}" alt="{{ $items->name }}"></a>
-                                                    <a href="#">{{ $items->name }}<span>{{ $items->position }}</span></a>
+                                                    <a href="#">{{ $leave->employee_name ?? 'No Name' }}<span>{{ $leave->position ?? 'No Position' }}</span></a>
                                                 </h2>
                                             </td>
-                                            <td hidden class="id">{{ $items->id }}</td>
-                                            <td class="leave_type">{{$items->leave_type}}</td>
-                                            <td hidden class="from_date">{{ $items->from_date }}</td>
-                                            <td>{{date('d F, Y',strtotime($items->from_date)) }}</td>
-                                            <td hidden class="to_date">{{$items->to_date}}</td>
-                                            <td>{{date('d F, Y',strtotime($items->to_date)) }}</td>
-                                            <td class="day">{{$items->day}} Day</td>
-                                            <td class="leave_reason" data-reason="{{ $items->leave_reason }}" style="cursor: pointer;">
-                                                {{ Str::limit($items->leave_reason, 30, '...') }}
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="dropdown action-label">
-                                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
-                                                        <i class="fa fa-dot-circle-o text-purple"></i> New
-                                                    </a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-purple"></i> New</a>
-                                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-info"></i> Pending</a>
-                                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#approve_leave"><i class="fa fa-dot-circle-o text-success"></i> Approved</a>
-                                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-danger"></i> Declined</a>
-                                                    </div>
-                                                </div>
-                                            </td>
+                                            <td>{{ $leave->leave_type ?? 'No Leave Type' }}</td>
+                                            <td>{{ date('d F, Y', strtotime($leave->from_date)) ?? 'No From Date' }}</td>
+                                            <td>{{ date('d F, Y', strtotime($leave->to_date)) ?? 'No To Date' }}</td>
+                                            <td>{{ $leave->day }} Day(s)</td>
+                                            <td>{{ $leave->leave_reason ?? 'No Reason' }}</td>
+                                            <td class="text-center">{{ $leave->leave_status ?? 'No Status' }}</td>
                                             <td class="text-right">
-                                                <div class="dropdown dropdown-action">
-                                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item leaveUpdate" data-toggle="modal" data-id="'.$items->id.'" data-target="#edit_leave"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                                        <a class="dropdown-item leaveDelete" href="#" data-toggle="modal" data-target="#delete_approve"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                                    </div>
-                                                </div>
+                                                <button class="btn btn-warning leaveEdit" data-id="{{ $leave->id }}" data-leave-type="{{ $leave->leave_type }}" data-from-date="{{ $leave->from_date }}" data-to-date="{{ $leave->to_date }}" data-reason="{{ $leave->leave_reason }}">Edit</button>
+                                                <form action="{{ route('form/leaves/edit/delete', $leave->id) }}" method="POST" style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this leave?');">Delete</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -188,7 +177,7 @@
                             @csrf
                             <div class="form-group">
                                 <label>Employee ID <span class="text-danger">*</span></label>
-                                <select class="select" id="employeeSelect" name="user_id" required>
+                                <select class="select2" id="employeeSelect" name="user_id" required>
                                     <option value="">Select Employee</option>
                                     <!-- Options will be populated via AJAX -->
                                 </select>
@@ -203,26 +192,33 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>From <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text" id="fromDate" name="from_date" required>
-                                </div>
+                                <label for="from_date">From Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="from_date" name="from_date" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="to_date">To Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="to_date" name="to_date" required>
                             </div>
                             <div class="form-group">
-                                <label>To <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text" id="toDate" name="to_date" required>
-                                </div>
+                                <input class="form-control" readonly type="hidden" id="numberOfDays" name="number_of_days">
                             </div>
                             <div class="form-group">
-                                <label>Number of days <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly type="text" id="numberOfDays" name="number_of_days">
+                            <label for="leave_reason">Leave Reason <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="leave_reason" name="leave_reason" required></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Leave Reason <span class="text-danger">*</span></label>
-                                <textarea rows="4" class="form-control" id="leaveReason" name="leave_reason" required></textarea>
+                                <label>Leave Status <span class="text-danger">*</span></label>
+                                <select class="select" name="leave_status" required>
+                                    <option value="">Select Leave Status</option>
+                                    <option value="paid">Paid Leave</option>
+                                    <option value="unpaid">Unpaid Leave</option>
+                                </select>
                             </div>
-                            <div class="submit-section">
+                            <div class="form-group">
+                                <input type="hidden" class="form-control" id="remaining_days" name="remaining_days" value="0" readonly>
+                            </div>
+                                <div class="submit-section">
                                 <button type="submit" class="btn btn-primary submit-btn">Submit</button>
                             </div>
                         </form>
@@ -243,41 +239,31 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ route('form/leaves/edit') }}" method="POST">
+                        <form id="editLeaveForm" action="{{ route('form/leaves/edit') }}" method="POST">
                             @csrf
-                            <input type="hidden" id="e_id" name="id" value="">
+                            <input type="hidden" name="id" id="edit_leave_id">
+                            
                             <div class="form-group">
-                                <label>Leave Type <span class="text-danger">*</span></label>
-                                <select class="select" id="e_leave_type" name="leave_type">
-                                    <option selected disabled>Select Leave Type</option>
-                                    <option value="Casual Leave 12 Days">Casual Leave 12 Days</option>
-                                    <option value="Medical Leave">Medical Leave</option>
-                                    <option value="Loss of Pay">Loss of Pay</option>
-                                </select>
+                                <label>Leave Type</label>
+                                <input type="text" class="form-control" name="leave_type" id="edit_leave_type" required>
                             </div>
+                            
                             <div class="form-group">
-                                <label>From <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input type="text" class="form-control datetimepicker" id="e_from_date" name="from_date" value="">
-                                </div>
+                                <label>From Date</label>
+                                <input type="date" class="form-control" name="from_date" id="edit_from_date" required>
                             </div>
+                            
                             <div class="form-group">
-                                <label>To <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input type="text" class="form-control datetimepicker" id="e_to_date" name="to_date" value="">
-                                </div>
+                                <label>To Date</label>
+                                <input type="date" class="form-control" name="to_date" id="edit_to_date" required>
                             </div>
+                            
                             <div class="form-group">
-                                <label>Number of days <span class="text-danger">*</span></label>
-                                <input class="form-control" readonly type="text" id="e_number_of_days" name="number_of_days" value="">
+                                <label>Leave Reason</label>
+                                <textarea class="form-control" name="leave_reason" id="edit_leave_reason" required></textarea>
                             </div>
-                            <div class="form-group">
-                                <label>Leave Reason <span class="text-danger">*</span></label>
-                                <textarea rows="4" class="form-control" id="e_leave_reason" name="leave_reason" value=""></textarea>
-                            </div>
-                            <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Save</button>
-                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Update Leave</button>
                         </form>
                     </div>
                 </div>
@@ -359,6 +345,13 @@
     <!-- /Page Wrapper -->
     @section('script')
     <script>
+    $(document).on('click', '.leave_reason', function() {
+        var reasonText = $(this).data('reason'); // Get the leave reason from data attribute
+        $('#fullReasonText').text(reasonText); // Set it in the modal
+        $('#fullReasonModal').modal('show'); // Show the modal
+    });
+</script>
+    <script>
         document.getElementById("year").innerHTML = new Date().getFullYear();
     </script>
     {{-- update js --}}
@@ -385,62 +378,73 @@
             $('.e_id').val(_this.find('.id').text());
         });
     </script>
-    {{-- full reason modal --}}
     <script>
-        $(document).on('click', '.leave_reason', function() {
-            var reasonText = $(this).data('reason'); // Get the leave reason from data attribute
-            $('#fullReasonText').text(reasonText); // Set it in the modal
-            $('#fullReasonModal').modal('show'); // Show the modal
-        });
-    </script>
-    <script>
-        $(document).ready(function() {
-            // Function to fetch employees for the select input
-            $('#employeeSelect').select2({
-                ajax: {
-                    url: '/leaves/employees/search', 
-                    dataType: 'json',
-                    delay: 250,
-                    processResults: function(data) {
+    $(document).ready(function() {
+    // Initialize Select2 with autocomplete functionality
+    $('#employeeSelect').select2({
+        ajax: {
+            url: "{{ route('leaves.employees.search') }}", // Route to fetch employee data
+            dataType: 'json',
+            delay: 250, // Wait for user to stop typing before sending request
+            data: function(params) {
+                return {
+                    q: params.term // Send the search term as a parameter
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.map(function(employee) {
                         return {
-                            results: $.map(data, function(item) {
-                                return {
-                                    id: item.employee_id, // Use employee_id as the unique identifier
-                                    text: item.name // Display name
-                                };
-                            })
+                            id: employee.employee_id,
+                            text: employee.name + ' (' + employee.employee_id + ')'
                         };
-                    },
-                    cache: true
-                },
-                minimumInputLength: 1 // Minimum characters to start searching
-            });
+                    })
+                };
+            },
+            cache: true
+        },
+        placeholder: 'Search for an Employee...',
+        minimumInputLength: 1 // Minimum number of characters to trigger the search
+    });
+});
+</script>
+<!-- get remaining leave days -->
+<script>
+    document.getElementById('user_id').addEventListener('change', function() {
+        const userId = this.value;
 
-            // Function to calculate the number of days
-            function calculateDays() {
-                var fromDate = $('#fromDate').val();
-                var toDate = $('#toDate').val();
+        // Make an AJAX call to get the remaining leave days for the selected employee
+        if (userId) {
+            fetch(`/getRemainingLeaveDays/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('remaining_days').value = data.remaining_days;
+                });
+        } else {
+            document.getElementById('remaining_days').value = 0;
+        }
+    });
+</script>
 
-                if (fromDate && toDate) {
-                    var startDate = new Date(fromDate);
-                    var endDate = new Date(toDate);
-                    var timeDiff = endDate - startDate; // Difference in milliseconds
-                    var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // Convert to days and include start date
+<script>
+$(document).on('click', '.leaveEdit', function() {
+    var leaveId = $(this).data('id');
+    var leaveType = $(this).data('leave-type');
+    var fromDate = $(this).data('from-date');
+    var toDate = $(this).data('to-date');
+    var reason = $(this).data('reason');
 
-                    if (daysDiff < 0) {
-                        daysDiff = 0; // Ensure no negative days
-                    }
+    // Populate the modal fields
+    $('#edit_leave_id').val(leaveId);
+    $('#edit_leave_type').val(leaveType);
+    $('#edit_from_date').val(fromDate);
+    $('#edit_to_date').val(toDate);
+    $('#edit_leave_reason').val(reason);
 
-                    $('#numberOfDays').val(daysDiff); // Update the number of days input
-                } else {
-                    $('#numberOfDays').val(''); // Clear if dates are not set
-                }
-            }
+    // Show the modal
+    $('#edit_leave').modal('show');
+});
+</script>
 
-            // Event listeners for date changes
-            $('#fromDate').on('change', calculateDays);
-            $('#toDate').on('change', calculateDays);
-        });
-    </script>
     @endsection
 @endsection

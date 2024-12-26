@@ -21,13 +21,13 @@
                         <table class="table table-striped custom-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Employee ID</th>
                                     <th>Name</th>
                                     <th>Role</th>
                                     <th>Email</th>
                                     <th>Phone Number</th>
                                     <th>Status</th>
-                                    <th>Join Date</th>
+                                    <th>Resignation Date</th>
+                                    <th>Resignation Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -38,13 +38,13 @@
                                 @else
                                     @foreach ($pastEmployees as $employee)
                                         <tr>
-                                            <td>{{ $employee->employee_id }}</td>
                                             <td>{{ $employee->name }}</td>
                                             <td>{{ $employee->role_name }}</td>
                                             <td>{{ $employee->email }}</td>
                                             <td>{{ $employee->phone_number }}</td>
                                             <td>{{ $employee->status }}</td>
-                                            <td>{{ $employee->created_at }}</td>
+                                            <td>{{$employee->resignation_date}}</td>
+                                            <td>{{$employee->resignation_reason}}</td>
                                         </tr>
                                     @endforeach
                                 @endif
