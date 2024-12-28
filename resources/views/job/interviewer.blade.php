@@ -762,7 +762,6 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr, status, error) {
-                // More detailed error logging
                 console.error('Error Status:', status);
                 console.error('Error:', error);
                 console.error('Response:', xhr.responseText); // This will show the actual error message
@@ -800,31 +799,6 @@ $(document).ready(function() {
             $('#interview_datetime').val('');
         }
     });
-
-    // Enable/disable WhatsApp notification button based on form selection
-    $('#interview_type, #interview_datetime').on('change', function() {
-        const interviewType = $('#interview_type').val();
-        const interviewDateTime = $('#interview_datetime').val();
-        
-        // Enable/disable WhatsApp button based on selections
-        if (interviewType && interviewDateTime) {
-            $('#sendWhatsApp').prop('disabled', false);
-        } else {
-            $('#sendWhatsApp').prop('disabled', true);
-        }
-    });
-
-    // Handle WhatsApp notification button click
-    $('#sendWhatsApp').on('click', function() {
-        var phoneNumber = $('#candidate_phone').val().replace(/[^0-9]/g, '');
-        var interviewDateTime = $('#interview_datetime').val();
-        var interviewType = $('#interview_type').val();
-        
-        // Validate required data
-        if (!phoneNumber || !interviewDateTime || !interviewType) {
-            toastr.error('Please ensure interview type and date/time are selected');
-            return;
-        }
 
         // Fetch company information using Ajax
         $.ajax({
