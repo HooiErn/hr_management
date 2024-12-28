@@ -23,14 +23,14 @@
                 <div class="col-md-4">
                     <div class="card punch-status">
                         <div class="card-body">
-                            <h5 class="card-title">Timesheet <small class="text-muted">11 Mar 2019</small></h5>
+                            <h5 class="card-title">Timesheet <small class="text-muted">{{ Carbon\Carbon::today()->format('d M Y') }}</small></h5>
                             <div class="punch-det">
                                 <h6>Punch In at</h6>
-                                <p>Wed, 11th Mar 2019 10.00 AM</p>
+                                <p>{{ $attendances->isNotEmpty() && $attendances->first()->punch_in ? \Carbon\Carbon::parse($attendances->first()->punch_in)->format('D, d M Y h:i A') : 'N/A' }}</p>
                             </div>
                             <div class="punch-info">
                                 <div class="punch-hours">
-                                    <span>3.45 hrs</span>
+                                    <span>{{ $attendances->isNotEmpty() ? $attendances->first()->overtime . ' hrs' : '0 hrs' }}</span>
                                 </div>
                             </div>
                             <div class="punch-btn-section">
@@ -42,13 +42,13 @@
                                     <div class="col-md-6 col-6 text-center">
                                         <div class="stats-box">
                                             <p>Break</p>
-                                            <h6>1.21 hrs</h6>
+                                            <h6>{{ $attendances->isNotEmpty() ? $attendances->first()->break_duration . ' hrs' : '0 hrs' }}</h6>
                                         </div>
                                     </div>
                                     <div class="col-md-6 col-6 text-center">
                                         <div class="stats-box">
                                             <p>Overtime</p>
-                                            <h6>3 hrs</h6>
+                                            <h6>{{ $attendances->isNotEmpty() ? $attendances->first()->overtime . ' hrs' : '0 hrs' }}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -62,9 +62,9 @@
                             <h5 class="card-title">Statistics</h5>
                             <div class="stats-list">
                                 <div class="stats-info">
-                                    <p>Today <strong>3.45 <small>/ 8 hrs</small></strong></p>
+                                    <p>Today <strong>{{ $attendances->isNotEmpty() ? $attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) . ' <small>/ 8 hrs</small>' : '0 <small>/ 8 hrs</small>' }}</strong></p>
                                     <div class="progress">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 31%" aria-valuenow="31" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $attendances->isNotEmpty() ? ($attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) / 8) * 100 : 0 }}%" aria-valuenow="{{ $attendances->isNotEmpty() ? ($attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) / 8) * 100 : 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                 </div>
                                 <div class="stats-info">
@@ -182,7 +182,7 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Date </th>
+                                    <th>Date</th>
                                     <th>Punch In</th>
                                     <th>Punch Out</th>
                                     <th>Production</th>
@@ -191,24 +191,17 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @foreach($attendances as $index => $attendance)
                                 <tr>
-                                    <td>1</td>
-                                    <td>19 Feb 2019</td>
-                                    <td>10 AM</td>
-                                    <td>7 PM</td>
-                                    <td>9 hrs</td>
-                                    <td>1 hrs</td>
-                                    <td>0</td>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($attendance->date)->format('d M Y') }}</td>
+                                    <td>{{ $attendance->punch_in ? \Carbon\Carbon::parse($attendance->punch_in)->format('h:i A') : 'N/A' }}</td>
+                                    <td>{{ $attendance->punch_out ? \Carbon\Carbon::parse($attendance->punch_out)->format('h:i A') : 'N/A' }}</td>
+                                    <td>{{ $attendance->punch_in && $attendance->punch_out ? $attendance->punch_in->diffInHours($attendance->punch_out) . ' hrs' : '0 hrs' }}</td>
+                                    <td>{{ $attendance->break_duration }} hrs</td>
+                                    <td>{{ $attendance->overtime }} hrs</td>
                                 </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>20 Feb 2019</td>
-                                    <td>10 AM</td>
-                                    <td>7 PM</td>
-                                    <td>9 hrs</td>
-                                    <td>1 hrs</td>
-                                    <td>0</td>
-                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -216,11 +209,6 @@
             </div>
         </div>
         <!-- /Page Content -->
-
-        </div>
-        <!-- /Page Content -->
-
-   
     </div>
     <!-- /Page Wrapper -->
     @section('script')

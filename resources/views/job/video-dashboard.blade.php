@@ -13,7 +13,7 @@
                     </ul>
                 </div>
                     <div class="col-auto">
-                        <button onclick="createMeeting()" class="btn btn-primary btn-sm mb-3 w-100">
+                        <button onclick="createMeeting()" class="btn btn-primary btn-md mb-3 w-100" style="background-color:#5a83d2;border:none;">
                                 <i class="fa fa-plus-circle"></i> Create New Meeting
                         </button>
                     </div>

@@ -8,6 +8,9 @@ use App\Models\LeavesAdmin;
 use DB;
 use DateTime;
 use App\Models\Employee;
+use App\Exports\LeavesExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LeavesController extends Controller
 {
@@ -228,5 +231,16 @@ class LeavesController extends Controller
         return response()->json($employees); // Return employee data as JSON
     }
     
+    public function exportExcel()
+    {
+        return Excel::download(new LeavesExport, 'leaves.xlsx');
+    }
 
+    public function exportPDF()
+    {
+        $leaves = LeavesAdmin::with('employee')->get(); // Fetch leaves with employee data
+
+        $pdf = PDF::loadView('pdf.leaves_pdf', compact('leaves')); // Create PDF from view
+        return $pdf->download('leaves.pdf'); // Download the PDF
+    }
 }

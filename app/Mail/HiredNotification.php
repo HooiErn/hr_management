@@ -26,7 +26,6 @@ class HiredNotification extends Mailable
          'name' => $this->interviewer->name,
          'position' => $this->interviewer->position,  
          'start_date' => now()->addWeek()->toFormattedDateString(),
-         'salary' => $this->interviewer->salary,  // Add this property as needed
      ];
      $pdf = PDF::loadView('contracts.contract', $contractData);
  

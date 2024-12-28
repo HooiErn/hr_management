@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PastEmployeesExport;
 use Illuminate\Http\Request;
 use DB;
 use Brian2694\Toastr\Facades\Toastr;
@@ -10,7 +11,9 @@ use App\Models\department;
 use App\Models\User;
 use App\Models\module_permission;
 use App\Models\PastEmployee;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EmployeesExport;
 class EmployeeController extends Controller
 {
     // all employee card view
@@ -543,5 +546,42 @@ class EmployeeController extends Controller
 
         return response()->json(['employees' => $employees]);
     }
+
+    public function exportPDF()
+    {
+        $employees = Employee::all();
+
+        
+        if ($employees->isEmpty()) {
+            $employees = collect([['#'=>'','Employee ID' => '', 'Name' => '', 'Department' => '', 'Role' => '', 'Email' => '', 'Phone Number' => '', 'Status' => '', 'Join Date' => '']]);
+        }
+
+        $pdf = PDF::loadView('pdf.employees', compact('employees'));
+        return $pdf->download('employees.pdf');
+    }
+    public function exportExcel()
+    {
+        return Excel::download(new EmployeesExport, 'employee.xlsx');
+    }
+
+    //past employees export
+    
+    public function exportPDFforPastEmployee()
+    {
+        $pastemployees = PastEmployee::all();
+
+        
+        if ($pastemployees->isEmpty()) {
+            $pastemployees = collect([['#'=>'','Name' => '', 'Role' => '', 'Email' => '', 'Phone Number' => '', 'Status' => '', 'Resignation Date' => '', 'Resignation Reason' => '']]);
+        }
+
+        $pdf = PDF::loadView('pdf.pastemployees', compact('pastemployees'));
+        return $pdf->download('Past_employees.pdf');
+    }
+    public function exportExcelforPastEmployee()
+    {
+        return Excel::download(new PastEmployeesExport, 'Pastemployee.xlsx');
+    }
+
 
 }

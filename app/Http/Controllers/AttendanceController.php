@@ -10,9 +10,25 @@ class AttendanceController extends Controller
 {
 
   // attendance admin
-  public function attendanceIndex()
+  public function attendanceIndex(Request $request)
   {
-      return view('form.attendance');
+    // Get the current month and year or use the request values
+    $month = $request->input('month', date('m'));
+    $year = $request->input('year', date('Y'));
+
+    // Fetch attendance data for all employees for the selected month and year
+    $attendances = Attendance::with('employee')
+        ->whereYear('date', $year)
+        ->whereMonth('date', $month)
+        ->get();
+
+    // Group attendance by employee
+    $attendanceData = [];
+    foreach ($attendances as $attendance) {
+        $attendanceData[$attendance->employee_id][$attendance->date] = $attendance;
+    }
+
+    return view('form.attendance', compact('attendanceData', 'month', 'year'));
   }
 
   // attendance employee
@@ -21,6 +37,17 @@ class AttendanceController extends Controller
       $attendances = Attendance::where('employee_id', auth()->user()->id)
           ->where('date', Carbon::today()->toDateString())
           ->get();
+
+      // Parse punch_in and punch_out to Carbon instances
+      foreach ($attendances as $attendance) {
+          if ($attendance->punch_in) {
+              $attendance->punch_in = Carbon::parse($attendance->punch_in);
+          }
+          if ($attendance->punch_out) {
+              $attendance->punch_out = Carbon::parse($attendance->punch_out);
+          }
+      }
+
       return view('form.attendanceemployee', compact('attendances'));
   }
 
@@ -90,22 +117,68 @@ class AttendanceController extends Controller
 
     private function calculateBreakDuration($punchIn, $punchOut)
     {
-        // Assuming break time is calculated as the time between punch in and punch out
-        // You can adjust this logic based on your requirements
-        return Carbon::parse($punchOut)->diffInMinutes(Carbon::parse($punchIn));
+        $punchInTime = Carbon::parse($punchIn);
+        $punchOutTime = Carbon::parse($punchOut);
+
+        // If punch out is before 9 AM, no break is counted
+        if ($punchOutTime->lessThanOrEqualTo(Carbon::createFromTime(9, 0))) {
+            return 0;
+        }
+
+        // If punch in is after 9 AM, count the time from punch in to punch out
+        if ($punchInTime->greaterThanOrEqualTo(Carbon::createFromTime(9, 0))) {
+            return $punchInTime->diffInMinutes($punchOutTime);
+        }
+
+        // If punch in is before 9 AM, count the time from 9 AM to punch out
+        return Carbon::createFromTime(9, 0)->diffInMinutes($punchOutTime);
     }
 
     private function calculateOvertime($punchIn, $punchOut)
     {
-        $workingEndTime = Carbon::createFromTime(18, 0); // 6 PM
         $punchOutTime = Carbon::parse($punchOut);
+        $workingEndTime = Carbon::createFromTime(18, 0); // 6 PM
 
-        if ($punchOutTime->greaterThan($workingEndTime)) {
-            return $punchOutTime->diffInMinutes($workingEndTime);
+        // If punch out is before 6 PM, no overtime is counted
+        if ($punchOutTime->lessThanOrEqualTo($workingEndTime)) {
+            return 0;
         }
 
-        return 0;
+        // Calculate overtime as the difference between punch out and 6 PM
+        return $punchOutTime->diffInMinutes($workingEndTime);
     }
 
+    public function search(Request $request)
+    {
+        
+        $request->validate([
+            'employee_name' => 'nullable|string|max:255',
+            'month' => 'nullable|integer|min:1|max:12',
+            'year' => 'nullable|integer|min:2000|max:2100',
+        ]);
+
+       
+        $employeeName = $request->input('employee_name');
+        $month = $request->input('month');
+        $year = $request->input('year');
+
+        
+        $attendanceData = Attendance::with('employee')
+            ->when($employeeName, function ($query) use ($employeeName) {
+                return $query->whereHas('employee', function ($q) use ($employeeName) {
+                    $q->where('name', 'like', '%' . $employeeName . '%');
+                });
+            })
+            ->when($month, function ($query) use ($month) {
+                return $query->whereMonth('date', $month);
+            })
+            ->when($year, function ($query) use ($year) {
+                return $query->whereYear('date', $year);
+            })
+            ->get();
+
+        
+        return response()->json(['attendanceData' => $attendanceData]);
+    }
 
 }

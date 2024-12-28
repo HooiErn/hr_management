@@ -8,6 +8,10 @@
                 <div class="col">
                     <h3 class="page-title">Leave Reports</h3>
                 </div>
+                <div class="col-auto float-right ml-auto">
+                    <a href="{{ route('leaves.export.excel') }}" class="btn btn-success">Export to Excel</a>
+                    <a href="{{ route('leaves.export.pdf') }}" class="btn btn-danger">Export to PDF</a>
+                </div>
             </div>
         </div>
 

@@ -18,4 +18,10 @@ class LeavesAdmin extends Model
         'leave_status',
         'remaining_days'
     ];
+
+    // Define the relationship with the Employee model
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'user_id'); // Assuming 'user_id' is the foreign key
+    }
 }

@@ -204,23 +204,26 @@ class InterviewController extends Controller
     //hired or rejected interviewer
     public function bulkAction(Request $request)
     {
-        \Log::info('Bulk action request:', $request->all()); // Log incoming request
-    
+        // Validate the request data
         $request->validate([
-            'action' => 'required|in:hired,rejected', 
-            'interviewers' => 'required|array', 
-            'interviewers.*' => 'exists:interviewers,id', 
-            'salary' => 'required_if:action,hired|numeric|min:0', // Validate salary if the action is hired
+            'action' => 'required|in:hired,rejected',
+            'interviewers' => 'required|array',
+            'interviewers.*' => 'exists:interviewers,id',
+            'salary' => 'required_if:action,hired|numeric|min:0',
         ]);
-    
+
+        // Confirmation handling
+        if (!$request->has('confirm') || !$request->confirm) {
+            return response()->json(['success' => false, 'message' => 'Confirmation required'], 400);
+        }
+
         try {
             foreach ($request->interviewers as $interviewerId) {
-                $interviewer = Interviewer::findOrFail($interviewerId); // Find the interviewer by ID
-    
+                $interviewer = Interviewer::findOrFail($interviewerId);
+
                 if ($request->action === 'hired') {
-                    // Send Hired email with contract attachment
-                    Mail::to($interviewer->email)->send(new HiredNotification($interviewer));
-                    \Log::info('Hired email with contract sent to: ' . $interviewer->email);
+                    // Generate employee ID
+                    $employeeId = 'EMP' . str_pad(Employee::count() + 1, 4, '0', STR_PAD_LEFT); // Example ID generation
     
                     // Fetch job details based on the job_title
                     $job = AddJob::where('job_title', $interviewer->job_title)->first();
@@ -239,60 +242,66 @@ class InterviewController extends Controller
                         $employee->birth_date = $interviewer->birth_date;
                         $employee->gender = $interviewer->gender;
                         $employee->phone_number = $interviewer->phone_number;
-                        $employee->status = 'Pending';  
-                        $employee->role_name = 'Staff';  
-                        $employee->position = $job->job_title;  
-                        $employee->department = $job->department;  
-                        $employee->salary = $request->salary; // Set salary for the hired employees
+                        $employee->status = 'Pending';
+                        $employee->role_name = 'Staff';
+                        $employee->position = $job->job_title;
+                        $employee->department = $job->department;
+                        $employee->salary_from = ""; 
                         $employee->job_type = $job->job_type;
-                        $employee->company = env('APP_NAME');  
-                        $employee->join_date = now(); 
-                        $employee->password = bcrypt('12345678');  
+                        $employee->company = env('APP_NAME');
+                        $employee->join_date = now();
+                        $employee->password = bcrypt('12345678');
                         $employee->save();
     
-                        \Log::info('Employee record created for: ' . $interviewer->name);
-                    } else {
-                        \Log::warning('No matching job found for the job title: ' . $interviewer->job_title);
-                        return redirect()->back()->with('error', 'No matching job found for some interviewers.');
+                        // Send Hired email with contract attachment
+                        try {
+                            Mail::to($interviewer->email)->send(new HiredNotification($interviewer));
+                            \Log::info('Hired email with contract sent to: ' . $interviewer->email);
+                        } catch (\Exception $e) {
+                            \Log::error('Error sending email: ' . $e->getMessage());
+                        }
+                        $interviewer->delete();
                     }
-    
                 } elseif ($request->action === 'rejected') {
+                    // Handle rejection logic
                     // Move interviewer data back to candidates table
                     $candidate = new Candidate();
                     $candidate->candidate_id = $interviewer->candidate_id;
                     $candidate->ic_number = $interviewer->ic_number;
                     $candidate->name = $interviewer->name;
-                    $candidate->age = $interviewer->age; 
-                    $candidate->race = $interviewer->race; 
-                    $candidate->gender = $interviewer->gender; 
-                    $candidate->phone_number = $interviewer->phone_number; 
+                    $candidate->age = $interviewer->age;
+                    $candidate->race = $interviewer->race;
+                    $candidate->gender = $interviewer->gender;
+                    $candidate->phone_number = $interviewer->phone_number;
                     $candidate->email = $interviewer->email;
-                    $candidate->birth_date = $interviewer->birth_date; 
+                    $candidate->birth_date = $interviewer->birth_date;
                     $candidate->job_title = $interviewer->job_title;
-                    $candidate->highest_education = $interviewer->highest_education; 
+                    $candidate->highest_education = $interviewer->highest_education;
                     $candidate->work_experiences = $interviewer->work_experiences;
                     $candidate->role_name = 'Candidate'; // Default role
                     $candidate->message = $interviewer->message;
-                    $candidate->interview_datetime = ''; 
+                    $candidate->interview_datetime = '';
                     $candidate->cv_upload = $interviewer->cv_uploads;
                     $candidate->save();
     
                     // Send Rejected email
                     Mail::to($interviewer->email)->send(new RejectedNotification($interviewer));
-                    \Log::info('Rejected email sent to: ' . $interviewer->email);
-    
-                    // Delete the interviewer record
                     $interviewer->delete();
                     \Log::info('Interviewer record deleted for: ' . $interviewer->name);
+                } elseif ($request->action === 'approve') {
+                    // Logic for approving the interviewer
+                    $interviewer->status = 'approved'; // Example status change
+                    $interviewer->save();
                 }
             }
-    
-            return redirect()->back()->with('success', 'Action applied successfully.');
+
+            return response()->json(['success' => true, 'message' => 'Action applied successfully.']);
         } catch (\Exception $e) {
-            \Log::error('Error applying bulk action: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while processing the action. Please try again.');
+            \Log::error('Error in bulkAction: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while processing your request.'], 500);
         }
     }
+    
     
           /*Search Interviewer*/
           public function search(Request $request)
@@ -331,6 +340,20 @@ class InterviewController extends Controller
               return response()->json(['interviewers' => $interviewers]);
           }
           
+    public function sendEmail(Request $request)
+    {
+        // Validate the request data
+        $request->validate([
+            'candidate_id' => 'required|exists:interviewers,id',
+            // Add other necessary validations
+        ]);
 
+        $interviewer = Interviewer::findOrFail($request->candidate_id);
+
+        // Send the email with the contract
+        Mail::to($interviewer->email)->send(new HiredNotification($interviewer));
+
+        return response()->json(['success' => true]);
+    }
 }
 

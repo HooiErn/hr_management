@@ -20,7 +20,7 @@
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave"><i class="fa fa-plus"></i> Add Leave</a>
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave" style="background-color:#5a83d2;border:none; "><i class="fa fa-plus"></i> Add Leave</a>
                     </div>
                 </div>
             </div>
@@ -445,6 +445,7 @@ $(document).on('click', '.leaveEdit', function() {
     $('#edit_leave').modal('show');
 });
 </script>
+
 
     @endsection
 @endsection

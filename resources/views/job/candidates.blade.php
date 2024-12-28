@@ -49,6 +49,9 @@
 .form-focus select.form-control {
     padding-top: 10px;
 }
+.btn-primary {
+    border: none !important;
+}
 
 </style>
 @extends('layouts.master')
@@ -71,7 +74,7 @@
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add_candidate">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add_candidate" style="background-color:#5a83d2;">
                         <i class="fa fa-plus"></i> Add Candidate
                     </button>
                     </div>

@@ -40,6 +40,11 @@ class Employee extends Model
     
             return $lastEmployeeId + 1;
         }
+
+        public function attendances()
+        {
+            return $this->hasMany(Attendance::class, 'employee_id', 'id');
+        }
     }
     
 

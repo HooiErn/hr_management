@@ -50,8 +50,8 @@
                     </ul>
                 </li>
                 <li class="menu-title"> <span>Administration</span> </li>
-                <li class="{{set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/applied/jobs','user/dashboard/interviewing','user/dashboard/offered/jobs','user/dashboard/visited/jobs','user/dashboard/archived/jobs','user/dashboard/save','jobs','job/applicants','job/details','page/manage/resumes','page/candidates','video/dashboard','public/meeting'])}} submenu">
-                    <a href="#" class="{{ set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/save','jobs','job/applicants','job/details','page/candidates','video/dashboard','public/meeting']) ? 'noti-dot' : '' }}"><i class="la la-briefcase"></i>
+                <li class="{{set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/applied/jobs','user/dashboard/interviewing','user/dashboard/offered/jobs','user/dashboard/visited/jobs','user/dashboard/archived/jobs','user/dashboard/save','jobs','job/applicants','job/details','page/manage/resumes','page/candidates','page/interviwer','video/dashboard','public/meeting'])}} submenu">
+                    <a href="#" class="{{ set_active(['user/dashboard/index','user/dashboard/all','user/dashboard/save','jobs','job/applicants','job/details','page/candidates','page/interviwer','video/dashboard','public/meeting']) ? 'noti-dot' : '' }}"><i class="la la-briefcase"></i>
                         <span> Jobs </span> <span class="menu-arrow"></span>
                     </a>
                     <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }} {{ (request()->is('job/applicants/*')) ? 'display: block;' : 'display: none;' }}">

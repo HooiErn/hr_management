@@ -28,7 +28,7 @@
                                 <option value="hired">Hired</option>
                                 <option value="rejected">Rejected</option>
                             </select>
-                            <button id="apply-action" class="btn btn-primary">Apply</button>
+                            <button id="apply-action" class="btn btn-primary" style="background-color:#5a83d2;border:none;">Apply</button>
                         </div>
                     </div>
 
@@ -196,11 +196,16 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Are you sure you want to approve the candidate as an interviewer?</p>
-                        <div class="submit-section">
-                            <button class="btn btn-primary submit-btn-sm">Yes</button>
-                            <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        </div>
+                        <form action="{{ route('interviewer/bulkAction') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="action" value="approve">
+                            <input type="hidden" name="interviewers[]" id="approve_interviewer_id">
+                            <p>Are you sure you want to approve this interviewer?</p>
+                            <div class="submit-section">
+                                <button type="submit" class="btn btn-primary submit-btn">Yes, Approve</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -503,54 +508,28 @@
          
     </div>
     <!-- /Page Wrapper -->
-    <!-- Confirmation Modal -->
-    <div id="confirmationModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Action</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p id="confirmationMessage"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmAction">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- /Confirmation Modal -->
 
-    <!-- Salary Input Modal -->
-    <div id="salaryInputModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Enter Salary</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="salaryForm">
-                        <div class="form-group">
-                            <label for="salary">Salary</label>
-                            <input type="number" class="form-control" id="salary" name="salary" required>
-                        </div>
-                        <input type="hidden" id="selectedInterviewers" name="interviewers">
-                        <div class="submit-section">
-                            <button type="submit" class="btn btn-primary">Submit Salary</button>
-                        </div>
-                    </form>
-                </div>
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="modal custom-modal fade"  role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalConfirmationMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <form id="confirmationForm" action="{{ route('interviewer/bulkAction') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-primary submit-btn">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </form>
             </div>
         </div>
     </div>
-    <!-- /Salary Input Modal -->
+</div>
 
 
 <!--Advanced Search Filter-->
@@ -799,210 +778,41 @@ $(document).ready(function() {
             $('#interview_datetime').val('');
         }
     });
+});
+</script>
 
-        // Fetch company information using Ajax
-        $.ajax({
-            url: '{{ route("get.company.info") }}', 
-            method: 'GET',
-            success: function(response) {
-                if (response.success) {
-                    const companyName = response.company.company_name;
-                    const companyAddress = response.company.address;
-                    const companyCity = response.company.city;
-                    const companyState = response.company.state;
-                    const companyPostalC = response.company.postal_code;
-                    
-                    // Format the message with company information
-                    var message = "Dear candidate,\n\n"
-                        + "Your interview has been scheduled at " + companyName + ":\n\n"
-                        + "Date & Time: " + interviewDateTime + "\n"
-                        + "Interview Type: " + (interviewType === 'f2f' ? 'Face-to-Face' : 'Online') + "\n";
-                    
-                    // Add location information for face-to-face interviews
-                    if (interviewType === 'f2f') {
-                        message += "Location: " + companyAddress + ", " + companyPostalC + " " + companyState 
-                                    + ", " + companyCity + "\n";
-                        message += "Please bring the following documents with you for the interview:\n";
-                        message += "- A copy of your IC (Identity Card), both front and back.\n";
-                        message += "- A copy of your highest educational certificate.\n";
-                        message += "- Any relevant work experience certificates (if applicable).\n";
-                        message += "- Proof of previous employment (if applicable).\n";
-                        message += "- Any other personal identification documents required by the company.\n";
-                        message += "Please arrive 15 minutes before the scheduled time.\n";
-                    }
-                    
-                    message += "\nPlease confirm your attendance.\n"
-                        + "Thank you.";
-                    
-                    // Encode the message for URL
-                    var encodedMessage = encodeURIComponent(message);
-                    
-                    // Create WhatsApp URL with direct send
-                    var whatsappURL = "https://api.whatsapp.com/send?phone=" + phoneNumber + "&text=" + encodedMessage;
-                    
-                    // Open WhatsApp in new window
-                    var newWindow = window.open(whatsappURL, '_blank');
-                    
-                    // Show success message
-                    toastr.success('WhatsApp notification window opened');
-                    
-                    // Close the schedule modal
-                    $('#schedule_interview').modal('hide');
-                } else {
-                    toastr.error('Could not fetch company information');
-                }
-            },
-            error: function() {
-                toastr.error('Error fetching company information');
-            }
-        });
+<script>
+document.getElementById('apply-action').addEventListener('click', function () {
+    const action = document.getElementById('bulk-action').value;
+    const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
+
+    if (!action) {
+        alert('Please select an action.');
+        return;
+    }
+
+    if (selectedInterviewers.length === 0) {
+        alert('Please select at least one interviewer.');
+        return;
+    }
+
+    // Set the action and selected interviewers in the confirmation modal
+    document.getElementById('confirmationAction').value = action;
+    document.getElementById('interviewersInput').value = JSON.stringify(selectedInterviewers);
+
+    // Show the confirmation modal
+    $('#confirmationModal').modal('show');
+});
+</script>
+
+<script>
+document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="interviewers[]"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
     });
 });
-
 </script>
-    <script>
-        // Select all checkboxes
-        document.getElementById('select-all').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('input[name="interviewers[]"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-
-        // Handle bulk action
-        document.getElementById('apply-action').addEventListener('click', function () {
-            const action = document.getElementById('bulk-action').value;
-            const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
-
-            if (action && selectedInterviewers.length > 0) {
-                const interviewerEmails = selectedInterviewers.map(id => {
-                    const row = document.querySelector(`input[name="interviewers[]"][value="${id}"]`).closest('tr');
-                    return row.querySelector('td:nth-child(8)').textContent.trim(); // Get email from the 8th column
-                }).join(', ');
-
-                const confirmationMessage = action === 'hired'
-                    ? `Are you sure you want to hire the selected interviewers? Emails: ${interviewerEmails}.`
-                    : `Are you sure you want to reject the selected interviewers? Emails: ${interviewerEmails}.`;
-
-                document.getElementById('confirmationMessage').innerText = confirmationMessage;
-
-                // Show the confirmation modal using Bootstrap's modal API
-                $('#confirmationModal').modal('show');
-            } else {
-                alert('Please select at least one interviewer and choose an action.');
-            }
-        });
-
-        $('#confirmationModal').on('shown.bs.modal', function () {
-        $('#confirmationModal').removeAttr('aria-hidden'); // REMOVE THIS
-        });
-
-        $('#confirmationModal').on('hidden.bs.modal', function () {
-            $('#confirmationModal').attr('aria-hidden', 'true'); // REMOVE THIS
-        });
-        // Handle confirmation action
-        document.getElementById('confirmAction').addEventListener('click', function () {
-            const action = document.getElementById('bulk-action').value;
-
-            if (action === 'hired') {
-                // Show salary input modal
-                $('#confirmationModal').modal('hide');
-                $('#salaryInputModal').modal('show');
-            } else if (action === 'rejected') {
-                // Process rejection directly
-                processBulkAction('rejected');
-            }
-        });
-
-        // Handle salary form submission
-        document.getElementById('salaryForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const salary = document.getElementById('salary').value;
-            const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
-
-            if (!salary || salary <= 0) {
-                alert('Please enter a valid salary.');
-                return;
-            }
-
-            // Process hiring with salary
-            processBulkAction('hired', salary);
-        });
-
-        // Function to process bulk actions
-        function processBulkAction(action, salary = null) {
-            const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
-
-            // Send data to the server via AJAX
-            fetch('/bulk-action', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    action: action,
-                    interviewers: selectedInterviewers,
-                    salary: salary
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Action applied successfully.');
-                        location.reload(); // Reload the page to reflect changes
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An unexpected error occurred.');
-                });
-
-            // Hide modals
-            $('#confirmationModal').modal('hide');
-            $('#salaryInputModal').modal('hide');
-        }
-    </script>
-
-
-<!-- Handle salary form submission
-<script>
-    document.getElementById('salaryForm').onsubmit = function(e) {
-        e.preventDefault();
-
-        const salary = document.getElementById('salary').value;
-        const interviewers = document.getElementById('selectedInterviewers').value.split(',');
-
-        // Perform AJAX request to handle bulk action with salary
-        $.ajax({
-            url: '{{ route("interviewer/bulkAction") }}',
-            method: 'POST',
-            data: {
-                action: 'hired',
-                interviewers: interviewers,
-                salary: salary,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                toastr.success('Action applied successfully.');
-                location.reload(); // Reload the page to see changes
-            },
-            error: function(xhr) {
-                toastr.error('Error applying action. Please try again.');
-                console.error(xhr);  // Debug AJAX error
-            }
-        });
-
-        // Close the salary input modal
-        $('#salaryInputModal').modal('hide');
-    };
-</script> -->
-
-
-
 
 <style>
 /* Enhanced styles for time picker */
@@ -1073,6 +883,41 @@ $(document).ready(function() {
 }
 </style>
 
+<script>
+document.getElementById('confirmationForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent default form submission
 
+    const formData = new FormData(this);
 
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message); // Show success message
+            location.reload(); // Reload the page to reflect changes
+        } else {
+            alert('Error: ' + data.message); // Show error message
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your request: ' + error.message);
+    });
+});
+</script>
+
+<script>
+$(document).ready(function() {
+    $('.approve-interviewer').click(function() {
+        var interviewerId = $(this).data('id');
+        $('#approve_interviewer_id').val(interviewerId);
+    });
+});
+</script>
 @endsection

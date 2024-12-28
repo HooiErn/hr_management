@@ -51,6 +51,14 @@
             </form>
             <!-- /Search Filter -->
 
+            <!-- Export Buttons -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <a href="{{ route('employees.export.excel') }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route('employees.export.pdf') }}" class="btn btn-danger">Export PDF</a>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">

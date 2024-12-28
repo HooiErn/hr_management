@@ -183,6 +183,8 @@ Route::controller(InterviewController::class)->group(function () {
     Route::get('/resume/{id}', 'showResume')->middleware('auth')->name('resume');
     Route::post('interviewer/bulkAction', 'bulkAction')->middleware('auth')->name('interviewer/bulkAction');
     Route::post('/interviewers/search',  'search')->name('interviewers/search');
+    Route::post('/interviewers/send-email',  'sendEmail')->name('interviewers/send-email');
+
 });
 
 // ----------------------------- chatbox candidates ------------------------------//
@@ -211,6 +213,15 @@ Route::controller(EmployeeController::class)->group(function () {
     Route::get('/resign/{employeeId}',  'resign')->middleware('auth')->name('employee.resign');
     Route::get('/pastEmployee',  'pastEmployeePage')->middleware('auth')->name('employee/past');
 
+    //export
+    Route::get('/employees/export/excel', 'exportExcel')->middleware('auth')->name('employees.export.excel');
+    Route::get('/employees/export/pdf',  'exportPDF')->middleware('auth')->name('employees.export.pdf');
+    Route::get('/pastemployees/export/excel', 'exportExcelforPastEmployee')->middleware('auth')->name('pastemployees.export.excel');
+    Route::get('/pastemployees/export/pdf',  'exportPDFforPastEmployee')->middleware('auth')->name('pastemployees.export.pdf');
+
+
+
+    //departments
     Route::get('form/departments/page', 'index')->middleware('auth')->name('form/departments/page');    
     Route::post('form/departments/save', 'saveRecordDepartment')->middleware('auth')->name('form/departments/save');    
     Route::post('form/department/update', 'updateRecordDepartment')->middleware('auth')->name('form/department/update');    
@@ -266,6 +277,11 @@ Route::controller(LeavesController::class)->group(function () {
     Route::get('form/leavesettings/page', 'leaveSettings')->middleware('auth')->name('form/leavesettings/page');
     Route::get('form/shiftscheduling/page', 'shiftScheduLing')->middleware('auth')->name('form/shiftscheduling/page');
     Route::get('form/shiftlist/page', 'shiftList')->middleware('auth')->name('form/shiftlist/page');    
+
+    //export
+    Route::get('/leaves/export/excel', 'exportExcel')->middleware('auth')->name('leaves.export.excel');
+    Route::get('/leaves/export/pdf', 'exportPDF')->middleware('auth')->name('leaves.export.pdf');
+    
 });
 
 // ----------------------------- reports  ------------------------------//
@@ -281,6 +297,7 @@ Route::controller(AttendanceController::class)->group(function () {
     Route::get('attendance/page', 'attendanceIndex')->middleware('auth')->name('attendance/page');
     Route::get('attendance/employee/page', 'viewAttendance')->middleware('auth')->name('attendance/employee/page');
     Route::post('/attendance/check-today', 'checkToday')->middleware('auth')->name('attendance.checkToday');
+    Route::post('attendance/search', 'search')->middleware('auth')->name('attendance/search');
 });
 
 
@@ -292,6 +309,9 @@ Route::controller(PersonalInformationController::class)->group(function () {
 // Public meeting routes (no auth required)
 Route::get('public/meeting', [JobController::class, 'publicMeeting'])->name('public.meeting');
 Route::post('public/meeting/join', [JobController::class, 'joinPublicMeeting'])->name('public.meeting.join');
+
+
+
 
 
 

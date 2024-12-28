@@ -15,6 +15,14 @@
                 </div>
             </div>
 
+            <!-- Export Buttons -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <a href="{{ route('pastemployees.export.excel') }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route('pastemployees.export.pdf') }}" class="btn btn-danger">Export PDF</a>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
