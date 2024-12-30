@@ -28,7 +28,7 @@ async function sendMessage(userMessage, fromQuickOption = false) {
         "how to apply": "To apply for a job, please visit our careers page and submit your application online.",
         "interview tips": "Prepare your CV, review job requirements, and highlight relevant experiences.",
         "intro your company": "We are a leading enterprise company specializing in innovative solutions.",
-        "contact customer service": "Please contact our customer service via WhatsApp at +601234567.",
+        "contact customer service": "Please contact our customer service via <a href='https://wa.me/601234567' target='_blank'>WhatsApp</a>.",
         "hello": "Hi, how can I assist you today?",
         "hi": "Hi, how can I assist you today?",
         "thanks": "You're welcome!"

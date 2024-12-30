@@ -20,25 +20,25 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-cubes"></i></span>
                             <div class="dash-widget-info">
-                                <h3></h3> <span>Schedule</span>
+                                <h3>{{ $employeeCount }}</h3> <span>Employees</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
                     <div class="card dash-widget">
-                        <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-usd"></i></span>
+                        <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-address-book"></i></span>
                             <div class="dash-widget-info">
-                                <h3></h3> <span>Jobs Offer</span>
+                                <h3>{{ $interviewerCount }}</h3> <span>Interviewer</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
                     <div class="card dash-widget">
-                        <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-diamond"></i></span>
+                        <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-envelope"></i></span>
                             <div class="dash-widget-info">
-                                <h3></h3> <span>Leaves</span>
+                                <h3>{{ $leaveCount }}</h3> <span>Leaves</span>
                             </div>
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-user"></i></span>
                             <div class="dash-widget-info">
-                                <h3>{{ $employeeCount }}</h3> <span>Employees</span>
+                                <h3></h3> <span>Pending Employee</span>
                             </div>
                         </div>
                     </div>
@@ -673,6 +673,7 @@
                                                     <span>12</span> <span class="text-muted">open tasks, </span>
                                                     <span>4</span> <span class="text-muted">tasks completed</span>
                                                 </small>
+                                            
                                             </td>
                                             <td>
                                                 <div class="progress progress-xs progress-striped">

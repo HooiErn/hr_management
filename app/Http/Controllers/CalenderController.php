@@ -11,58 +11,78 @@ class CalenderController extends Controller
 {
     public function calender()
     {
-        
-        return view('form.calender');
+        $events = Event::all(); // Fetch all events
+        return view('form.calender', compact('events'));
     }
-    // save record
+
+    // Save record
     public function saveRecord(Request $request)
     {
         $request->validate([
             'nameEvent' => 'required|string|max:255',
-            'EventDate' => 'required|string|max:255',
+            'eventDate' => 'required|date',
         ]);
         
         DB::beginTransaction();
         try {
             $event = new Event;
             $event->name_calender = $request->nameEvent;
-            $event->date_calender  = $request->eventDate;
+
+            // Convert the date format to YYYY-MM-DD
+            $event->date_calender = \Carbon\Carbon::createFromFormat('m/d/Y', $request->eventDate)->format('Y-m-d');
+
             $event->save();
             
             DB::commit();
             Toastr::success('Create new event successfully :)','Success');
-            return redirect()->back();
+            return redirect()->route('calendar')->with('success', 'Event added successfully!'); // Redirect to calendar route with success message
             
         } catch(\Exception $e) {
             DB::rollback();
-            Toastr::error('Add Event fail :)','Error');
+            Toastr::error('Add Event fail: ' . $e->getMessage(), 'Error'); // Log the error message
             return redirect()->back();
         }
     }
-    // update
-    public function updateRecord( Request $request)
+
+    // Update record
+    public function updateRecord(Request $request)
     {
         DB::beginTransaction();
-        try{
-            $id           = $request->id;
-            $eventName  = $request->eventName;
-            $eventDate  = $request->eventDate;
+        try {
+            $id = $request->id;
+            $eventName = $request->eventName;
+            $eventDate = $request->eventDate;
 
             $update = [
-
-                'id'           => $id,
-                'name_event' => $eventName,
-                'date_event' => $eventDate,
+                'name_calender' => $eventName,
+                'date_calender' => \Carbon\Carbon::createFromFormat('m/d/Y', $eventDate)->format('Y-m-d'),
             ];
 
-            Event::where('id',$request->id)->update($update);
+            Event::where('id', $id)->update($update);
             DB::commit();
             Toastr::success('Event updated successfully :)','Success');
-            return redirect()->back();
+            return redirect()->route('calendar')->with('success', 'Event updated successfully!'); // Redirect with success message
 
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             DB::rollback();
             Toastr::error('Event update fail :)','Error');
+            return redirect()->back();
+        }
+    }
+
+    // Delete record
+    public function deleteRecord($id)
+    {
+        DB::beginTransaction();
+        try {
+            Event::destroy($id); // Delete the event by ID
+            DB::commit();
+            Toastr::success('Event deleted successfully :)','Success');
+            return redirect()->route('calendar')->with('success', 'Event deleted successfully!'); // Redirect with success message
+
+        } catch(\Exception $e) {
+            DB::rollback();
+            Toastr::error('Event deletion fail: ' . $e->getMessage(), 'Error'); // Log the error message
             return redirect()->back();
         }
     }

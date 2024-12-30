@@ -26,4 +26,9 @@ class Interviewer extends Model
         'ic_number',
         'interview_type',
     ];
+
+    public function timesheets()
+    {
+        return $this->hasMany(Timesheet::class);
+    }
 }

@@ -12,17 +12,24 @@
     <ul>
         <li><strong>Position:</strong> {{ $position }}</li>
         <li><strong>Start Date:</strong> {{ $start_date }}</li>
-        <li><strong>Salary:</strong> ${{ $salary }}</li>
+        <li><strong>Salary:</strong> RM{{ $salary }}</li>
         <!-- Add other contract details here -->
     </ul>
 
     <h2>Employee Benefits</h2>
     <ul>
-        <li><strong>Health Insurance:</strong> {{ $health_insurance }}</li>
-        <li><strong>Bonus:</strong> {{ $bonus }}</li>
-        <li><strong>Paid Time Off:</strong> {{ $paid_time_off }} days per year</li>
-        <li><strong>Retirement Fund:</strong> {{ $retirement_fund }}</li>
-        <li><strong>Other Benefits:</strong> {{ $other_benefits }}</li>
+        <li><strong>Medical Coverage:</strong> Comprehensive medical insurance coverage for you and your immediate family members after 3 months of employment.</li>
+        <li><strong>Annual Bonus:</strong> Performance-based bonus evaluated yearly based on individual and company performance.</li>
+        <li><strong>Leave Benefits:</strong> 14 days of paid annual leave, 14 days of medical leave, and other statutory leaves as per Malaysian employment law.</li>
+        <li><strong>EPF & SOCSO:</strong> Statutory contributions as per Malaysian law.</li>
+        <li><strong>Additional Benefits:</strong>
+            <ul>
+                <li>Professional development and training opportunities</li>
+                <li>Flexible working arrangements</li>
+                <li>Annual salary review</li>
+                <li>Team building activities</li>
+            </ul>
+        </li>
     </ul>
 
     <h2>Declaration of Understanding</h2>

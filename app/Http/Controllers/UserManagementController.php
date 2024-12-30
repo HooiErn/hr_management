@@ -11,6 +11,7 @@ use App\Models\Form;
 use App\Models\ProfileInformation;
 use App\Models\PersonalInformation;
 use App\Rules\MatchOldPassword;
+use App\Models\Department;
 use Carbon\Carbon;
 use Session;
 use Auth;
@@ -122,28 +123,25 @@ class UserManagementController extends Controller
 
     // profile user
     public function profile()
-    {   
-        $profile = Session::get('user_id'); // get user_id session
-        $userInformation = PersonalInformation::where('user_id',$profile)->first(); // user information
-        $user = DB::table('users')->get();
-        $employees = DB::table('profile_information')->where('user_id',$profile)->first();
-
-        if(empty($employees))
-        {
-            $information = DB::table('profile_information')->where('user_id',$profile)->first();
-            return view('usermanagement.profile_user',compact('information','user','userInformation'));
-
-        } else {
-            $user_id = $employees->user_id;
-            if($user_id == $profile)
-            {
-                $information = DB::table('profile_information')->where('user_id',$profile)->first();
-                return view('usermanagement.profile_user',compact('information','user','userInformation'));
-            } else {
-                $information = ProfileInformation::all();
-                return view('usermanagement.profile_user',compact('information','user','userInformation'));
-            } 
-        }
+    {
+        $user = Auth::user();
+        $information = ProfileInformation::where('user_id', $user->id)->first();
+        
+        // Get designations/positions from users table
+        $designations = DB::table('users')
+            ->select('position')
+            ->distinct()
+            ->whereNotNull('position')
+            ->pluck('position');
+        
+        // Get potential reporting managers (excluding current user)
+        $managers = User::where('id', '!=', $user->id)
+            ->where('role_name', 'Admin')
+            ->get();
+        
+        $departments = Department::pluck('department');
+        
+        return view('usermanagement.profile_user', compact('information', 'departments', 'designations', 'managers'));
     }
 
     // save profile information
@@ -151,59 +149,52 @@ class UserManagementController extends Controller
     {
         DB::beginTransaction();
         try {
-            $data = $request->all(); // Get all input data
-            $image_name = $data['hidden_image']; // Default to the existing image
-    
-            // Handle file upload
+            $user = Auth::user();
+            
+            // Handle avatar upload
             if ($request->hasFile('images')) {
-                $image = $request->file('images');
-    
-                // Move the uploaded file to the public directory
-                $image->move(public_path('/assets/images/avatar/'), $image_name);
-    
-                // Check if the file was moved successfully
-                if (!file_exists(public_path('/assets/images/avatar/'.$image_name))) {
-                    throw new \Exception('File upload failed.');
-                }
+                $avatar = $request->file('images');
+                $avatarName = time() . '.' . $avatar->getClientOriginalExtension();
+                $avatar->move(public_path('assets/images'), $avatarName);
+            } else {
+                $avatarName = $request->hidden_image ?? 'avatar.jpg';
             }
-    
-            // Prepare the data for updating the user
-            $update = [
-                'name'   => $data['name'],
-                'avatar' => $image_name,
-            ];
-    
-            // Update the user's profile information
-            User::where('user_id', $data['user_id'])->update($update);
-    
-            // Prepare data for updating or creating profile information
-            $profileData = [
-                'name'         => $data['name'],
-                'email'        => $data['email'],
-                'birth_date'   => $data['birthDate'],
-                'gender'       => $data['gender'],
-                'address'      => $data['address'],
-                'state'        => $data['state'],
-                'country'      => $data['country'],
-                'pin_code'     => $data['pin_code'],
-                'phone_number' => $data['phone_number'],
-                'department'   => $data['department'],
-                'designation'  => $data['designation'],
-                'reports_to'   => $data['reports_to'],
-            ];
-    
+
+            // Update user table
+            $user->update([
+                'name' => $request->name,
+                'avatar' => $avatarName,
+                'department' => $request->department,
+                'position' => $request->designation // Update position in users table
+            ]);
+
             // Update or create profile information
             ProfileInformation::updateOrCreate(
-                ['user_id' => $data['user_id']],
-                $profileData
+                ['user_id' => $user->id],
+                [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'birth_date' => $request->birthDate,
+                    'gender' => $request->gender,
+                    'address' => $request->address,
+                    'state' => $request->state,
+                    'country' => $request->country,
+                    'pin_code' => $request->pin_code,
+                    'phone_number' => $request->phone_number,
+                    'department' => $request->department,
+                    'designation' => $request->designation,
+                    'reports_to' => $request->reports_to
+                ]
             );
-    
+
             DB::commit();
-            Toastr::success('Profile Information successfully updated', 'Success');
+            Toastr::success('Profile updated successfully!', 'Success');
             return redirect()->back();
-        } catch (\Exception $e) {
+
+        } catch(\Exception $e) {
             DB::rollback();
-            Toastr::error('Failed to update profile information: ' . $e->getMessage(), 'Error');
+            \Log::error('Profile update error: ' . $e->getMessage());
+            Toastr::error('Profile update failed!', 'Error');
             return redirect()->back();
         }
     }

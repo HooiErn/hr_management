@@ -38,13 +38,27 @@ class AttendanceController extends Controller
           ->where('date', Carbon::today()->toDateString())
           ->get();
 
-      // Parse punch_in and punch_out to Carbon instances
       foreach ($attendances as $attendance) {
           if ($attendance->punch_in) {
               $attendance->punch_in = Carbon::parse($attendance->punch_in);
           }
           if ($attendance->punch_out) {
               $attendance->punch_out = Carbon::parse($attendance->punch_out);
+          }
+
+          // Calculate worked hours and overtime
+          if ($attendance->punch_in && $attendance->punch_out) {
+              $attendance->worked_hours = $attendance->punch_in->diffInMinutes($attendance->punch_out); // in minutes
+              $attendance->overtime = $this->calculateOvertime($attendance->punch_in, $attendance->punch_out); // Calculate overtime
+              \Log::info('Attendance Record:', [
+                'punch_in' => $attendance->punch_in,
+                'punch_out' => $attendance->punch_out,
+                'worked_minutes' => $attendance->worked_hours,
+                'overtime' => $attendance->overtime,
+            ]);
+          } else {
+              $attendance->worked_hours = 0;
+              $attendance->overtime = 0; // Ensure overtime is set to 0 if no punch out
           }
       }
 
@@ -91,25 +105,36 @@ class AttendanceController extends Controller
             'employee_id' => 'required|exists:employees,id',
         ]);
 
+        // Log the incoming request data
+        \Log::info('PunchOut Request Data: ', $request->all());
+
         // Find the latest punch in record for today
         $attendance = Attendance::where('employee_id', $request->employee_id)
             ->where('date', Carbon::today()->toDateString())
-            ->whereNull('punch_out') // Ensure we are punching out the latest punch in
+            ->whereNull('punch_out') 
             ->first();
 
+        // Log the attendance record found
+        \Log::info('Attendance Record Found: ', [$attendance]);
+
         if ($attendance) {
-            $attendance->punch_out = Carbon::now();
-            $attendance->save();
+            try {
+                $attendance->punch_out = Carbon::now();
+                $attendance->save();
+                $attendance->overtime = $this->calculateOvertime($attendance->punch_in, $attendance->punch_out);
+                $attendance->location = 'FBIhotline';
+                $attendance->save();
 
-            // Calculate break time and overtime
-            $breakDuration = $this->calculateBreakDuration($attendance->punch_in, $attendance->punch_out);
-            $overtime = $this->calculateOvertime($attendance->punch_in, $attendance->punch_out);
 
-            $attendance->break_duration = $breakDuration;
-            $attendance->overtime = $overtime;
-            $attendance->save();
 
-            return response()->json(['message' => 'Punched out successfully!', 'attendance' => $attendance]);
+                return response()->json([
+                    'message' => 'Punched out successfully!',
+                    'attendance' => $attendance,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Error during punch out: ' . $e->getMessage());
+                return response()->json(['message' => 'An error occurred while punching out.'], 500);
+            }
         }
 
         return response()->json(['message' => 'No punch in record found for today.'], 404);
@@ -117,36 +142,32 @@ class AttendanceController extends Controller
 
     private function calculateBreakDuration($punchIn, $punchOut)
     {
-        $punchInTime = Carbon::parse($punchIn);
-        $punchOutTime = Carbon::parse($punchOut);
-
-        // If punch out is before 9 AM, no break is counted
-        if ($punchOutTime->lessThanOrEqualTo(Carbon::createFromTime(9, 0))) {
-            return 0;
-        }
-
-        // If punch in is after 9 AM, count the time from punch in to punch out
-        if ($punchInTime->greaterThanOrEqualTo(Carbon::createFromTime(9, 0))) {
-            return $punchInTime->diffInMinutes($punchOutTime);
-        }
-
-        // If punch in is before 9 AM, count the time from 9 AM to punch out
-        return Carbon::createFromTime(9, 0)->diffInMinutes($punchOutTime);
+        // Return 0 to indicate no break time is calculated
+        return 0; 
     }
-
     private function calculateOvertime($punchIn, $punchOut)
     {
-        $punchOutTime = Carbon::parse($punchOut);
-        $workingEndTime = Carbon::createFromTime(18, 0); // 6 PM
+        $overtimeStartTime = Carbon::createFromTime(18, 0); // 6 PM
+        $nextDayStartTime = Carbon::createFromTime(9, 0)->addDay(); // 9 AM next day
 
-        // If punch out is before 6 PM, no overtime is counted
-        if ($punchOutTime->lessThanOrEqualTo($workingEndTime)) {
-            return 0;
+        // Calculate total worked minutes
+        $workedMinutes = $punchIn->diffInMinutes($punchOut);
+
+        // If punch out is after 6 PM, calculate overtime
+        if ($punchOut->greaterThan($overtimeStartTime)) {
+            // Calculate minutes worked after 6 PM
+            $overtimeMinutes = $punchOut->diffInMinutes($overtimeStartTime);
+            return min($overtimeMinutes, $workedMinutes); // Ensure we don't exceed total worked minutes
         }
 
-        // Calculate overtime as the difference between punch out and 6 PM
-        return $punchOutTime->diffInMinutes($workingEndTime);
+        // If punch in is before 9 AM and punch out is after 6 PM, count those minutes as overtime
+        if ($punchIn->lessThan($nextDayStartTime) && $punchOut->greaterThan($overtimeStartTime)) {
+            return $workedMinutes; // All worked minutes are considered overtime
+        }
+
+        return 0; // No overtime if conditions are not met
     }
+    
 
     public function search(Request $request)
     {
@@ -181,4 +202,5 @@ class AttendanceController extends Controller
         return response()->json(['attendanceData' => $attendanceData]);
     }
 
+ 
 }

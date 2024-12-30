@@ -24,7 +24,8 @@ class ChatController extends Controller
             } elseif (stripos($question, 'recommend jobs') !== false) {
                 $answer = $this->recommendJobs($request->input('skills'));
             } elseif (stripos($question, 'contact customer service') !== false) {
-                $answer = "If you need to contact customer service, please reach out via WhatsApp at [your phone number].";
+                $phoneNumber = '+601234567';
+                $answer = "If you need to contact customer service, please reach out via WhatsApp at <a href='https://wa.me/$phoneNumber'>$phoneNumber</a>.";
             } else {
                 // Check for job title similarity and provide links
                 $relatedJobs = $this->getRelatedJobs($question);

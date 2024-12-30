@@ -154,7 +154,7 @@
                                                     <i class="material-icons">more_vert</i>
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_job" 
+                                                    <a class="dropdown-item edit-interviewer" href="#" data-toggle="modal" data-target="#edit_job" 
                                                        data-id="{{ $interviewer->id }}"
                                                        data-name="{{ $interviewer->name }}"
                                                        data-email="{{ $interviewer->email }}"
@@ -510,22 +510,21 @@
     <!-- /Page Wrapper -->
 
 <!-- Confirmation Modal -->
-<div id="confirmationModal" class="modal custom-modal fade"  role="dialog">
+<div id="confirmationModal" class="modal custom-modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Confirmation</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <p id="modalConfirmationMessage">Are you sure you want to proceed?</p>
             </div>
             <div class="modal-footer">
-                <form id="confirmationForm" action="{{ route('interviewer/bulkAction') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-primary submit-btn">Confirm</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                </form>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
@@ -615,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_interviewer" data-id="${interviewer.id}"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item edit-interviewer" href="#" data-toggle="modal" data-target="#edit_interviewer" data-id="${interviewer.id}"><i class="fa fa-pencil m-r-5"></i> Edit</a>
                                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_interviewer" data-id="${interviewer.id}"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                     </div>
                                 </div>
@@ -782,141 +781,93 @@ $(document).ready(function() {
 </script>
 
 <script>
-document.getElementById('apply-action').addEventListener('click', function () {
-    const action = document.getElementById('bulk-action').value;
-    const selectedInterviewers = Array.from(document.querySelectorAll('input[name="interviewers[]"]:checked')).map(cb => cb.value);
+$(document).ready(function() {
+    $('#apply-action').click(function() {
+        const action = $('#bulk-action').val();
+        const selectedInterviewers = $('input[name="interviewers[]"]:checked').map(function() {
+            return this.value;
+        }).get();
 
-    if (!action) {
-        alert('Please select an action.');
-        return;
-    }
-
-    if (selectedInterviewers.length === 0) {
-        alert('Please select at least one interviewer.');
-        return;
-    }
-
-    // Set the action and selected interviewers in the confirmation modal
-    document.getElementById('confirmationAction').value = action;
-    document.getElementById('interviewersInput').value = JSON.stringify(selectedInterviewers);
-
-    // Show the confirmation modal
-    $('#confirmationModal').modal('show');
-});
-</script>
-
-<script>
-document.getElementById('select-all').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('input[name="interviewers[]"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-    });
-});
-</script>
-
-<style>
-/* Enhanced styles for time picker */
-.bootstrap-datetimepicker-widget .timepicker {
-    margin-top: 0;
-    padding: 1em;
-}
-
-.bootstrap-datetimepicker-widget .timepicker-hour,
-.bootstrap-datetimepicker-widget .timepicker-minute {
-    font-size: 1.2em;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.bootstrap-datetimepicker-widget .timepicker-hour:hover,
-.bootstrap-datetimepicker-widget .timepicker-minute:hover {
-    background-color: #f8f9fa;
-}
-
-.bootstrap-datetimepicker-widget .btn[data-action] {
-    padding: 6px 12px;
-    margin: 2px;
-    border-radius: 4px;
-}
-
-.bootstrap-datetimepicker-widget .timepicker-picker table td {
-    padding: 5px;
-    text-align: center;
-}
-
-.bootstrap-datetimepicker-widget .timepicker-picker table td span {
-    width: 35px;
-    height: 35px;
-    line-height: 35px;
-    display: inline-block;
-}
-
-/* Make sure the time picker is visible */
-.bootstrap-datetimepicker-widget.wider {
-    width: 300px !important;
-}
-
-.bootstrap-datetimepicker-widget .timepicker-picker table td a {
-    padding: 5px;
-    width: 100%;
-    display: inline-block;
-    border: 1px solid transparent;
-    border-radius: 4px;
-}
-
-.bootstrap-datetimepicker-widget .timepicker-picker table td a:hover {
-    background-color: #f8f9fa;
-    border-color: #dee2e6;
-}
-
-.btn-success {
-    margin-left: 10px;
-    background-color: #25d366;
-    border-color: #25d366;
-}
-
-.btn-success:hover {
-    background-color: #128c7e;
-    border-color: #128c7e;
-}
-</style>
-
-<script>
-document.getElementById('confirmationForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
-
-    const formData = new FormData(this);
-
-    fetch(this.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        if (!action) {
+            toastr.error('Please select an action');
+            return;
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message); // Show success message
-            location.reload(); // Reload the page to reflect changes
-        } else {
-            alert('Error: ' + data.message); // Show error message
+
+        if (selectedInterviewers.length === 0) {
+            toastr.error('Please select at least one interviewer');
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while processing your request: ' + error.message);
+
+        // Show confirmation modal
+        $('#confirmationModal').modal('show');
+        $('#modalConfirmationMessage').text(`Are you sure you want to mark ${selectedInterviewers.length} interviewer(s) as ${action}?`);
+
+        // Handle confirmation button click
+        $('#confirmActionBtn').off('click').on('click', function() {
+            const formData = {
+                _token: '{{ csrf_token() }}',
+                action: action,
+                interviewers: selectedInterviewers,
+                confirm: true, // This will be converted to boolean
+                salary: action === 'hired' ? 3000 : null
+            };
+
+            $.ajax({
+                url: '{{ route("interviewer/bulkAction") }}',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                processData: false,
+                beforeSend: function() {
+                    $('#confirmActionBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        toastr.error(response.message || 'An error occurred');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'An error occurred';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    toastr.error(errorMessage);
+                },
+                complete: function() {
+                    $('#confirmActionBtn').prop('disabled', false).text('Confirm');
+                    $('#confirmationModal').modal('hide');
+                }
+            });
+        });
     });
 });
 </script>
 
 <script>
 $(document).ready(function() {
-    $('.approve-interviewer').click(function() {
-        var interviewerId = $(this).data('id');
-        $('#approve_interviewer_id').val(interviewerId);
+    // Handle edit button click
+    $(document).on('click', '.edit-interviewer', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var email = $(this).data('email');
+        var phone = $(this).data('phone');
+        var jobTitle = $(this).data('job-title');
+        var gender = $(this).data('gender');
+        var ic = $(this).data('ic');
+
+        // Set values in the edit modal
+        $('#edit_id').val(id);
+        $('#edit_name').val(name);
+        $('#edit_email').val(email);
+        $('#edit_phone').val(phone);
+        $('#edit_job_title').val(jobTitle);
+        $('#edit_gender').val(gender);
+        $('#edit_ic').val(ic);
     });
 });
 </script>

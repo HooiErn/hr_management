@@ -243,7 +243,7 @@ class JobController extends Controller
             'ic_number' => 'required|string|size:12|unique:candidates,ic_number|regex:/^\d{12}$/',
             'phone_number' => 'required|string|regex:/^[0-9]{10,13}$/', 
             'email' => 'required|email|max:255',
-            'age' => 'nullable|integer|min:0|max:120',
+            'age' => 'nullable|integer|min:0|max:100',
             'race' => 'nullable|string|max:50',
             'gender' => 'nullable|string|in:Male,Female,Other', 
             'birth_date' => 'nullable|date', 

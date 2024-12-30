@@ -14,14 +14,18 @@ use App\Models\PastEmployee;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\EmployeesExport;
+use App\Models\Timesheet;
+use Illuminate\Support\Facades\Storage;
+
 class EmployeeController extends Controller
 {
     // all employee card view
     public function cardAllEmployee(Request $request)
     {
+        $department = DB::table('departments')->get();
         $users = DB::table('employees')->get(); 
         $permission_lists = DB::table('permission_lists')->get();
-        return view('form.allemployeecard',compact('users','permission_lists'));
+        return view('form.allemployeecard',compact('users','permission_lists','department'));
     }
     // all employee list
     public function listAllEmployee()
@@ -34,58 +38,71 @@ class EmployeeController extends Controller
     public function saveRecord(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|string|email',
-            'birthDate'   => 'required|string|max:255',
-            'gender'      => 'required|string|max:255',
-            'employee_id' => 'required|string|max:255',
-            'company'     => 'required|string|max:255',
+            'name' => 'required',
+            'email' => 'required|email|unique:employees,email',
+            'ic_number' => 'required|string|size:12|unique:employees,ic_number|regex:/^\d{12}$/',
+            'salary' => 'required|numeric',
+            'status' => 'required',
+            'role_name' => 'nullable|string',
+            'phone_number' => 'nullable|string|regex:/^[0-9]{10,13}$/',
+            'age' => 'nullable|integer|min:0|max:100',
+            'gender' => 'nullable|string',
+            'race' => 'nullable|string',
+            'highest_education' => 'nullable|string',
+            'work_experiences' => 'nullable|integer',
+            'company' => 'nullable|string',
+            'cv_upload' => 'nullable|file|mimes:pdf|max:2048',
+            'birth_date' => 'nullable|date',
+            'avatar' => 'nullable|string',
+            'position' => 'nullable|string',
+            'department' => 'nullable|string',
+            'leaves' => 'nullable|string',
+            'contracts' => 'nullable|string',
+            'job_type' => 'required|string',
+            'password' => 'required|string|min:8', // Assuming password is part of your employee data
         ]);
 
-        DB::beginTransaction();
-        try{
+        try {
+            DB::beginTransaction();
+            
+            // Generate employee_id
+            $employeeId = 'EMP' . str_pad(Employee::count() + 1, 4, '0', STR_PAD_LEFT);
+            
+            // Handle CV upload (if provided)
+            $cvUploadPath = time().'.'.$request->cv_upload->extension();  
+            $request->cv_upload->move(public_path('assets/cv/'), $cvUploadPath);
 
-            $employees = Employee::where('email', '=',$request->email)->first();
-            if ($employees === null)
-            {
 
-                $employee = new Employee;
-                $employee->name         = $request->name;
-                $employee->email        = $request->email;
-                $employee->birth_date   = $request->birthDate;
-                $employee->gender       = $request->gender;
-                $employee->employee_id  = $request->employee_id;
-                $employee->company      = $request->company;
-                $employee->save();
-    
-                for($i=0;$i<count($request->id_count);$i++)
-                {
-                    $module_permissions = [
-                        'employee_id' => $request->employee_id,
-                        'module_permission' => $request->permission[$i],
-                        'id_count'          => $request->id_count[$i],
-                        'read'              => $request->read[$i],
-                        'write'             => $request->write[$i],
-                        'create'            => $request->create[$i],
-                        'delete'            => $request->delete[$i],
-                        'import'            => $request->import[$i],
-                        'export'            => $request->export[$i],
-                    ];
-                    DB::table('module_permissions')->insert($module_permissions);
-                }
-                
-                DB::commit();
-                Toastr::success('Add new employee successfully :)','Success');
-                return redirect()->route('all/employee/card');
-            } else {
-                DB::rollback();
-                Toastr::error('Add new employee exits :)','Error');
-                return redirect()->back();
-            }
-        }catch(\Exception $e){
+            $employee = new Employee();
+            $employee->employee_id = $employeeId;
+            $employee->name = $request->name;
+            $employee->email = $request->email;
+            $employee->age = $request->age;
+            $employee->race = $request->race;
+            $employee->highest_education = $request->highest_education;
+            $employee->work_experiences = $request->work_experiences;
+            $employee->ic_number = $request->ic_number;
+            $employee->cv_upload = $cvUploadPath;
+            $employee->birth_date = $request->birth_date;
+            $employee->gender = $request->gender;
+            $employee->phone_number = $request->phone_number;
+            $employee->status = $request->status;
+            $employee->role_name = $request->role_name;
+            $employee->position = $request->position;
+            $employee->department = $request->department;
+            $employee->salary = $request->salary; 
+            $employee->job_type = $request->job_type;
+            $employee->company = 'HRTech Inc.';
+            $employee->join_date = now();
+            $employee->password = bcrypt($request->password);
+            $employee->save();
+
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Add new employee fail :)','Error');
-            return redirect()->back();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
     // view edit record
@@ -100,54 +117,42 @@ class EmployeeController extends Controller
         return view('form.edit.editemployee',compact('employees','permission'));
     }
     // update record employee
-    public function updateRecord( Request $request)
+    public function updateRecord(Request $request)
     {
-        DB::beginTransaction();
-        try{
-            // update table Employee
-            $updateEmployee = [
-                'id'=>$request->id,
-                'name'=>$request->name,
-                'email'=>$request->email,
-                'birth_date'=>$request->birth_date,
-                'gender'=>$request->gender,
-                'employee_id'=>$request->employee_id,
-                'company'=>$request->company,
-            ];
-            // update table user
-            $updateUser = [
-                'id'=>$request->id,
-                'name'=>$request->name,
-                'email'=>$request->email,
-            ];
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:employees,email,' . $request->id,
+            'salary' => 'required|numeric',
+            'status' => 'required',
+            'role_name' => 'nullable|string',
+            'phone_number' => 'nullable|string|regex:/^[0-9]{10,13}$/',
+            'gender' => 'nullable|string',
+            'position' => 'nullable|string',
+            'department' => 'nullable|string',
+            'job_type' => 'required|string',
+        ]);
 
-            // update table module_permissions
-            for($i=0;$i<count($request->id_permission);$i++)
-            {
-                $UpdateModule_permissions = [
-                    'employee_id' => $request->employee_id,
-                    'module_permission' => $request->permission[$i],
-                    'id'                => $request->id_permission[$i],
-                    'read'              => $request->read[$i],
-                    'write'             => $request->write[$i],
-                    'create'            => $request->create[$i],
-                    'delete'            => $request->delete[$i],
-                    'import'            => $request->import[$i],
-                    'export'            => $request->export[$i],
-                ];
-                module_permission::where('id',$request->id_permission[$i])->update($UpdateModule_permissions);
-            }
+        try {
+            DB::beginTransaction();
+            
+            $employee = Employee::findOrFail($request->id);
 
-            User::where('id',$request->id)->update($updateUser);
-            Employee::where('id',$request->id)->update($updateEmployee);
-        
+            $employee->name = $request->name;
+            $employee->email = $request->email;
+            $employee->phone_number = $request->phone_number;
+            $employee->status = $request->status;
+            $employee->position = $request->position;
+            $employee->department = $request->department;
+            $employee->job_type = $request->job_type;
+            $employee->salary = $request->salary;
+            $employee->role_name = $request->role_name;
+            $employee->save();
+
             DB::commit();
-            Toastr::success('updated record successfully :)','Success');
-            return redirect()->route('all/employee/card');
-        }catch(\Exception $e){
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('updated record fail :)','Error');
-            return redirect()->back();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
     // delete record
@@ -469,7 +474,10 @@ class EmployeeController extends Controller
     /** page time sheet */
     public function timeSheetIndex()
     {
-        return view('form.timesheet');
+        // Retrieve all timesheets with their associated interviewers
+        $timesheets = Timesheet::with('interviewer')->get();
+
+        return view('form.timesheet', compact('timesheets'));
     }
 
     /** page overtime */

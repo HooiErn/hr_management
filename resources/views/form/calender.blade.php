@@ -8,18 +8,17 @@
             <div class="page-header">
                 <div class="row align-items-center">
                     <div class="col">
-                        <h3 class="page-title">Calender <span id="year"></span></h3>
+                        <h3 class="page-title">Calendar <span id="year"></span></h3>
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item active">Holidays</li>
+                            <li class="breadcrumb-item active">Events</li>
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_holiday"><i class="fa fa-plus"></i> Add Holiday</a>
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_holiday"><i class="fa fa-plus"></i> Add Events</a>
                     </div>
                 </div>
             </div>
-			<!-- /Page Header -->
             {{-- message --}}
             {!! Toastr::message() !!}
 
@@ -38,27 +37,28 @@
             </div>
         </div>
         <!-- /Page Content -->
+
         <!-- Add Holiday Modal -->
         <div class="modal custom-modal fade" id="add_holiday" role="dialog">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add Holiday</h5>
+                        <h5 class="modal-title">Add Events</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="" method="POST">
+                        <form action="{{ route('form/calender/save') }}" method="POST">
                             @csrf
                             <div class="form-group">
-                                <label>Holiday Name <span class="text-danger">*</span></label>
-                                <input class="form-control" type="text" id="nameHoliday" name="nameHoliday">
+                                <label>Event Name <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" id="nameHoliday" name="nameEvent" required>
                             </div>
                             <div class="form-group">
-                                <label>Holiday Date <span class="text-danger">*</span></label>
+                                <label>Event Date <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text" id="holidayDate" name="holidayDate">
+                                    <input class="form-control datetimepicker" type="text" id="holidayDate" name="eventDate" required>
                                 </div>
                             </div>
                             <div class="submit-section">
@@ -71,67 +71,35 @@
         </div>
         <!-- /Add Holiday Modal -->
 
-        <!-- Edit Holiday Modal -->
-        <div class="modal custom-modal fade" id="edit_holiday" role="dialog">
+        <!-- Delete Event Modal -->
+        <div class="modal custom-modal fade" id="delete_event" role="dialog">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Edit Holiday</h5>
+                        <h5 class="modal-title">Delete Event</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="" method="POST">
+                        <p>Are you sure you want to delete this event?</p>
+                        <form id="deleteEventForm" method="POST">
                             @csrf
-                            <input type="hidden" name="id" id="e_id" value="">
-                            <div class="form-group">
-                                <label>Holiday Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="holidayName_edit" name="holidayName" value="">
-                            </div>
-                            <div class="form-group">
-                                <label>Holiday Date <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input type="text" class="form-control datetimepicker" id="holidayDate_edit" name="holidayDate" value="">
-                                </div>
-                            </div>
+                            @method('DELETE')
+                            <input type="hidden" name="event_id" id="event_id">
                             <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Save</button>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- /Edit Holiday Modal -->
-
-        <!-- Delete Holiday Modal -->
-        <div class="modal custom-modal fade" id="delete_holiday" role="dialog">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <div class="form-header">
-                            <h3>Delete Holiday</h3>
-                            <p>Are you sure want to delete?</p>
-                        </div>
-                        <div class="modal-btn delete-action">
-                            <div class="row">
-                                <div class="col-6">
-                                    <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
-                                </div>
-                                <div class="col-6">
-                                    <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /Delete Holiday Modal -->
-       
+        <!-- /Delete Event Modal -->
     </div>
     <!-- /Page Wrapper -->
+
     @section('script')
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script>
@@ -148,33 +116,41 @@
                     // Holidays
                     @foreach($events as $item)
                     {
-                        title: '🎉 ' + '{{ $item->name_holiday }}',
-                        start: '{{ $item->date_holiday }}',
+                        title: '🎉 ' + '{{ $item->name_calender }}',
+                        start: '{{ $item->date_calender }}',
                         backgroundColor: '#f43b48',
                         borderColor: '#f43b48',
-                        className: 'holiday-event'
-                    },
-                    @endforeach
-                    
-                    // Approved Leaves
-                    @foreach($approvedLeaves ?? [] as $leave)
-                    {
-                        title: '🌴 ' + '{{ $leave->employee_name }}',
-                        start: '{{ $leave->from_date }}',
-                        end: '{{ $leave->to_date }}',
-                        backgroundColor: '#55ce63',
-                        borderColor: '#55ce63',
-                        className: 'leave-event'
+                        className: 'holiday-event',
+                        id: '{{ $item->id }}' // Assuming you have an ID for each event
                     },
                     @endforeach
                 ],
                 eventClick: function(info) {
-                    // Handle event clicks if needed
+                    // Open delete modal
+                    $('#event_id').val(info.event.id);
+                    $('#delete_event').modal('show');
                 }
             });
             calendar.render();
         });
+
+        $(document).ready(function() {
+            $('.datetimepicker').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true
+            });
+        });
     </script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     @endsection
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 @endsection

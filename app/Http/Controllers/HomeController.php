@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\ApplyForJob; 
 use App\Models\Company;
 use App\Models\Employee;
+use App\Models\Interviewer;
 
 class HomeController extends Controller
 {
@@ -32,7 +33,12 @@ class HomeController extends Controller
     public function index()
     {
         $employeeCount = Employee::count();
-        return view('dashboard.dashboard', compact('employeeCount'));
+        $interviewerCount = Interviewer::count();
+        $leaveCount = DB::table('leaves_admins')
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
+
+        return view('dashboard.dashboard', compact('employeeCount', 'interviewerCount', 'leaveCount'));
     }
 
     public function showHomepage()

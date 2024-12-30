@@ -17,6 +17,7 @@ class Attendance extends Model
         'overtime',
         'date', 
         'session_id',
+        'location',
     ];
 
     // Define the relationship with the Employee model

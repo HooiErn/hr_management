@@ -48,8 +48,8 @@
 			font-size: 32px;
 		}
 		.chat-message {
-			display: flex; /* 使用 Flexbox */
-			align-items: flex-start; /* 垂直对齐 */
+			display: flex; 
+			align-items: flex-start; 
 		}
 		.custom-chatbox-container {
 			display: none;

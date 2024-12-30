@@ -39,12 +39,7 @@
                             </div>
                             <div class="statistics">
                                 <div class="row">
-                                    <div class="col-md-6 col-6 text-center">
-                                        <div class="stats-box">
-                                            <p>Break</p>
-                                            <h6>{{ $attendances->isNotEmpty() ? $attendances->first()->break_duration . ' hrs' : '0 hrs' }}</h6>
-                                        </div>
-                                    </div>
+
                                     <div class="col-md-6 col-6 text-center">
                                         <div class="stats-box">
                                             <p>Overtime</p>
@@ -62,7 +57,15 @@
                             <h5 class="card-title">Statistics</h5>
                             <div class="stats-list">
                                 <div class="stats-info">
-                                    <p>Today <strong>{{ $attendances->isNotEmpty() ? $attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) . ' <small>/ 8 hrs</small>' : '0 <small>/ 8 hrs</small>' }}</strong></p>
+                                    <p style="display: flex; align-items: center;">
+                                        Today <strong style="margin-left: 5px;">
+                                            {{ $attendances->isNotEmpty() && $attendances->first()->punch_in && $attendances->first()->punch_out 
+                                                ? floor($attendances->first()->punch_in->diffInMinutes($attendances->first()->punch_out) / 60) . ' hrs ' . ($attendances->first()->punch_in->diffInMinutes($attendances->first()->punch_out) % 60) . ' mins'
+                                                : '0 hrs' 
+                                            }}
+                                        </strong>
+                                        <span style="margin-left: 5px;">/ 8 hrs</span>
+                                    </p>
                                     <div class="progress">
                                         <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $attendances->isNotEmpty() ? ($attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) / 8) * 100 : 0 }}%" aria-valuenow="{{ $attendances->isNotEmpty() ? ($attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) / 8) * 100 : 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
@@ -186,7 +189,6 @@
                                     <th>Punch In</th>
                                     <th>Punch Out</th>
                                     <th>Production</th>
-                                    <th>Break</th>
                                     <th>Overtime</th>
                                 </tr>
                             </thead>
@@ -197,9 +199,8 @@
                                     <td>{{ \Carbon\Carbon::parse($attendance->date)->format('d M Y') }}</td>
                                     <td>{{ $attendance->punch_in ? \Carbon\Carbon::parse($attendance->punch_in)->format('h:i A') : 'N/A' }}</td>
                                     <td>{{ $attendance->punch_out ? \Carbon\Carbon::parse($attendance->punch_out)->format('h:i A') : 'N/A' }}</td>
-                                    <td>{{ $attendance->punch_in && $attendance->punch_out ? $attendance->punch_in->diffInHours($attendance->punch_out) . ' hrs' : '0 hrs' }}</td>
-                                    <td>{{ $attendance->break_duration }} hrs</td>
-                                    <td>{{ $attendance->overtime }} hrs</td>
+                                    <td>{{ floor($attendance->worked_hours / 60) }} hrs {{ $attendance->worked_hours % 60 }} mins</td>
+                                    <td>{{ floor($attendance->overtime / 60) }} hrs {{ $attendance->overtime % 60 }} mins</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -277,6 +278,8 @@
             })
             .catch(error => console.error('Error:', error));
         });
+
+        
     </script>
 @endsection
 @endsection

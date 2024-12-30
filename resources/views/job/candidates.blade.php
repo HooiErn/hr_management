@@ -346,7 +346,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Gender <span class="text-danger">*</span></label>
                                         <select class="form-control @error('gender') is-invalid @enderror" name="gender" required>

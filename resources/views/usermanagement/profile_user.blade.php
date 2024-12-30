@@ -27,7 +27,7 @@
                                 <div class="profile-img-wrap">
                                     <div class="profile-img">
                                         <a href="#">
-                                        <img src="{{ URL::to('/assets/images/avatar/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+                                        <img src="{{ URL::to('/assets/images/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
                                         </a>
                                     </div>
                                 </div>
@@ -860,7 +860,7 @@
                                 </div>
                                 
                                 <div class="submit-section">
-                                    <button class="btn btn-primary submit-btn" type="submit">Save</button>
+                                    <button class="btn btn-success submit-btn" type="submit">Save</button>
                                 </div>
                             </form>
                         </div>
@@ -891,107 +891,38 @@
                                         <div class="fileupload btn">
                                             <span class="btn-text">edit</span>
                                             <input class="upload" type="file" id="image" name="images">
-                                            <input type="hidden" name="hidden_image" id="e_image" value="{{ Auth::user()->avatar }}">
+                                            <input type="hidden" name="hidden_image" value="{{ Auth::user()->avatar }}">
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>Full Name</label>
-                                                <input type="text" class="form-control" id="name" name="name" value="{{ Auth::user()->name }}">
-                                                <input type="hidden" class="form-control" id="user_id" name="user_id" value="{{ Auth::user()->user_id }}">
-                                                <input type="hidden" class="form-control" id="email" name="email" value="{{ Auth::user()->email }}">
+                                                <input type="text" class="form-control" name="name" value="{{ $information->name ?? Auth::user()->name }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Birth Date</label>
                                                 <div class="cal-icon">
-                                                    <input class="form-control datetimepicker" type="text" id="birthDate" name="birthDate" value="{{ $information->birth_date }}">
+                                                    <input class="form-control datetimepicker" type="text" name="birthDate" value="{{ $information->birth_date ?? '' }}">
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>Gender</label>
-                                                <select class="select form-control" id="gender" name="gender">
-                                                    <option value="{{ $information->gender }}" {{ ( $information->gender == $information->gender) ? 'selected' : '' }}>{{ $information->gender }} </option>
-                                                    <option value="Male">Male</option>
-                                                    <option value="Female">Female</option>
+                                                <select class="select form-control" name="gender">
+                                                    <option value="Male" {{ ($information->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
+                                                    <option value="Female" {{ ($information->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
                                                 </select>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>Address</label>
-                                        <input type="text" class="form-control" id="address" name="address" value="{{ $information->address }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>State</label>
-                                        <input type="text" class="form-control" id="state" name="state" value="{{ $information->state }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Country</label>
-                                        <input type="text" class="form-control" id="" name="country" value="{{ $information->country }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Pin Code</label>
-                                        <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ $information->pin_code }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                      <label>Phone Number</label>
-                                        <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ $information->phone_number }}">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Department <span class="text-danger">*</span></label>
-                                        <select class="select" id="department" name="department">
-                                            <option value="{{ $information->department }}" {{ ( $information->department == $information->department) ? 'selected' : '' }}>{{ $information->department }} </option>
-                                            <option value="Web Development">Web Development</option>
-                                            <option value="IT Management">IT Management</option>
-                                            <option value="Marketing">Marketing</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Designation <span class="text-danger">*</span></label>
-                                        <select class="select" id="" name="designation">
-                                            <option value="{{ $information->designation }}" {{ ( $information->designation == $information->designation) ? 'selected' : '' }}>{{ $information->designation }} </option>
-                                            <option value="Web Designer">Web Designer</option>
-                                            <option value="Web Developer">Web Developer</option>
-                                            <option value="Android Developer">Android Developer</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Reports To <span class="text-danger">*</span></label>
-                                        <select class="select" id="" name="reports_to">
-                                            <option value="{{ $information->reports_to }}" {{ ( $information->reports_to == $information->reports_to) ? 'selected' : '' }}>{{ $information->reports_to }} </option>
-                                            @foreach ($user as $users )
-                                            <option value="{{ $users->name }}">{{ $users->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
                             <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                                <button type="submit" class="btn btn-primary submit-btn">Save</button>
                             </div>
                         </form>
                     </div>
@@ -1085,41 +1016,48 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Department <span class="text-danger">*</span></label>
-                                        <select class="select" id="department" name="department">
-                                            <option selected disabled>Select Department</option>
-                                            <option value="Web Development">Web Development</option>
-                                            <option value="IT Management">IT Management</option>
-                                            <option value="Marketing">Marketing</option>
+                                        <label>Department</label>
+                                        <select class="select form-control" name="department">
+                                            <option value="">Select Department</option>
+                                            @foreach($departments as $dept)
+                                                <option value="{{ $dept }}" {{ ($information->department ?? Auth::user()->department) == $dept ? 'selected' : '' }}>
+                                                    {{ $dept }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
+                                
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Designation <span class="text-danger">*</span></label>
-                                        
-                                        <select class="select" id="" name="designation">
-                                            <option selected disabled>Select Designation</option>
-                                            <option value="Web Designer">Web Designer</option>
-                                            <option value="Web Developer">Web Developer</option>
-                                            <option value="Android Developer">Android Developer</option>
+                                        <label>Designation</label>
+                                        <select class="select form-control" name="designation">
+                                            <option value="">Select Designation</option>
+                                            @foreach($designations as $designation)
+                                                <option value="{{ $designation }}" {{ ($information->designation ?? Auth::user()->position) == $designation ? 'selected' : '' }}>
+                                                    {{ $designation }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
+                                
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Reports To <span class="text-danger">*</span></label>
-                                        <select class="select" id="" name="reports_to">
-                                            <option selected disabled>-- select --</option>
-                                            @foreach ($user as $users )
-                                            <option value="{{ $users->name }}">{{ $users->name }}</option>
+                                        <label>Reports To</label>
+                                        <select class="select form-control" name="reports_to">
+                                            <option value="">Select Manager</option>
+                                            @foreach($managers as $manager)
+                                                <option value="{{ $manager->id }}" {{ ($information->reports_to ?? '') == $manager->id ? 'selected' : '' }}>
+                                                    {{ $manager->name }} - {{ $manager->position }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
                             </div>
                             <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                                <button type="submit" class="btn btn-success submit-btn">Save</button>
                             </div>
                         </form>
                     </div>
@@ -1344,32 +1282,45 @@
                                         <h3 class="card-title">Education Informations <a href="javascript:void(0);" class="delete-icon"><i class="fa fa-trash-o"></i></a></h3>
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Name <span class="text-danger">*</span></label>
-                                                    <input class="form-control" type="text">
+                                                <div class="form-group form-focus focused">
+                                                    <input type="text" value="Oxford University" class="form-control floating">
+                                                    <label class="focus-label">Institution</label>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Relationship <span class="text-danger">*</span></label>
-                                                    <input class="form-control" type="text">
+                                                <div class="form-group form-focus focused">
+                                                    <input type="text" value="Computer Science" class="form-control floating">
+                                                    <label class="focus-label">Subject</label>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Date of birth <span class="text-danger">*</span></label>
-                                                    <input class="form-control" type="text">
+                                                <div class="form-group form-focus focused">
+                                                    <div class="cal-icon">
+                                                        <input type="text" value="01/06/2002" class="form-control floating datetimepicker">
+                                                    </div>
+                                                    <label class="focus-label">Starting Date</label>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Phone <span class="text-danger">*</span></label>
-                                                    <input class="form-control" type="text">
+                                                <div class="form-group form-focus focused">
+                                                    <div class="cal-icon">
+                                                        <input type="text" value="31/05/2006" class="form-control floating datetimepicker">
+                                                    </div>
+                                                    <label class="focus-label">Complete Date</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="add-more">
-                                            <a href="javascript:void(0);"><i class="fa fa-plus-circle"></i> Add More</a>
+                                            <div class="col-md-6">
+                                                <div class="form-group form-focus focused">
+                                                    <input type="text" value="BE Computer Science" class="form-control floating">
+                                                    <label class="focus-label">Degree</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group form-focus focused">
+                                                    <input type="text" value="Grade A" class="form-control floating">
+                                                    <label class="focus-label">Grade</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

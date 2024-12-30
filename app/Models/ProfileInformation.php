@@ -22,5 +22,11 @@ class ProfileInformation extends Model
         'department',
         'designation',
         'reports_to',
+        'avatar'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

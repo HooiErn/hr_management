@@ -14,6 +14,9 @@ use App\Notifications\InterviewScheduled;
 use App\Mail\HiredNotification;
 use App\Mail\RejectedNotification;
 use App\Models\Candidate;
+use App\Models\Timesheet;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class InterviewController extends Controller
 {
@@ -33,6 +36,12 @@ class InterviewController extends Controller
                 'interview_datetime' => $request->interview_datetime,
                 'interview_type' => $request->interview_type
             ]);
+
+            // Create or update the timesheet entry
+            Timesheet::updateOrCreate(
+                ['interviewer_id' => $interviewer->id, 'date' => Carbon::now()->format('Y-m-d')],
+                ['scheduled_time' => $request->interview_datetime, 'status' => 'Scheduled']
+            );
 
             // Prepare interview data
             $interviewData = [
@@ -204,24 +213,39 @@ class InterviewController extends Controller
     //hired or rejected interviewer
     public function bulkAction(Request $request)
     {
-        // Validate the request data
-        $request->validate([
-            'action' => 'required|in:hired,rejected',
-            'interviewers' => 'required|array',
-            'interviewers.*' => 'exists:interviewers,id',
-            'salary' => 'required_if:action,hired|numeric|min:0',
-        ]);
-
-        // Confirmation handling
-        if (!$request->has('confirm') || !$request->confirm) {
-            return response()->json(['success' => false, 'message' => 'Confirmation required'], 400);
-        }
-
+        \Log::info('Bulk action started', $request->all());
+        
         try {
-            foreach ($request->interviewers as $interviewerId) {
-                $interviewer = Interviewer::findOrFail($interviewerId);
+            $data = $request->json()->all();
+            
+            $validator = Validator::make($data, [
+                'action' => 'required|in:hired,rejected',
+                'interviewers' => 'required|array',
+                'interviewers.*' => 'exists:interviewers,id',
+                'confirm' => 'required|boolean'
+            ]);
 
-                if ($request->action === 'hired') {
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            if (!$data['confirm']) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Confirmation required'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+            
+            foreach ($data['interviewers'] as $interviewerId) {
+                $interviewer = Interviewer::findOrFail($interviewerId);
+                \Log::info('Processing interviewer: ' . $interviewer->name);
+
+                if ($data['action'] === 'hired') {
                     // Generate employee ID
                     $employeeId = 'EMP' . str_pad(Employee::count() + 1, 4, '0', STR_PAD_LEFT); // Example ID generation
     
@@ -231,6 +255,7 @@ class InterviewController extends Controller
                     if ($job) {
                         // Transfer interviewer data to the employee table
                         $employee = new Employee();
+                        $employee->employee_id = $employeeId;
                         $employee->name = $interviewer->name;
                         $employee->email = $interviewer->email;
                         $employee->age = $interviewer->age;
@@ -246,7 +271,7 @@ class InterviewController extends Controller
                         $employee->role_name = 'Staff';
                         $employee->position = $job->job_title;
                         $employee->department = $job->department;
-                        $employee->salary_from = ""; 
+                        $employee->salary = $request->salary ?? ""; 
                         $employee->job_type = $job->job_type;
                         $employee->company = env('APP_NAME');
                         $employee->join_date = now();
@@ -262,7 +287,7 @@ class InterviewController extends Controller
                         }
                         $interviewer->delete();
                     }
-                } elseif ($request->action === 'rejected') {
+                } elseif ($data['action'] === 'rejected') {
                     // Handle rejection logic
                     // Move interviewer data back to candidates table
                     $candidate = new Candidate();
@@ -288,17 +313,16 @@ class InterviewController extends Controller
                     Mail::to($interviewer->email)->send(new RejectedNotification($interviewer));
                     $interviewer->delete();
                     \Log::info('Interviewer record deleted for: ' . $interviewer->name);
-                } elseif ($request->action === 'approve') {
-                    // Logic for approving the interviewer
-                    $interviewer->status = 'approved'; // Example status change
-                    $interviewer->save();
                 }
             }
 
+            DB::commit();
             return response()->json(['success' => true, 'message' => 'Action applied successfully.']);
+
         } catch (\Exception $e) {
+            DB::rollback();
             \Log::error('Error in bulkAction: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'An error occurred while processing your request.'], 500);
+            return response()->json(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
     

@@ -21,24 +21,32 @@ class HiredNotification extends Mailable
  // In the HiredNotification Mailable
  public function build()
  {
-     // Generate the contract PDF
-     $contractData = [
-         'name' => $this->interviewer->name,
-         'position' => $this->interviewer->position,  
-         'start_date' => now()->addWeek()->toFormattedDateString(),
-     ];
-     $pdf = PDF::loadView('contracts.contract', $contractData);
- 
-     // Build the email and attach the contract PDF
-     return $this->subject('Congratulations! You are Hired')
-                 ->view('emails.hired')
-                 ->with([
-                     'name' => $this->interviewer->name,
-                     'interview_datetime' => $this->interviewer->interview_datetime,
-                     'start_date' => now()->addWeek()->toFormattedDateString(),
-                 ])
-                 ->attachData($pdf->output(), 'contract.pdf', [
-                     'mime' => 'application/pdf',
-                 ]);
+     try {
+         // Generate the contract PDF
+         $contractData = [
+             'name' => $this->interviewer->name,
+             'position' => $this->interviewer->job_title,
+             'start_date' => now()->addWeek()->toFormattedDateString(),
+             'salary' => number_format(3000, 2) // Default salary or get from your data
+         ];
+
+         $pdf = PDF::loadView('contract.contract', $contractData);
+         \Log::info('Contract generated for: ' . $this->interviewer->name);
+
+         // Build the email
+         return $this->subject('Congratulations! You are Hired')
+                    ->view('emails.hired')
+                    ->with([
+                        'name' => $this->interviewer->name,
+                        'position' => $this->interviewer->job_title,
+                        'start_date' => now()->addWeek()->toFormattedDateString(),
+                    ])
+                    ->attachData($pdf->output(), 'employment_contract.pdf', [
+                        'mime' => 'application/pdf',
+                    ]);
+     } catch (\Exception $e) {
+         \Log::error('Error in HiredNotification: ' . $e->getMessage());
+         throw $e;
+     }
  }
 }

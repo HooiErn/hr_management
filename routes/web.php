@@ -18,6 +18,7 @@ use App\Http\Controllers\PersonalInformationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ProfileController;
 
 
 /*
@@ -106,8 +107,8 @@ Route::controller(ForgotPasswordController::class)->group(function () {
 
 // ----------------------------- reset password -----------------------------//
 Route::controller(ResetPasswordController::class)->group(function () {
-    Route::get('reset-password/{token}', 'getPassword');
-    Route::post('reset-password', 'updatePassword');    
+    Route::get('reset-password/{token}', 'getPassword')->name('reset-password');
+    Route::post('reset-password', 'updatePassword')->name('reset-password.post');    
 });
 
 // ----------------------------- user profile ------------------------------//
@@ -182,9 +183,9 @@ Route::controller(InterviewController::class)->group(function () {
     Route::delete('interviewer/delete', 'destroy')->name('interviewer/delete');
     Route::get('/resume/{id}', 'showResume')->middleware('auth')->name('resume');
     Route::post('interviewer/bulkAction', 'bulkAction')->middleware('auth')->name('interviewer/bulkAction');
-    Route::post('/interviewers/search',  'search')->name('interviewers/search');
-    Route::post('/interviewers/send-email',  'sendEmail')->name('interviewers/send-email');
-
+    Route::post('/interviewers/search',  'search')->middleware('auth')->name('interviewers/search');
+    Route::post('/interviewers/send-email',  'sendEmail')->middleware('auth')->name('interviewers/send-email');
+   
 });
 
 // ----------------------------- chatbox candidates ------------------------------//
@@ -255,6 +256,7 @@ Route::controller(CalenderController::class)->group(function () {
     Route::get('form/calender/new', 'calender')->middleware('auth')->name('form/calender/new');
     Route::post('form/calender/save', 'saveRecord')->middleware('auth')->name('form/calender/save');
     Route::post('form/calender/update', 'updateRecord')->middleware('auth')->name('form/calender/update');    
+    Route::delete('/calendar/delete/{id}', 'deleteRecord')->middleware('auth')->name('calendar.delete');
 });
 
 // ----------------------------- form leaves ------------------------------//
@@ -286,7 +288,6 @@ Route::controller(LeavesController::class)->group(function () {
 
 // ----------------------------- reports  ------------------------------//
 Route::controller(ExpenseReportsController::class)->group(function () {
-    Route::get('form/daily/reports/page', 'dailyReport')->middleware('auth')->name('form/daily/reports/page');
     Route::get('form/leave/reports/page','leaveReport')->middleware('auth')->name('form/leave/reports/page');
 });
 
@@ -309,6 +310,12 @@ Route::controller(PersonalInformationController::class)->group(function () {
 // Public meeting routes (no auth required)
 Route::get('public/meeting', [JobController::class, 'publicMeeting'])->name('public.meeting');
 Route::post('public/meeting/join', [JobController::class, 'joinPublicMeeting'])->name('public.meeting.join');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('profile', [ProfileController::class, 'index'])->name('user.profile');
+    Route::post('profile/save', [ProfileController::class, 'saveProfile'])->name('user.profile.save');
+});
+
 
 
 
