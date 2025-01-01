@@ -55,62 +55,43 @@ class LeavesController extends Controller
     public function saveRecord(Request $request)
     {
         $request->validate([
-            'leave_type'   => 'required|string|max:255',
-            'from_date'    => 'required|date',
-            'to_date'      => 'required|date',
-            'leave_reason' => 'required|string|max:255',
-            'user_id'      => 'required|exists:employees,employee_id',
-            'leave_status' => 'required|string',
-            'remaining_days' => 'required|integer',
+            'user_id' => 'required',
+            'leave_type' => 'required',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+            'leave_reason' => 'required',
+            'leave_status' => 'required|in:paid,unpaid',
+            'remaining_days' => 'required',
         ]);
 
-        // Log the validated data
-        \Log::info('Validated Data:', $request->all());
-
-        DB::beginTransaction();
         try {
-            // Calculate the number of days
+            // Calculate number of days (inclusive of both from_date and to_date)
             $from_date = new DateTime($request->from_date);
             $to_date = new DateTime($request->to_date);
-            $days = $from_date->diff($to_date)->d + 1; // Include the start date
-    
-            // Fetch total leave entitlement and calculate remaining leave days
-            $totalLeaveEntitlement = 15; // Set this based on your company policy
-            $usedLeaveDays = DB::table('leaves_admins')
-                ->where('user_id', $request->user_id)
+            $days = $from_date->diff($to_date)->days + 1; // Add 1 to include both start and end dates
+
+            // Calculate remaining days directly
+            $totalLeaveEntitlement = 15;
+            $usedLeaveDays = LeavesAdmin::where('user_id', $request->user_id)
                 ->whereYear('from_date', date('Y'))
-                ->sum('day'); // Assume 'day' stores the number of days taken
-    
-            // Calculate remaining leave days
-            $remainingLeaveDays = $totalLeaveEntitlement - $usedLeaveDays - $days;
-    
-            // Check if remaining leave days are sufficient
-            if ($remainingLeaveDays < 0) {
-                Toastr::error('Not enough leave days available!', 'Error');
-                return redirect()->back();
-            }
-    
-            // Save the leave request
-            $leaves = new LeavesAdmin();
-            $leaves->user_id = $request->user_id;
-            $leaves->leave_type = $request->leave_type;
-            $leaves->from_date = $request->from_date;
-            $leaves->to_date = $request->to_date;
-            $leaves->day = $days;
-            $leaves->leave_reason = $request->leave_reason;
-            $leaves->leave_status = $request->leave_status; // Save leave status
-            $leaves->remaining_days = $remainingLeaveDays; // Save remaining days
-            $leaves->save();
-    
-            DB::commit();
-            Toastr::success('Leave request submitted successfully!', 'Success');
-    
-            // Redirect to the leave report page or wherever appropriate
-            return redirect()->route('leaves.report');
-        } catch (\Exception $e) {
-            DB::rollback();
-            \Log::error('Error saving leave request: ' . $e->getMessage()); // Log the error message
-            Toastr::error('Failed to submit leave request.', 'Error');
+                ->sum('day');
+            $remainingDays = $totalLeaveEntitlement - $usedLeaveDays;
+
+            $leave = new LeavesAdmin;
+            $leave->user_id = $request->user_id;
+            $leave->leave_type = $request->leave_type;
+            $leave->from_date = $request->from_date;
+            $leave->to_date = $request->to_date;
+            $leave->day = $days; // Use calculated days
+            $leave->leave_reason = $request->leave_reason;
+            $leave->leave_status = $request->leave_status;
+            $leave->remaining_days = $remainingDays;
+            $leave->save();
+
+            Toastr::success('Leave has been created successfully :)','Success');
+            return redirect()->back();
+        } catch(\Exception $e) {
+            Toastr::error('Error occurred while creating leave :(','Error');
             return redirect()->back();
         }
     }
@@ -174,7 +155,7 @@ class LeavesController extends Controller
 
         $leave->delete();
         Toastr::success('Leave record deleted successfully!', 'Success');
-        return redirect()->route('leaves.report'); // Redirect to the report page
+        return redirect()->route('form/leave/reports/page'); // Redirect to the report page
     }
 
     // leaveSettings
@@ -201,22 +182,6 @@ class LeavesController extends Controller
         return view('form.shiftlist');
     }
 
-    public function leaveReport()
-    {
-        $leaves = DB::table('leaves_admins')
-                    ->join('employees', 'employees.employee_id', '=', 'leaves_admins.user_id')
-                    ->select('leaves_admins.leave_type',
-                             'leaves_admins.*', 
-                             'employees.name as employee_name', 
-                             'employees.position', 
-                             'employees.department')
-                    ->get();
-
-        \Log::info('Leaves Report Data:', $leaves->toArray()); // Log the leaves data
-
-        return view('reports.leavereports', compact('leaves'));
-    }
-
     public function searchEmployee(Request $request)
     {
         $searchTerm = $request->input('q'); // Get the search term
@@ -233,7 +198,7 @@ class LeavesController extends Controller
     
     public function exportExcel()
     {
-        return Excel::download(new LeavesExport, 'leaves.xlsx');
+        return Excel::download(new LeavesExport, 'leaves_employeeList.xlsx');
     }
 
     public function exportPDF()
@@ -241,6 +206,87 @@ class LeavesController extends Controller
         $leaves = LeavesAdmin::with('employee')->get(); // Fetch leaves with employee data
 
         $pdf = PDF::loadView('pdf.leaves_pdf', compact('leaves')); // Create PDF from view
-        return $pdf->download('leaves.pdf'); // Download the PDF
+        return $pdf->download('leaves_employeeList.pdf'); // Download the PDF
     }
+
+    public function updateRecord(Request $request)
+    {
+        $request->validate([
+            'leave_type' => 'required',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+            'leave_reason' => 'required',
+            'leave_status' => 'required|in:paid,unpaid',
+        ],[
+            'to_date.after_or_equal' => 'Leave To date cannot be earlier than Leave From date'
+        ]);
+
+        try {
+            $leave = LeavesAdmin::find($request->id);
+            $leave->leave_type = $request->leave_type;
+            $leave->from_date = $request->from_date;
+            $leave->to_date = $request->to_date;
+            $leave->leave_reason = $request->leave_reason;
+            $leave->leave_status = $request->leave_status;
+            $leave->save();
+
+            Toastr::success('Leave has been updated successfully :)','Success');
+            return redirect()->back();
+        } catch(\Exception $e) {
+            Toastr::error('Error occurred while updating leave :(','Error');
+            return redirect()->back();
+        }
+    }
+
+    public function searchLeaves(Request $request)
+    {
+        try {
+            $query = LeavesAdmin::query()
+                ->join('employees', 'employees.employee_id', '=', 'leaves_admins.user_id')
+                ->select('leaves_admins.*', 
+                        'employees.name as employee_name', 
+                        'employees.position', 
+                        'employees.department');
+
+            if ($request->filled('employee_name')) {
+                $query->where('employees.name', 'LIKE', '%' . $request->employee_name . '%')
+                      ->orWhere('employees.employee_id', 'LIKE', '%' . $request->employee_name . '%');
+            }
+
+            if ($request->filled('leave_type')) {
+                $query->where('leaves_admins.leave_type', $request->leave_type);
+            }
+
+            if ($request->filled('leave_status')) {
+                $query->where('leaves_admins.leave_status', $request->leave_status);
+            }
+
+            $leaves = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'leaves' => $leaves->map(function($leave) {
+                    return [
+                        'id' => $leave->id,
+                        'employee_name' => $leave->employee_name,
+                        'position' => $leave->position,
+                        'leave_type' => $leave->leave_type,
+                        'from_date' => $leave->from_date,
+                        'to_date' => $leave->to_date,
+                        'day' => $leave->day,
+                        'leave_reason' => $leave->leave_reason,
+                        'leave_status' => $leave->leave_status,
+                        'user_id' => $leave->user_id
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Search error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred while searching: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

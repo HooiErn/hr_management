@@ -27,7 +27,7 @@
                                 <div class="profile-img-wrap">
                                     <div class="profile-img">
                                         <a href="#">
-                                        <img src="{{ URL::to('/assets/images/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
+                                        <img src="{{ URL::to('/assets/images/avatar/'. Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}">
                                         </a>
                                     </div>
                                 </div>
@@ -219,15 +219,15 @@
                                     <ul class="personal-info">
                                         <li>
                                             <div class="title">Name</div>
-                                            <div class="text">John Doe</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Relationship</div>
-                                            <div class="text">Father</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Phone </div>
-                                            <div class="text">9876543210, 9876543210</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                     </ul>
                                     <hr>
@@ -235,15 +235,15 @@
                                     <ul class="personal-info">
                                         <li>
                                             <div class="title">Name</div>
-                                            <div class="text">Karen Wills</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Relationship</div>
-                                            <div class="text">Brother</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Phone </div>
-                                            <div class="text">9876543210, 9876543210</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -258,19 +258,19 @@
                                     <ul class="personal-info">
                                         <li>
                                             <div class="title">Bank name</div>
-                                            <div class="text">ICICI Bank</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Bank account No.</div>
-                                            <div class="text">159843014641</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">IFSC Code</div>
-                                            <div class="text">ICI24504</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">PAN No</div>
-                                            <div class="text">TC000Y56</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -293,10 +293,10 @@
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>Leo</td>
-                                                    <td>Brother</td>
-                                                    <td>Feb 16th, 2019</td>
-                                                    <td>9876543210</td>
+                                                    <td>Coming soon</td>
+                                                    <td>Coming soon</td>
+                                                    <td>Coming soon</td>
+                                                    <td>Coming soon</td>
                                                     <td class="text-right">
                                                         <div class="dropdown dropdown-action">
                                                             <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle" href="#"><i class="material-icons">more_vert</i></a>
@@ -327,9 +327,9 @@
                                                 </div>
                                                 <div class="experience-content">
                                                     <div class="timeline-content">
-                                                        <a href="#/" class="name">International College of Arts and Science (UG)</a>
-                                                        <div>Bsc Computer Science</div>
-                                                        <span class="time">2000 - 2003</span>
+                                                        <a href="#/" class="name">Coming soon</a>
+                                                        <div>Coming soon</div>
+                                                        <span class="time">Coming soon</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -339,9 +339,9 @@
                                                 </div>
                                                 <div class="experience-content">
                                                     <div class="timeline-content">
-                                                        <a href="#/" class="name">International College of Arts and Science (PG)</a>
-                                                        <div>Msc Computer Science</div>
-                                                        <span class="time">2000 - 2003</span>
+                                                        <a href="#/" class="name">Coming soon</a>
+                                                        <div>Coming soon</div>
+                                                        <span class="time">Coming soon</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -362,8 +362,8 @@
                                                 </div>
                                                 <div class="experience-content">
                                                     <div class="timeline-content">
-                                                        <a href="#/" class="name">Web Designer at Zen Corporation</a>
-                                                        <span class="time">Jan 2013 - Present (5 years 2 months)</span>
+                                                        <a href="#/" class="name">Coming soon</a>
+                                                        <span class="time">Coming soon</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -373,8 +373,8 @@
                                                 </div>
                                                 <div class="experience-content">
                                                     <div class="timeline-content">
-                                                        <a href="#/" class="name">Web Designer at Ron-tech</a>
-                                                        <span class="time">Jan 2013 - Present (5 years 2 months)</span>
+                                                        <a href="#/" class="name">Coming soon</a>
+                                                        <span class="time">Coming soon</span>
                                                     </div>
                                                 </div>
                                             </li>
@@ -384,8 +384,8 @@
                                                 </div>
                                                 <div class="experience-content">
                                                     <div class="timeline-content">
-                                                        <a href="#/" class="name">Web Designer at Dalt Technology</a>
-                                                        <span class="time">Jan 2013 - Present (5 years 2 months)</span>
+                                                        <a href="#/" class="name">Coming soon</a>
+                                                        <span class="time">Coming soon</span>
                                                     </div>
                                                 </div>
                                             </li>

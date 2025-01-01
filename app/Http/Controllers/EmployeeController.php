@@ -8,7 +8,6 @@ use DB;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Models\Employee;
 use App\Models\department;
-use App\Models\User;
 use App\Models\module_permission;
 use App\Models\PastEmployee;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -16,6 +15,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\EmployeesExport;
 use App\Models\Timesheet;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class EmployeeController extends Controller
 {
@@ -57,9 +58,10 @@ class EmployeeController extends Controller
             'position' => 'nullable|string',
             'department' => 'nullable|string',
             'leaves' => 'nullable|string',
-            'contracts' => 'nullable|string',
+            'contract_file' => 'required|mimes:pdf|max:5120', //max 5mb
             'job_type' => 'required|string',
             'password' => 'required|string|min:8', // Assuming password is part of your employee data
+          
         ]);
 
         try {
@@ -72,6 +74,9 @@ class EmployeeController extends Controller
             $cvUploadPath = time().'.'.$request->cv_upload->extension();  
             $request->cv_upload->move(public_path('assets/cv/'), $cvUploadPath);
 
+            // Handle Contract file upload
+            $contractFileName = $employeeId . '_contract_' . time() . '.pdf';
+            $request->contract_file->move(public_path('assets/contracts/'), $contractFileName);
 
             $employee = new Employee();
             $employee->employee_id = $employeeId;
@@ -95,8 +100,8 @@ class EmployeeController extends Controller
             $employee->company = 'HRTech Inc.';
             $employee->join_date = now();
             $employee->password = bcrypt($request->password);
+            $employee->contracts = $contractFileName; // Save contract file path
             $employee->save();
-
 
             DB::commit();
             return response()->json(['success' => true]);
@@ -130,12 +135,29 @@ class EmployeeController extends Controller
             'position' => 'nullable|string',
             'department' => 'nullable|string',
             'job_type' => 'required|string',
+            'contract_file' => 'nullable|mimes:pdf|max:5120', // Allow PDF up to 5MB
         ]);
 
         try {
             DB::beginTransaction();
             
             $employee = Employee::findOrFail($request->id);
+
+            // Handle contract file upload if provided
+            if ($request->hasFile('contract_file')) {
+                // Delete old contract file if exists
+                if ($employee->contracts) {
+                    $oldContractPath = public_path('assets/contracts/' . $employee->contracts);
+                    if (file_exists($oldContractPath)) {
+                        unlink($oldContractPath);
+                    }
+                }
+
+                // Store new contract file
+                $contractFileName = $employee->employee_id . '_contract_' . time() . '.pdf';
+                $request->contract_file->move(public_path('assets/contracts/'), $contractFileName);
+                $employee->contracts = $contractFileName;
+            }
 
             $employee->name = $request->name;
             $employee->email = $request->email;
@@ -382,9 +404,10 @@ class EmployeeController extends Controller
     return redirect()->back()->with('error', 'Employee not found.');
 }
 
-    public function pastEmployeePage(){
-        $pastEmployees = PastEmployee::all();
-        return view('form.past_employee_list', compact('pastEmployees'));
+    public function pastEmployeePage()
+    {
+        //pass Past employee data it via AJAX
+        return view('form.past_employee_list');
     }
 
     /** page departments */
@@ -475,7 +498,10 @@ class EmployeeController extends Controller
     public function timeSheetIndex()
     {
         // Retrieve all timesheets with their associated interviewers
-        $timesheets = Timesheet::with('interviewer')->get();
+        $timesheets = Timesheet::upcoming()
+        ->with('interviewer')
+        ->orderBy('scheduled_time', 'asc')
+        ->get();
 
         return view('form.timesheet', compact('timesheets'));
     }
@@ -557,19 +583,100 @@ class EmployeeController extends Controller
 
     public function exportPDF()
     {
-        $employees = Employee::all();
+        try {
+            $employees = Employee::select(
+                'employee_id',
+                'name',
+                'department',
+                'position',
+                'role_name',
+                'job_type',
+                'salary',
+                'email',
+                'phone_number',
+                'status',
+                DB::raw('DATE_FORMAT(join_date, "%Y-%m-%d") as join_date')
+            )->get();
 
-        
-        if ($employees->isEmpty()) {
-            $employees = collect([['#'=>'','Employee ID' => '', 'Name' => '', 'Department' => '', 'Role' => '', 'Email' => '', 'Phone Number' => '', 'Status' => '', 'Join Date' => '']]);
+            if ($employees->isEmpty()) {
+                $employees = collect([[
+                    'employee_id' => '',
+                    'name' => '',
+                    'department' => '',
+                    'position' => '',
+                    'role_name' => '',
+                    'job_type' => '',
+                    'salary' => '',
+                    'email' => '',
+                    'phone_number' => '',
+                    'status' => '',
+                    'join_date' => ''
+                ]]);
+            }
+
+            $pdf = PDF::loadView('pdf.employees', compact('employees'));
+            
+            // Set paper size to A4 landscape for better fit
+            $pdf->setPaper('a4', 'landscape');
+            
+            return $pdf->download('Employee_List.pdf');
+        } catch (\Exception $e) {
+            \Log::error('PDF Export Error: ' . $e->getMessage());
+            return back()->with('error', 'Error exporting PDF: ' . $e->getMessage());
         }
-
-        $pdf = PDF::loadView('pdf.employees', compact('employees'));
-        return $pdf->download('employees.pdf');
     }
     public function exportExcel()
     {
-        return Excel::download(new EmployeesExport, 'employee.xlsx');
+        try {
+            $pastEmployees = PastEmployee::all();
+            
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            
+            // Set headers
+            $sheet->setCellValue('A1', 'Name');
+            $sheet->setCellValue('B1', 'Department');
+            $sheet->setCellValue('C1', 'Role');
+            $sheet->setCellValue('D1', 'Email');
+            $sheet->setCellValue('E1', 'Phone Number');
+            $sheet->setCellValue('F1', 'Status');
+            $sheet->setCellValue('G1', 'Resignation Date');
+            $sheet->setCellValue('H1', 'Resignation Reason');
+
+            // Add data
+            $row = 2;
+            foreach ($pastEmployees as $employee) {
+                $sheet->setCellValue('A' . $row, $employee->name);
+                $sheet->setCellValue('B' . $row, $employee->department);
+                $sheet->setCellValue('C' . $row, $employee->role_name);
+                $sheet->setCellValue('D' . $row, $employee->email);
+                $sheet->setCellValue('E' . $row, $employee->phone_number);
+                $sheet->setCellValue('F' . $row, $employee->status);
+                $sheet->setCellValue('G' . $row, $employee->resignation_date ? date('Y-m-d', strtotime($employee->resignation_date)) : '');
+                $sheet->setCellValue('H' . $row, $employee->resignation_reason);
+                $row++;
+            }
+
+            // Auto size columns
+            foreach (range('A', 'H') as $column) {
+                $sheet->getColumnDimension($column)->setAutoSize(true);
+            }
+
+            // Create the Excel file
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'past_employees_' . date('Y-m-d') . '.xlsx';
+            
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+            
+            $writer->save('php://output');
+            exit;
+
+        } catch (\Exception $e) {
+            \Log::error('Excel Export Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to export Excel file');
+        }
     }
 
     //past employees export
@@ -584,12 +691,72 @@ class EmployeeController extends Controller
         }
 
         $pdf = PDF::loadView('pdf.pastemployees', compact('pastemployees'));
-        return $pdf->download('Past_employees.pdf');
+        return $pdf->download('Past_Employee_List.pdf');
     }
     public function exportExcelforPastEmployee()
     {
-        return Excel::download(new PastEmployeesExport, 'Pastemployee.xlsx');
+        return Excel::download(new PastEmployeesExport, 'Past_Employee_List.xlsx');
     }
 
+    public function searchDepartmentEmployees(Request $request)
+    {
+        try {
+            $query = DB::table('users')->where('department', $request->department);
+
+            if ($request->filled('employee_id')) {
+                $query->where('employee_id', 'LIKE', '%' . $request->employee_id . '%');
+            }
+
+            if ($request->filled('name')) {
+                $query->where('name', 'LIKE', '%' . $request->name . '%');
+            }
+
+            if ($request->filled('position')) {
+                $query->where('position', 'LIKE', '%' . $request->position . '%');
+            }
+
+            $employees = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'employees' => $employees
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Search error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred while searching',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function searchPastEmployees(Request $request)
+    {
+        try {
+            $query = PastEmployee::query();
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where('name', 'LIKE', "%{$search}%");
+            }
+
+            $perPage = $request->input('limit', 10);
+            $results = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'employees' => $results
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Past Employees Search error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred while searching'
+            ], 500);
+        }
+    }
 
 }

@@ -14,9 +14,9 @@
                             <li class="breadcrumb-item active">Events</li>
                         </ul>
                     </div>
-                    <div class="col-auto float-right ml-auto">
+                    <!-- <div class="col-auto float-right ml-auto">
                         <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_holiday"><i class="fa fa-plus"></i> Add Events</a>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             {{-- message --}}

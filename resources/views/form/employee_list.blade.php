@@ -14,10 +14,32 @@
                 </div>
             </div>
 
+            <!-- Search and Entries Selector -->
+            <div class="row filter-row">
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-group">
+                        <label>Show Entries</label>
+                        <select class="form-control" id="entries-limit">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="form-group form-focus">
+                        <input type="text" class="form-control floating" id="search-input">
+                        <label class="focus-label">Search Employee</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
             <div class="row">
                 <div class="col-md-12">
                     <div class="table-responsive">
-                        <table class="table table-striped custom-table mb-0">
+                        <table class="table table-striped custom-table mb-0" id="employees-table">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -199,6 +221,134 @@
                 .catch(error => console.error('Error:', error));
             });
         });
+    </script>
+
+    <script>
+    $(document).ready(function() {
+        var currentPage = 1;
+        var entriesPerPage = 10;
+
+        // Handle entries limit change
+        $('#entries-limit').on('change', function() {
+            entriesPerPage = parseInt($(this).val());
+            currentPage = 1;
+            performSearch();
+        });
+
+        // Handle search input
+        $('#search-input').on('input', function() {
+            currentPage = 1;
+            performSearch();
+        });
+
+        function performSearch() {
+            $.ajax({
+                url: "{{ route('employees/search') }}",
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    search: $('#search-input').val(),
+                    limit: entriesPerPage,
+                    page: currentPage
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var tbody = $('#employees-table tbody');
+                        tbody.empty();
+
+                        if (response.employees.data.length === 0) {
+                            tbody.append('<tr><td colspan="11" class="text-center">No employees found</td></tr>');
+                            return;
+                        }
+
+                        response.employees.data.forEach(function(employee) {
+                            var row = `
+                                <tr>
+                                    <td>${employee.employee_id}</td>
+                                    <td>${employee.name}</td>
+                                    <td>${employee.department}</td>
+                                    <td>${employee.position}</td>
+                                    <td>${employee.role_name}</td>
+                                    <td>${employee.job_type}</td>
+                                    <td>${employee.email}</td>
+                                    <td>${employee.phone_number}</td>
+                                    <td>${employee.status}</td>
+                                    <td>${formatDate(employee.join_date)}</td>
+                                    <td class="text-right">
+                                        <div class="dropdown dropdown-action">
+                                            <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a class="dropdown-item" href="{{ url('employee/edit') }}/${employee.employee_id}"><i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                                <a class="dropdown-item" href="#" onclick="deleteEmployee('${employee.employee_id}')"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.append(row);
+                        });
+
+                        // Update pagination
+                        updatePagination(response.employees);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Search error:', xhr);
+                    toastr.error('An error occurred while searching');
+                }
+            });
+        }
+
+        function updatePagination(employees) {
+            var pagination = $('.pagination');
+            pagination.empty();
+
+            var totalPages = Math.ceil(employees.total / entriesPerPage);
+
+            // Previous button
+            pagination.append(`
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+                </li>
+            `);
+
+            // Page numbers
+            for (var i = 1; i <= totalPages; i++) {
+                pagination.append(`
+                    <li class="page-item ${currentPage === i ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `);
+            }
+
+            // Next button
+            pagination.append(`
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+                </li>
+            `);
+
+            // Handle pagination clicks
+            $('.page-link').click(function(e) {
+                e.preventDefault();
+                currentPage = parseInt($(this).data('page'));
+                performSearch();
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Initial search
+        performSearch();
+    });
     </script>
 
 @endsection 

@@ -84,10 +84,10 @@ class LoginController extends Controller
             $activityLog = ['name'=> Session::get('name'),'email'=> $username,'description' => 'Has log in','date_time'=> $todayDate,];
             DB::table('activity_logs')->insert($activityLog);
             
-            Toastr::success('Login successfully :)','Success');
+            Toastr::success('Login successfully','Success');
             return redirect()->intended('home');
         } else {
-            Toastr::error('fail, WRONG USERNAME OR PASSWORD :)','Error');
+            Toastr::error('fail, Invalid Email OR Password','Error');
             return redirect('login');
         }
     }

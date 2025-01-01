@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Department;
 use DB;
 
 class ExpenseReportsController extends Controller
@@ -29,9 +30,21 @@ class ExpenseReportsController extends Controller
     public function leaveReport()
     {
         $leaves = DB::table('leaves_admins')
-                    ->join('users', 'users.user_id', '=', 'leaves_admins.user_id')
-                    ->select('leaves_admins.*', 'users.*')
-                    ->get();
-        return view('reports.leavereports',compact('leaves'));
+        ->join('employees', 'employees.employee_id', '=', 'leaves_admins.user_id')
+        ->select('leaves_admins.leave_type',
+                 'leaves_admins.*', 
+                 'employees.name as employee_name', 
+                 'employees.position', 
+                 'employees.department',)
+        ->get();
+
+        $departments = DB::table('departments')
+        ->select('department')
+        ->distinct()
+        ->get();
+
+        \Log::info('Leaves Report Data:', $leaves->toArray()); // Log the leaves data
+
+        return view('reports.leavereports', compact('leaves', 'departments'));
     }
 }

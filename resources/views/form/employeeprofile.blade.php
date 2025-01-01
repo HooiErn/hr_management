@@ -25,7 +25,7 @@
                             <div class="profile-view">
                                 <div class="profile-img-wrap">
                                     <div class="profile-img">
-                                        <a href="#"><img alt="" src="{{ URL::to('/assets/images/'. $user[0]->avatar) }}" alt="{{ $user[0]->name }}"></a>
+                                        <a href="#"><img alt="" src="{{ URL::to('/assets/images/avatar'. $user[0]->avatar) }}" alt="{{ $user[0]->name }}"></a>
                                     </div>
                                 </div>
                                 <div class="profile-basic">
@@ -166,15 +166,15 @@
                                     <ul class="personal-info">
                                         <li>
                                             <div class="title">Name</div>
-                                            <div class="text">John Doe</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Relationship</div>
-                                            <div class="text">Father</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Phone </div>
-                                            <div class="text">9876543210, 9876543210</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                     </ul>
                                     <hr>
@@ -182,15 +182,15 @@
                                     <ul class="personal-info">
                                         <li>
                                             <div class="title">Name</div>
-                                            <div class="text">Karen Wills</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Relationship</div>
-                                            <div class="text">Brother</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">Phone </div>
-                                            <div class="text">9876543210, 9876543210</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -209,15 +209,15 @@
                                         </li>
                                         <li>
                                             <div class="title">Bank account No.</div>
-                                            <div class="text">159843014641</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">IFSC Code</div>
-                                            <div class="text">ICI24504</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                         <li>
                                             <div class="title">PAN No</div>
-                                            <div class="text">TC000Y56</div>
+                                            <div class="text">Coming soon</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -240,10 +240,10 @@
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>Leo</td>
-                                                    <td>Brother</td>
-                                                    <td>Feb 16th, 2019</td>
-                                                    <td>9876543210</td>
+                                                    <td>Coming soon</td>
+                                                    <td>Coming soon</td>
+                                                    <td>Coming soon</td>
+                                                    <td>Coming soon</td>
                                                     <td class="text-right">
                                                         <div class="dropdown dropdown-action">
                                                             <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle" href="#"><i class="material-icons">more_vert</i></a>

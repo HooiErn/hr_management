@@ -31,8 +31,12 @@ class ForgotPasswordController extends Controller
             'created_at' => Carbon::now()
         ]);
 
-        Mail::send('auth.verify', ['token' => $token], function($message) use ($request) {
-            $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+        // Define default values in case env variables are not set
+        $fromAddress = config('mail.from.address') ?: 'hrtech@gmail.com';
+        $fromName = config('mail.from.name') ?: 'HR Management';
+
+        Mail::send('auth.verify', ['token' => $token], function($message) use ($request, $fromAddress, $fromName) {
+            $message->from($fromAddress, $fromName);
             $message->to($request->email);
             $message->subject('Reset Password Notification');
         });

@@ -206,6 +206,9 @@ Route::controller(EmployeeController::class)->group(function () {
     //search
     Route::post('employees/search', 'search')->middleware('auth')->name('employees/search');
     Route::get('employees/searchbydepartment', 'SearchByDepartment')->middleware('auth')->name('employees/searchByDepartment');
+    //search in department employee
+    Route::post('department/employees/search', 'searchDepartmentEmployees')->middleware('auth')->name('department/employees/search');
+    
     
     Route::get('employees/list', 'employeeList')->middleware('auth')->name('employees/list');
     Route::get('employees/department/{department}', 'showByDepartment')->middleware('auth')->name('employees/byDepartment');
@@ -213,7 +216,7 @@ Route::controller(EmployeeController::class)->group(function () {
     //resign
     Route::get('/resign/{employeeId}',  'resign')->middleware('auth')->name('employee.resign');
     Route::get('/pastEmployee',  'pastEmployeePage')->middleware('auth')->name('employee/past');
-
+    Route::post('past/employees/search', 'searchPastEmployees')->middleware('auth')->name('past/employees/search');
     //export
     Route::get('/employees/export/excel', 'exportExcel')->middleware('auth')->name('employees.export.excel');
     Route::get('/employees/export/pdf',  'exportPDF')->middleware('auth')->name('employees.export.pdf');
@@ -268,10 +271,13 @@ Route::controller(LeavesController::class)->group(function () {
     Route::post('form/leaves/edit/delete','deleteLeave')->middleware('auth')->name('form/leaves/edit/delete');    
     Route::get('/getRemainingLeaveDays/{userId}','getRemainingLeaveDays')->middleware('auth');
 
-    Route::get('/leaves/report', 'leaveReport')->middleware('auth')->name('leaves.report');
-
-    //search employee id
+    //search employee id in input field
     Route::get('leaves/employees/search',  'searchEmployee')->middleware('auth')->name('leaves.employees.search');
+
+    //search
+    Route::post('leaves/search', 'searchLeaves')->middleware('auth')->name('leaves/search');
+
+
 });
 
 // ----------------------------- form attendance  ------------------------------//
@@ -311,10 +317,10 @@ Route::controller(PersonalInformationController::class)->group(function () {
 Route::get('public/meeting', [JobController::class, 'publicMeeting'])->name('public.meeting');
 Route::post('public/meeting/join', [JobController::class, 'joinPublicMeeting'])->name('public.meeting.join');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('profile', [ProfileController::class, 'index'])->name('user.profile');
-    Route::post('profile/save', [ProfileController::class, 'saveProfile'])->name('user.profile.save');
-});
+
+
+
+
 
 
 

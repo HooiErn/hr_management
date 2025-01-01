@@ -7,9 +7,6 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h3 class="page-title">Employees in {{ $department }}</h3>
-                        <button type="button" class="btn" style="background-color:#5a83d2; border:none;" data-toggle="modal" data-target="#addEmployeeModal">
-                            Add Employee
-                        </button>
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('employees/list') }}">Employee List</a></li>
                             <li class="breadcrumb-item active">Department: {{ $department }}</li>
@@ -36,8 +33,8 @@
                     </div>
                     <div class="col-sm-6 col-md-3"> 
                         <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" name="role_name" id="search-role" placeholder="Search by Role">
-                            <label class="focus-label">Role</label>
+                            <input type="text" class="form-control floating" name="position" id="search-position" placeholder="Search by Position">
+                            <label class="focus-label">Position</label>
                         </div>
                     </div>
                 </div>
@@ -55,31 +52,25 @@
                                     <tr>
                                         <th>Employee ID</th>
                                         <th>Name</th>
-                                        <th>Role</th>
+                                        <th>Position</th>
                                         <th>Email</th>
                                         <th>Phone Number</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="employee-table-body">
                                     @forelse ($employees as $employee)
                                         <tr>
                                             <td>{{ $employee->employee_id }}</td>
                                             <td>{{ $employee->name }}</td>
-                                            <td>{{ $employee->role_name }}</td>
+                                            <td>{{ $employee->position }}</td>
                                             <td>{{ $employee->email }}</td>
                                             <td>{{ $employee->phone_number }}</td>
                                             <td>{{ $employee->status }}</td>
-                                            <td>
-                                                <button class="btn btn-warning edit-employee" data-id="{{ $employee->id }}" data-toggle="modal" data-target="#editEmployeeModal" data-name="{{ $employee->name }}" data-email="{{ $employee->email }}" data-birthdate="{{ $employee->birth_date }}" data-gender="{{ $employee->gender }}" data-company="{{ $employee->company }}">
-                                                    <i class="fa fa-edit"></i>
-                                                </button>
-                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center">No employees found in this department</td>
+                                            <td colspan="6" class="text-center">No employees found in this department</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -114,19 +105,6 @@
                         <div class="form-group">
                             <label for="birthDate">Birth Date</label>
                             <input type="date" class="form-control" id="birthDate" name="birthDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <select class="form-control" id="gender" name="gender" required>
-                                <option value="">Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="company">Company</label>
-                            <input type="text" class="form-control" id="company" name="company" required>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -163,19 +141,7 @@
                             <label for="edit-birthDate">Birth Date</label>
                             <input type="date" class="form-control" id="edit-birthDate" name="birthDate" required>
                         </div>
-                        <div class="form-group">
-                            <label for="edit-gender">Gender</label>
-                            <select class="form-control" id="edit-gender" name="gender" required>
-                                <option value="">Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-company">Company</label>
-                            <input type="text" class="form-control" id="edit-company" name="company" required>
-                        </div>
+                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -193,7 +159,7 @@
             document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
-                fetch("{{ route('employees.save') }}", {
+                fetch("{{ route('all/employee/save') }}", {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -218,16 +184,12 @@
                     const name = this.getAttribute('data-name');
                     const email = this.getAttribute('data-email');
                     const birthDate = this.getAttribute('data-birthdate');
-                    const gender = this.getAttribute('data-gender');
-                    const company = this.getAttribute('data-company');
 
                     // Populate the modal fields
                     document.getElementById('edit-employee-id').value = employeeId;
                     document.getElementById('edit-name').value = name;
                     document.getElementById('edit-email').value = email;
                     document.getElementById('edit-birthDate').value = birthDate;
-                    document.getElementById('edit-gender').value = gender;
-                    document.getElementById('edit-company').value = company;
                 });
             });
 
@@ -235,7 +197,7 @@
             document.getElementById('editEmployeeForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
-                fetch("{{ route('employees.update') }}", {
+                fetch("{{ route('all/employee/update') }}", {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -254,5 +216,63 @@
             });
         });
     </script>
+
+    @section('script')
+    <script>
+    $(document).ready(function() {
+        // Search functionality
+        $('#search-form input').on('input', function() {
+            var searchData = {
+                _token: '{{ csrf_token() }}',
+                department: '{{ $department }}',
+                employee_id: $('#search-employee-id').val(),
+                name: $('#search-name').val(),
+                position: $('#search-position').val()
+            };
+
+            // Perform search immediately when user types
+            $.ajax({
+                url: "{{ route('department/employees/search') }}",
+                method: 'POST',
+                data: searchData,
+                success: function(response) {
+                    var tbody = $('#employee-table-body');
+                    tbody.empty();
+                    
+                    if (response.employees.length === 0) {
+                        tbody.append(`
+                            <tr>
+                                <td colspan="6" class="text-center">No employees found</td>
+                            </tr>
+                        `);
+                    } else {
+                        response.employees.forEach(function(employee) {
+                            var statusBadge = employee.leave_status === 'paid' 
+                                ? '<span class="badge badge-success">Paid Leave</span>'
+                                : '<span class="badge badge-warning">Unpaid Leave</span>';
+
+                            var row = `
+                                <tr>
+                                    <td>${employee.employee_id || ''}</td>
+                                    <td>${employee.name || ''}</td>
+                                    <td>${employee.position || ''}</td>
+                                    <td>${employee.email || ''}</td>
+                                    <td>${employee.phone_number || ''}</td>
+                                    <td>${statusBadge}</td>
+                                </tr>
+                            `;
+                            tbody.append(row);
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Search error:', xhr);
+                    toastr.error('An error occurred while searching');
+                }
+            });
+        });
+    });
+    </script>
+    @endsection
 
 @endsection

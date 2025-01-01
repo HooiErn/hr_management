@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Timesheet extends Model
 {
@@ -15,6 +16,12 @@ class Timesheet extends Model
         'scheduled_time',
         'status',
     ];
+
+    // Add local scope to get only current and future schedules
+    public function scopeUpcoming($query)
+    {
+        return $query->where('scheduled_time', '>=', Carbon::now());
+    }
 
     public function interviewer()
     {

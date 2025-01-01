@@ -16,7 +16,7 @@
                         </ul>
                     </div>
                     <button type="button" class="btn" style="color:white;background-color:#5a83d2; border:none;" data-toggle="modal" data-target="#addEmployeeModal">
-                            Add Employee
+                    <i class="fa fa-plus"></i> Add Employee
                     </button>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                                     <th>id</th>
                                     <th>Name</th>
                                     <th>Department</th>
-                                    <th>Role</th>
+                                    <th>Position</th>
                                     <th>Email</th>
                                     <th>Phone Number</th>
                                     <th>Status</th>
@@ -85,7 +85,7 @@
                                         <td>{{ $user->employee_id }}</td>
                                         <td>{{ $user->name }}</td>
                                         <td><a href="{{ route('employees/byDepartment', $user->department) }}">{{ $user->department }}</a></td>
-                                        <td>{{ $user->role_name }}</td>
+                                        <td>{{ $user->position }}</td>
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->phone_number }}</td>
                                         <td class="text-center">
@@ -108,7 +108,7 @@
                                         </td>
                                         <td>{{ $user->join_date }}</td>
                                         <td>
-                                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editEmployeeModal" data-id="{{ $user->id }}" data-name="{{ $user->name }}" data-email="{{ $user->email }}" data-phone="{{ $user->phone_number }}" data-salary="{{ $user->salary }}">
+                                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editEmployeeModal" data-id="{{ $user->id }}" data-name="{{ $user->name }}" data-email="{{ $user->email }}" data-phone="{{ $user->phone_number }}" data-salary="{{ $user->salary }}" data-contracts="{{ $user->contracts }}">
                                                 <i class="fa fa-pencil"></i> Edit
                                             </button>
                                         </td>
@@ -158,7 +158,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Gender</label>
-                                    <select name="gender" class="form-control">
+                                    <select name="gender" class="form-control" required>
                                         <option value="">Select Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
@@ -169,7 +169,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Phone Number</label>
-                                    <input type="text" name="phone_number" class="form-control" placeholder="e.g., 60123456789">
+                                    <input type="text" name="phone_number" class="form-control" placeholder="e.g., 60123456789" required>
                                 </div>
                                 <div class="form-group">
                                         <label>Race <span class="text-danger">*</span></label>
@@ -195,12 +195,17 @@
                                     </div>
                                 <div class="form-group">
                                     <label>Work Experience (Years)</label>
-                                    <input type="number" name="work_experiences" class="form-control" min="0" max="100">
+                                    <input type="number" name="work_experiences" class="form-control" min="0" max="100" required>
                                 </div>
                                 <div class="form-group">
                                     <label>CV Upload (PDF only)</label>
-                                    <input type="file" name="cv_upload" class="form-control" accept=".pdf">
+                                    <input type="file" name="cv_upload" class="form-control" accept=".pdf" required>
                                     <small class="text-muted">Max size: 2MB</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contract Document (PDF) <span class="text-danger">*</span></label>
+                                    <input type="file" class="form-control" name="contract_file" accept=".pdf" required>
+                                    <small class="text-muted">Upload contract document in PDF format (max 5MB)</small>
                                 </div>
                                 <div class="form-group">
                                     <label>Status <span class="text-danger">*</span></label>
@@ -211,7 +216,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Role <span class="text-danger">*</span></label>
-                                    <input type="text" name="role_name" class="form-control" required>
+                                    <input type="text" name="role_name" class="form-control" value="Employee" readonly required>
                                 </div>
                                 <div class="form-group">
                                     <label>Position</label>
@@ -283,7 +288,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Phone Number</label>
-                                    <input type="text" name="phone_number" id="edit_phone" class="form-control" value="{{$user->phone_number}}">
+                                    <input type="text" name="phone_number" id="edit_phone" class="form-control" value="{{$user->phone_number}}" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Status <span class="text-danger">*</span></label>
@@ -291,14 +296,14 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Position</label>
-                                    <input type="text" name="position" id="edit_position" class="form-control" value="{{$user->position}}">
+                                    <input type="text" name="position" id="edit_position" class="form-control" value="{{$user->position}}" required>
                                 </div>
                             </div>
                             <!-- Column 3 -->
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Department</label>
-                                    <input type="text" name="department" id="edit_department" class="form-control" value="{{$user->department}}">
+                                    <input type="text" name="department" id="edit_department" class="form-control" value="{{$user->department}}" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Job Type <span class="text-danger">*</span></label>
@@ -310,6 +315,16 @@
                                 <div class="form-group">
                                     <label>Salary <span class="text-danger">*</span></label>
                                     <input type="number" name="salary" id="edit_salary" class="form-control" value="{{$user->salary}}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <div class="form-group">
+                                <label>Update Contract Document (PDF)</label>
+                                <input type="file" class="form-control" name="contract_file" accept=".pdf">
+                                <small class="text-muted">Upload contract document in PDF format (max 5MB)</small>
+                                <div class="mt-2" id="current-contract-section">
+                                    <!-- Contract status will be dynamically updated via JavaScript -->
                                 </div>
                             </div>
                         </div>
@@ -326,21 +341,75 @@
     @section('script')
     <script>
         $(document).ready(function() {
-            // IC Number calculation function
+            // IC Number validation and calculation
             $('input[name="ic_number"]').on('input', function() {
                 const icNumber = $(this).val();
+                
+                // Remove any non-numeric characters
+                $(this).val(icNumber.replace(/[^0-9]/g, ''));
+                
                 if (icNumber.length === 12) {
                     const year = icNumber.substring(0, 2);
                     const month = icNumber.substring(2, 4);
                     const day = icNumber.substring(4, 6);
+                    
+                    // Validate year (1900-current year)
                     const fullYear = (parseInt(year) > (new Date().getFullYear() % 100)) ? `19${year}` : `20${year}`;
+                    const currentYear = new Date().getFullYear();
+                    
+                    if (parseInt(fullYear) < 1900 || parseInt(fullYear) > currentYear) {
+                        toastr.error('Invalid birth year. Year must be between 1900 and current year.');
+                        $(this).val('');
+                        $('input[name="birth_date"]').val('');
+                        $('input[name="age"]').val('');
+                        return;
+                    }
+
+                    // Validate month (01-12)
+                    if (parseInt(month) < 1 || parseInt(month) > 12) {
+                        toastr.error('Invalid birth month. Month must be between 01 and 12.');
+                        $(this).val('');
+                        $('input[name="birth_date"]').val('');
+                        $('input[name="age"]').val('');
+                        return;
+                    }
+
+                    // Validate day (01-31)
+                    if (parseInt(day) < 1 || parseInt(day) > 31) {
+                        toastr.error('Invalid birth day. Day must be between 01 and 31.');
+                        $(this).val('');
+                        $('input[name="birth_date"]').val('');
+                        $('input[name="age"]').val('');
+                        return;
+                    }
+
                     const birthDate = `${fullYear}-${month}-${day}`;
-                    const age = new Date().getFullYear() - parseInt(fullYear);
+                    const age = currentYear - parseInt(fullYear);
+
+                    // Validate minimum age (18 years)
+                    if (age < 18) {
+                        toastr.error('Employee must be at least 18 years old.');
+                        $(this).val('');
+                        $('input[name="birth_date"]').val('');
+                        $('input[name="age"]').val('');
+                        return;
+                    }
 
                     $('input[name="birth_date"]').val(birthDate);
                     $('input[name="age"]').val(age);
                 }
             });
+
+            // Prevent negative numbers in age field
+            $('input[name="age"]').on('input', function() {
+                if (parseInt($(this).val()) < 0) {
+                    $(this).val('');
+                    toastr.error('Age cannot be negative.');
+                }
+            });
+
+            // Add maxlength attribute to IC number input if not already present
+            $('input[name="ic_number"]').attr('maxlength', 12);
 
             // Add Employee Form Submit
             $('#addEmployeeForm').on('submit', function(e) {
@@ -385,6 +454,7 @@
                 var email = button.data('email');
                 var phone = button.data('phone');
                 var salary = button.data('salary');
+                var contracts = button.data('contracts');
                 
                 var modal = $(this);
                 modal.find('#edit_id').val(id);
@@ -392,6 +462,12 @@
                 modal.find('#edit_email').val(email);
                 modal.find('#edit_phone').val(phone);
                 modal.find('#edit_salary').val(salary);
+                modal.find('#current-contract-section').html(`
+                    <span class="text-muted">Current contract: </span>
+                    <a href="{{ asset('assets/contracts/') }}/${contracts}" target="_blank" class="text-primary">
+                        ${contracts}
+                    </a>
+                `);
             });
 
             // Edit Employee Form Submit
@@ -451,7 +527,7 @@
                                     <td>${employee.employee_id}</td>
                                     <td>${employee.name}</td>
                                     <td><a href="/employees/department/${employee.department}">${employee.department}</a></td>
-                                    <td>${employee.role_name}</td>
+                                    <td>${employee.position}</td>
                                     <td>${employee.email}</td>
                                     <td>${employee.phone_number}</td>
                                     <td class="text-center">
@@ -476,7 +552,8 @@
                                             data-name="${employee.name}" 
                                             data-email="${employee.email}" 
                                             data-phone="${employee.phone_number}" 
-                                            data-salary="${employee.salary}">
+                                            data-salary="${employee.salary}"
+                                            data-contracts="${employee.contracts}">
                                             <i class="fa fa-pencil"></i> Edit
                                         </button>
                                     </td>
@@ -486,6 +563,59 @@
                         });
                     }
                 });
+            });
+
+            // Phone number validation
+            $('input[name="phone_number"]').on('input', function() {
+                let phoneNumber = $(this).val();
+                
+                // Remove any non-numeric characters
+                phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+                
+                // Always set the value back to cleaned number
+                $(this).val(phoneNumber);
+
+                // Check if number starts with 60
+                if (phoneNumber.length >= 2 && !phoneNumber.startsWith('60')) {
+                    toastr.error('Phone number must start with 60 (Malaysia country code)');
+                    $(this).val('60');
+                    return;
+                }
+
+                // Validate length (60 + 9-10 digits = 11-12 total)
+                if (phoneNumber.length > 12) {
+                    toastr.error('Phone number is too long. Format: 60XXXXXXXXX');
+                    $(this).val(phoneNumber.substring(0, 12));
+                    return;
+                }
+
+                // Full validation when number is complete
+                if (phoneNumber.length >= 11) {
+                    // Check if it's a valid Malaysian format after 60
+                    // Valid formats after 60: 1xxxxxxxx, 3xxxxxxxx, 4xxxxxxxx, 6xxxxxxxx, 7xxxxxxxx, 8xxxxxxxx, 9xxxxxxxx
+                    const validPrefixes = ['1', '3', '4', '6', '7', '8', '9'];
+                    const prefix = phoneNumber.substring(2, 3);
+                    
+                    if (!validPrefixes.includes(prefix)) {
+                        toastr.error('Invalid phone number format. Must start with 60 followed by 1, 3, 4, 6, 7, 8, or 9');
+                        $(this).val('60');
+                    }
+                }
+            });
+
+            // Set default value if empty
+            $('input[name="phone_number"]').on('focus', function() {
+                if (!this.value) {
+                    $(this).val('60');
+                }
+            });
+
+            // Prevent backspace from deleting "60"
+            $('input[name="phone_number"]').on('keydown', function(e) {
+                const phoneNumber = $(this).val();
+                if (e.keyCode === 8 && phoneNumber.length <= 2) { // 8 is backspace key
+                    e.preventDefault();
+                }
             });
         });
     </script>
@@ -543,5 +673,24 @@
     }
     </script>
     @endsection
+
+    <script>
+    $('#editEmployeeModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var contracts = button.data('contracts'); // Add data-contracts to your edit button
+        var contractSection = $('#current-contract-section');
+        
+        if (contracts) {
+            contractSection.html(`
+                <span class="text-muted">Current contract: </span>
+                <a href="{{ asset('assets/contracts/') }}/${contracts}" target="_blank" class="text-primary">
+                    ${contracts}
+                </a>
+            `);
+        } else {
+            contractSection.html('<span class="text-muted">No contract uploaded yet</span>');
+        }
+    });
+    </script>
 
 @endsection

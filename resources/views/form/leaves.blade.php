@@ -29,80 +29,63 @@
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Today Presents</h6>
-                        <h4>0</h4>
+                        <h4><span>Coming Soon</span></h4>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Planned Leaves</h6>
-                        <h4><span>Today</span></h4>
+                        <h4><span>Coming Soon</span></h4>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Unplanned Leaves</h6>
-                        <h4><span>Today</span></h4>
+                        <h4><span>Coming Soon</span></h4>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-info">
                         <h6>Pending Requests</h6>
-                        <h4>0</h4>
+                        <h4><span>Coming Soon</span></h4>
                     </div>
                 </div>
             </div>
             <!-- /Leave Statistics -->
 
             <!-- Search Filter -->
-            <div class="row filter-row">
-                <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-                    <div class="form-group form-focus">
-                        <input type="text" class="form-control floating">
-                        <label class="focus-label">Employee Name</label>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-                    <div class="form-group form-focus select-focus">
-                        <select class="select floating"> 
-                            <option> -- Select -- </option>
-                            <option>Casual Leave</option>
-                            <option>Medical Leave</option>
-                            <option>Loss of Pay</option>
-                        </select>
-                        <label class="focus-label">Leave Type</label>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"> 
-                    <div class="form-group form-focus select-focus">
-                        <select class="select floating"> 
-                            <option> -- Select -- </option>
-                            <option> Pending </option>
-                            <option> Approved </option>
-                            <option> Rejected </option>
-                        </select>
-                        <label class="focus-label">Leave Status</label>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-                    <div class="form-group form-focus">
-                        <div class="cal-icon">
-                            <input class="form-control floating datetimepicker" type="text">
+            <form id="search-form">
+                @csrf
+                <div class="row filter-row">
+                    <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
+                        <div class="form-group form-focus">
+                            <input type="text" class="form-control floating" name="employee_name" id="search-employee">
+                            <label class="focus-label"><small>Employee Name/ID</small></label>
                         </div>
-                        <label class="focus-label">From</label>
                     </div>
-                </div>
-                <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-                    <div class="form-group form-focus">
-                        <div class="cal-icon">
-                            <input class="form-control floating datetimepicker" type="text">
+                    <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
+                        <div class="form-group form-focus select-focus">
+                            <select class="select floating" name="leave_type" id="search-leave-type"> 
+                                <option value=""> -- Select -- </option>
+                                <option value="Casual Leave">Casual Leave</option>
+                                <option value="Medical Leave">Medical Leave</option>
+                                <option value="Loss of Pay">Loss of Pay</option>
+                            </select>
+                            <label class="focus-label">Leave Type</label>
                         </div>
-                        <label class="focus-label">To</label>
+                    </div>
+                    <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12"> 
+                        <div class="form-group form-focus select-focus">
+                            <select class="select floating" name="leave_status" id="search-status"> 
+                                <option value=""> -- Select -- </option>
+                                <option value="paid">Paid Leave</option>
+                                <option value="unpaid">Unpaid Leave</option>
+                            </select>
+                            <label class="focus-label">Leave Status</label>
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">  
-                    <a href="#" class="btn btn-success btn-block"> Search </a>  
-                </div>     
-            </div>
+            </form>
             <!-- /Search Filter -->
 
 			<!-- /Page Header -->
@@ -141,8 +124,40 @@
                                             <td>{{ date('d F, Y', strtotime($leave->from_date)) ?? 'No From Date' }}</td>
                                             <td>{{ date('d F, Y', strtotime($leave->to_date)) ?? 'No To Date' }}</td>
                                             <td>{{ $leave->day }} Day(s)</td>
-                                            <td>{{ $leave->leave_reason ?? 'No Reason' }}</td>
-                                            <td class="text-center">{{ $leave->leave_status ?? 'No Status' }}</td>
+                                            <td>
+                                                <div class="leave-reason">
+                                                    <span class="reason-text" data-toggle="modal" data-target="#reasonModal{{ $leave->id }}">
+                                                        {{ \Str::limit($leave->leave_reason, 20) }}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Modal -->
+                                                <div class="modal fade" id="reasonModal{{ $leave->id }}" tabindex="-1" role="dialog">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Leave Reason</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body p-3">
+                                                                <div style="white-space: pre-line; word-break: break-word;">{{ trim($leave->leave_reason) }}</div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($leave->leave_status === 'paid')
+                                                    <span class="badge badge-success">Paid Leave</span>
+                                                @else
+                                                    <span class="badge badge-warning">Unpaid Leave</span>
+                                                @endif
+                                            </td>
                                             <td class="text-right">
                                                 <button class="btn btn-warning leaveEdit" data-id="{{ $leave->id }}" data-leave-type="{{ $leave->leave_type }}" data-from-date="{{ $leave->from_date }}" data-to-date="{{ $leave->to_date }}" data-reason="{{ $leave->leave_reason }}">Edit</button>
                                                 <form action="{{ route('form/leaves/edit/delete', $leave->id) }}" method="POST" style="display:inline;">
@@ -261,6 +276,14 @@
                             <div class="form-group">
                                 <label>Leave Reason</label>
                                 <textarea class="form-control" name="leave_reason" id="edit_leave_reason" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Leave Status</label>
+                                <select class="select" name="leave_status" id="edit_leave_status" required>
+                                    <option value="paid">Paid Leave</option>
+                                    <option value="unpaid">Unpaid Leave</option>
+                                </select>
                             </div>
                             
                             <button type="submit" class="btn btn-primary">Update Leave</button>
@@ -446,6 +469,190 @@ $(document).on('click', '.leaveEdit', function() {
 });
 </script>
 
+<script>
+$(document).ready(function() {
+    // Search functionality
+    function performSearch() {
+        $.ajax({
+            url: "{{ route('leaves/search') }}",
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                employee_name: $('#search-employee').val(), // This is actually employee_id now
+                leave_type: $('#search-leave-type').val(),
+                leave_status: $('#search-status').val()
+            },
+            success: function(response) {
+                var tbody = $('table tbody');
+                tbody.empty();
+                
+                if (response.leaves.length === 0) {
+                    tbody.append(`
+                        <tr>
+                            <td colspan="8" class="text-center">No leaves found.</td>
+                        </tr>
+                    `);
+                } else {
+                    response.leaves.forEach(function(leave) {
+                        var statusBadge = leave.leave_status === 'paid' 
+                            ? '<span class="badge badge-success">Paid Leave</span>'
+                            : '<span class="badge badge-warning">Unpaid Leave</span>';
 
+                        var row = `
+                            <tr>
+                                <td>
+                                    <h2 class="table-avatar">
+                                        <a href="#">${leave.employee_name} (${leave.user_id})<span>${leave.position}</span></a>
+                                    </h2>
+                                </td>
+                                <td>${leave.leave_type}</td>
+                                <td>${formatDate(leave.from_date)}</td>
+                                <td>${formatDate(leave.to_date)}</td>
+                                <td>${leave.day} Day(s)</td>
+                                <td>${leave.leave_reason}</td>
+                                <td class="text-center">${statusBadge}</td>
+                                <td class="text-right">
+                                    <div class="dropdown dropdown-action">
+                                        <button class="btn btn-warning btn-sm" onclick="editLeave(${JSON.stringify(leave)})">
+                                            <i class="fa fa-pencil m-r-5"></i> Edit
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteLeave(${leave.id})">
+                                            <i class="fa fa-trash-o m-r-5"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                }
+            },
+            error: function(xhr) {
+                console.error('Search error:', xhr);
+                toastr.error('An error occurred while searching');
+            }
+        });
+    }
+
+    // Helper function to format dates
+    function formatDate(dateString) {
+        if (!dateString) return 'No Date';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
+    // Trigger search on input change
+    $('#search-form input, #search-form select').on('input change', function() {
+        performSearch();
+    });
+});
+</script>
+<script>
+$(document).ready(function() {
+    // Add this to your existing form submit handler
+    $('#leaveForm').on('submit', function(e) {
+        var fromDate = new Date($('#from_date').val());
+        var toDate = new Date($('#to_date').val());
+        
+        if (fromDate > toDate) {
+            e.preventDefault();
+            alert('Leave From date cannot be later than Leave To date');
+            return false;
+        }
+    });
+
+    // For date inputs, add this change handler
+    $('#from_date, #to_date').on('change', function() {
+        var fromDate = new Date($('#from_date').val());
+        var toDate = new Date($('#to_date').val());
+        
+        if (fromDate > toDate) {
+            alert('Leave From date cannot be later than Leave To date');
+            $(this).val(''); // Clear the invalid date
+        }
+    });
+});
+</script>
+<style>
+    .leave-reason {
+        position: relative;
+    }
+    .reason-text.truncated {
+        display: inline-block;
+    }
+    .show-more-btn, .show-less-btn {
+        color: #0066cc;
+        text-decoration: none;
+        margin-left: 5px;
+        font-size: 0.9em;
+    }
+    .show-more-btn:hover, .show-less-btn:hover {
+        text-decoration: underline;
+    }
+    .reason-text {
+        cursor: pointer;
+        color: inherit;
+        text-decoration: none;
+    }
+    .modal-body {
+        font-size: 14px;
+        line-height: 1.6;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .modal-header .btn-close {
+        padding: 0.5rem;
+        margin: -0.5rem -0.5rem -0.5rem auto;
+        background: none;
+        border: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        opacity: .5;
+        cursor: pointer;
+    }
+    .modal-header .btn-close:hover {
+        opacity: .75;
+    }
+    .modal-content {
+        max-width: 100%;
+        word-wrap: break-word;
+    }
+</style>
+<script>
+$(document).ready(function() {
+    // Handle Show More/Less clicks
+    $('.show-more-btn').on('click', function() {
+        var container = $(this).closest('.leave-reason');
+        container.find('.reason-text').text(container.find('.reason-full').text());
+        $(this).hide();
+        container.find('.show-less-btn').show();
+    });
+
+    $('.show-less-btn').on('click', function() {
+        var container = $(this).closest('.leave-reason');
+        container.find('.reason-text').text(container.find('.reason-text').text().substring(0, 50) + '...');
+        $(this).hide();
+        container.find('.show-more-btn').show();
+    });
+});
+</script>
+<script>
+$(document).ready(function() {
+    // Click handler for the reason text
+    $('.reason-text').on('click', function() {
+        var modalId = $(this).data('target');
+        $(modalId).modal('show');
+    });
+
+    // Handle modal close
+    $('.close, [data-dismiss="modal"]').on('click', function() {
+        $(this).closest('.modal').modal('hide');
+    });
+});
+</script>
     @endsection
 @endsection

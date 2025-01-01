@@ -267,7 +267,7 @@ class InterviewController extends Controller
                         $employee->birth_date = $interviewer->birth_date;
                         $employee->gender = $interviewer->gender;
                         $employee->phone_number = $interviewer->phone_number;
-                        $employee->status = 'Pending';
+                        $employee->status = 'Active';
                         $employee->role_name = 'Staff';
                         $employee->position = $job->job_title;
                         $employee->department = $job->department;
@@ -305,7 +305,7 @@ class InterviewController extends Controller
                     $candidate->work_experiences = $interviewer->work_experiences;
                     $candidate->role_name = 'Candidate'; // Default role
                     $candidate->message = $interviewer->message;
-                    $candidate->interview_datetime = '';
+                    $candidate->interview_datetime = null;
                     $candidate->cv_upload = $interviewer->cv_uploads;
                     $candidate->save();
     

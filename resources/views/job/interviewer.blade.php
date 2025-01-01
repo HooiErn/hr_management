@@ -521,6 +521,14 @@
             </div>
             <div class="modal-body">
                 <p id="modalConfirmationMessage">Are you sure you want to proceed?</p>
+                
+                <!-- Add salary input field that only shows when action is 'hired' -->
+                <div id="salaryInputGroup" style="display: none;">
+                    <div class="form-group">
+                        <label for="salaryInput">Salary (RM)</label>
+                        <input type="number" class="form-control" id="salaryInput" placeholder="Enter salary amount">
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
@@ -801,15 +809,31 @@ $(document).ready(function() {
         // Show confirmation modal
         $('#confirmationModal').modal('show');
         $('#modalConfirmationMessage').text(`Are you sure you want to mark ${selectedInterviewers.length} interviewer(s) as ${action}?`);
+        
+        // Show/hide salary input based on action
+        if (action === 'hired') {
+            $('#salaryInputGroup').show();
+        } else {
+            $('#salaryInputGroup').hide();
+        }
 
         // Handle confirmation button click
         $('#confirmActionBtn').off('click').on('click', function() {
+            // Get salary value if action is 'hired'
+            const salary = action === 'hired' ? $('#salaryInput').val() : null;
+            
+            // Validate salary if action is 'hired'
+            if (action === 'hired' && (!salary || salary <= 0)) {
+                toastr.error('Please enter a valid salary amount');
+                return;
+            }
+
             const formData = {
                 _token: '{{ csrf_token() }}',
                 action: action,
                 interviewers: selectedInterviewers,
-                confirm: true, // This will be converted to boolean
-                salary: action === 'hired' ? 3000 : null
+                confirm: true,
+                salary: salary
             };
 
             $.ajax({
@@ -823,10 +847,15 @@ $(document).ready(function() {
                 },
                 success: function(response) {
                     if (response.success) {
+                        // Show two success messages in sequence
                         toastr.success(response.message);
+                        setTimeout(() => {
+                            toastr.success(`${action.charAt(0).toUpperCase() + action.slice(1)} notification email has been sent to the interviewer(s)`);
+                        }, 1000);
+                        
                         setTimeout(function() {
                             location.reload();
-                        }, 1500);
+                        }, 2500);
                     } else {
                         toastr.error(response.message || 'An error occurred');
                     }

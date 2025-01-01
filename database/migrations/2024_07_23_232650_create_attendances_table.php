@@ -20,9 +20,11 @@ return new class extends Migration
             $table->time('punch_in')->nullable();
             $table->time('punch_out')->nullable();
             $table->decimal('break_duration', 5, 2)->default(0);
+            $table->decimal('production', 5, 2)->default(0);
             $table->decimal('overtime', 5, 2)->default(0);
             $table->string('session_id')->nullable();
             $table->string('location')->nullable();
+            $table->string('ip_address')->nullabel();
             $table->timestamps();
         });
     }

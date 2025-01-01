@@ -26,27 +26,44 @@
                             <h5 class="card-title">Timesheet <small class="text-muted">{{ Carbon\Carbon::today()->format('d M Y') }}</small></h5>
                             <div class="punch-det">
                                 <h6>Punch In at</h6>
-                                <p>{{ $attendances->isNotEmpty() && $attendances->first()->punch_in ? \Carbon\Carbon::parse($attendances->first()->punch_in)->format('D, d M Y h:i A') : 'N/A' }}</p>
+                                <p>
+                                    @if($attendances->isNotEmpty() && $attendances->last()->punch_in)
+                                        {{ \Carbon\Carbon::parse($attendances->last()->punch_in)->format('D, d M Y h:i A') }}
+                                    @else
+                                        Not punched in yet
+                                    @endif
+                                </p>
                             </div>
                             <div class="punch-info">
                                 <div class="punch-hours">
-                                    <span>{{ $attendances->isNotEmpty() ? $attendances->first()->overtime . ' hrs' : '0 hrs' }}</span>
+                                    @php
+                                        $totalProduction = 0;
+                                        foreach($attendances as $attendance) {
+                                            if($attendance->punch_in && $attendance->punch_out) {
+                                                $totalProduction += $attendance->production;
+                                            } elseif($attendance->punch_in) {
+                                                // For ongoing session, calculate current duration
+                                                $totalProduction += Carbon\Carbon::parse($attendance->punch_in)->diffInMinutes(now());
+                                            }
+                                        }
+                                        
+                                        $hours = floor($totalProduction / 60);
+                                        $minutes = $totalProduction % 60;
+                                    @endphp
+                                    
+                                    @if($hours > 0)
+                                        {{ $hours }}h {{ $minutes }}m
+                                    @else
+                                        {{ $minutes }}m
+                                    @endif
                                 </div>
                             </div>
                             <div class="punch-btn-section">
-                                <button type="button" class="btn btn-primary punch-btn" id="punchInBtn">Punch In</button>
-                                <button type="button" class="btn btn-danger punch-btn" id="punchOutBtn" style="display: none;">Punch Out</button>
-                            </div>
-                            <div class="statistics">
-                                <div class="row">
-
-                                    <div class="col-md-6 col-6 text-center">
-                                        <div class="stats-box">
-                                            <p>Overtime</p>
-                                            <h6>{{ $attendances->isNotEmpty() ? $attendances->first()->overtime . ' hrs' : '0 hrs' }}</h6>
-                                        </div>
-                                    </div>
-                                </div>
+                                @if($attendances->isNotEmpty() && $attendances->last()->punch_in && !$attendances->last()->punch_out)
+                                    <button type="button" class="btn btn-danger punch-btn" id="punchOutBtn">Punch Out</button>
+                                @else
+                                    <button type="button" class="btn btn-primary punch-btn" id="punchInBtn">Punch In</button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -71,25 +88,25 @@
                                     </div>
                                 </div>
                                 <div class="stats-info">
-                                    <p>This Week <strong>28 <small>/ 40 hrs</small></strong></p>
+                                    <p>This Week <strong><small>coming soon/ 40 hrs</small></strong></p>
                                     <div class="progress">
                                         <div class="progress-bar bg-warning" role="progressbar" style="width: 31%" aria-valuenow="31" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                 </div>
                                 <div class="stats-info">
-                                    <p>This Month <strong>90 <small>/ 160 hrs</small></strong></p>
+                                    <p>This Month <strong><small>coming soon/ 160 hrs</small></strong></p>
                                     <div class="progress">
                                         <div class="progress-bar bg-success" role="progressbar" style="width: 62%" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                 </div>
                                 <div class="stats-info">
-                                    <p>Remaining <strong>90 <small>/ 160 hrs</small></strong></p>
+                                <p>Remaining <strong><small>coming soon/ 160 hrs</small></strong></p>
                                     <div class="progress">
                                         <div class="progress-bar bg-danger" role="progressbar" style="width: 62%" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                 </div>
                                 <div class="stats-info">
-                                    <p>Overtime <strong>4</strong></p>
+                                    <p>Overtime <strong>{{ $attendances->isNotEmpty() ? $attendances->first()->overtime . ' mins' : '0 mins' }}</strong></p>
                                     <div class="progress">
                                         <div class="progress-bar bg-info" role="progressbar" style="width: 22%" aria-valuenow="22" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
@@ -128,55 +145,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Search Filter -->
-            <div class="row filter-row">
-                <div class="col-sm-3">  
-                    <div class="form-group form-focus">
-                        <div class="cal-icon">
-                            <input type="text" class="form-control floating datetimepicker">
-                        </div>
-                        <label class="focus-label">Date</label>
-                    </div>
-                </div>
-                <div class="col-sm-3"> 
-                    <div class="form-group form-focus select-focus">
-                        <select class="select floating"> 
-                            <option>-</option>
-                            <option>Jan</option>
-                            <option>Feb</option>
-                            <option>Mar</option>
-                            <option>Apr</option>
-                            <option>May</option>
-                            <option>Jun</option>
-                            <option>Jul</option>
-                            <option>Aug</option>
-                            <option>Sep</option>
-                            <option>Oct</option>
-                            <option>Nov</option>
-                            <option>Dec</option>
-                        </select>
-                        <label class="focus-label">Select Month</label>
-                    </div>
-                </div>
-                <div class="col-sm-3"> 
-                    <div class="form-group form-focus select-focus">
-                        <select class="select floating"> 
-                            <option>-</option>
-                            <option>2019</option>
-                            <option>2018</option>
-                            <option>2017</option>
-                            <option>2016</option>
-                            <option>2015</option>
-                        </select>
-                        <label class="focus-label">Select Year</label>
-                    </div>
-                </div>
-                <div class="col-sm-3">  
-                    <a href="#" class="btn btn-success btn-block"> Search </a>  
-                </div>     
-            </div>
-            <!-- /Search Filter -->
             
             <div class="row">
                 <div class="col-lg-12">
@@ -189,7 +157,6 @@
                                     <th>Punch In</th>
                                     <th>Punch Out</th>
                                     <th>Production</th>
-                                    <th>Overtime</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -199,8 +166,8 @@
                                     <td>{{ \Carbon\Carbon::parse($attendance->date)->format('d M Y') }}</td>
                                     <td>{{ $attendance->punch_in ? \Carbon\Carbon::parse($attendance->punch_in)->format('h:i A') : 'N/A' }}</td>
                                     <td>{{ $attendance->punch_out ? \Carbon\Carbon::parse($attendance->punch_out)->format('h:i A') : 'N/A' }}</td>
-                                    <td>{{ floor($attendance->worked_hours / 60) }} hrs {{ $attendance->worked_hours % 60 }} mins</td>
-                                    <td>{{ floor($attendance->overtime / 60) }} hrs {{ $attendance->overtime % 60 }} mins</td>
+                                    <td>{{ floor($attendance->production / 60) }} hrs {{ $attendance->production % 60 }} mins</td>
+                                    
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -214,72 +181,112 @@
     <!-- /Page Wrapper -->
     @section('script')
     <script>
-        const employeeId = {{ auth()->user()->id }}; // Get the authenticated user's ID
+        $(document).ready(function() {
+            let isPunchedIn = false;
+            const employeeId = {{ auth()->user()->id }};
 
-        // Check if the user has already punched in today
-        fetch('{{ route("attendance.checkToday") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ employee_id: employeeId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.hasPunchedIn) {
-                document.getElementById('punchInBtn').style.display = 'none';
-                document.getElementById('punchOutBtn').style.display = 'block';
-            } else {
-                document.getElementById('punchInBtn').style.display = 'block';
-                document.getElementById('punchOutBtn').style.display = 'none';
+            // Function to get WiFi information
+            async function getWiFiInfo() {
+                try {
+                    // Try to get network connection type
+                    if ('connection' in navigator) {
+                        const connection = navigator.connection;
+                        if (connection) {
+                            return `${connection.type || 'unknown'}_${connection.effectiveType || 'unknown'}`;
+                        }
+                    }
+                    
+                    return 'WiFi_unknown';
+                } catch (error) {
+                    console.error('Error getting WiFi info:', error);
+                    return 'Unknown';
+                }
             }
-        })
-        .catch(error => console.error('Error:', error));
 
-        document.getElementById('punchInBtn').addEventListener('click', function() {
-            fetch('{{ route("attendance.punchIn") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    employee_id: employeeId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                // Update UI
-                document.getElementById('punchInBtn').style.display = 'none';
-                document.getElementById('punchOutBtn').style.display = 'block';
-            })
-            .catch(error => console.error('Error:', error));
+            // Check initial punch in status
+            checkPunchInStatus();
+
+            // Add click handlers for punch buttons
+            $('#punchInBtn').click(async function() {
+                const wifiName = await getWiFiInfo();
+                punchIn(wifiName);
+            });
+
+            $('#punchOutBtn').click(function() {
+                punchOut();
+            });
+
+            function punchIn(wifiName) {
+                // Log the WiFi name for debugging
+                console.log('WiFi Name:', wifiName);
+                
+                $.ajax({
+                    url: '{{ route("attendance.punchIn") }}',
+                    type: 'POST',
+                    data: {
+                        employee_id: employeeId,
+                        wifi_name: wifiName || 'Unknown',
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Punch in response:', response);
+                        isPunchedIn = true;
+                        updateUI();
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        console.error('Punch in error:', xhr);
+                        alert('Error punching in. Please try again.');
+                    }
+                });
+            }
+
+            function punchOut() {
+                $.ajax({
+                    url: '{{ route("attendance.punchOut") }}',
+                    type: 'POST',
+                    data: {
+                        employee_id: employeeId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        isPunchedIn = false;
+                        updateUI();
+                        location.reload(); // Refresh to show updated status
+                    },
+                    error: function(xhr) {
+                        alert('Error punching out. Please try again.');
+                    }
+                });
+            }
+
+            function checkPunchInStatus() {
+                $.ajax({
+                    url: '{{ route("attendance.checkToday") }}',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    data: {
+                        employee_id: employeeId
+                    },
+                    success: function(data) {
+                        isPunchedIn = data.hasPunchedIn;
+                        updateUI();
+                    }
+                });
+            }
+
+            function updateUI() {
+                if (isPunchedIn) {
+                    $('#punchInBtn').hide();
+                    $('#punchOutBtn').show();
+                } else {
+                    $('#punchInBtn').show();
+                    $('#punchOutBtn').hide();
+                }
+            }
         });
-
-        document.getElementById('punchOutBtn').addEventListener('click', function() {
-            fetch('{{ route("attendance.punchOut") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    employee_id: employeeId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                // Update UI
-                document.getElementById('punchOutBtn').style.display = 'none';
-                document.getElementById('punchInBtn').style.display = 'block';
-            })
-            .catch(error => console.error('Error:', error));
-        });
-
-        
     </script>
 @endsection
 @endsection

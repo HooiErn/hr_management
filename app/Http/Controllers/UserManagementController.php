@@ -221,7 +221,7 @@ class UserManagementController extends Controller
             $todayDate = $dt->toDayDateTimeString();
 
             $image = time().'.'.$request->image->extension();  
-            $request->image->move(public_path('assets/images'), $image);
+            $request->image->move(public_path('assets/images/avatar'), $image);
 
             $user = new User;
             $user->name         = $request->name;
@@ -268,7 +268,7 @@ class UserManagementController extends Controller
                 if($image != '')
                 {
                     $image_name = rand() . '.' . $image->getClientOriginalExtension();
-                    $image->move(public_path('/assets/images/'), $image_name);
+                    $image->move(public_path('/assets/images/avatar/'), $image_name);
                 }
             }
             else{
@@ -277,7 +277,7 @@ class UserManagementController extends Controller
                 {
                     unlink('assets/images/'.$image_name);
                     $image_name = rand() . '.' . $image->getClientOriginalExtension();
-                    $image->move(public_path('/assets/images/'), $image_name);
+                    $image->move(public_path('/assets/images/avatar/'), $image_name);
                 }
             }
             
