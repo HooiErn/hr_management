@@ -34,7 +34,8 @@ class AttendanceController extends Controller
             'date',
             'punch_in',
             'punch_out',
-            'break_duration'
+            'break_duration',
+            'overtime'
         )
         ->with('employee');
 
@@ -51,17 +52,31 @@ class AttendanceController extends Controller
     // Group attendance by employee
     $attendanceData = [];
     foreach ($attendances as $attendance) {
+        \Log::info("Raw attendance data:", [
+            'employee_id' => $attendance->employee_id,
+            'date' => $attendance->date,
+            'overtime' => $attendance->overtime,
+            'raw_record' => $attendance->toArray()
+        ]);
+
         $employeeId = $attendance->employee_id;
         $date = $attendance->date;
 
         if (!isset($attendanceData[$employeeId][$date])) {
+            // Add null checks for overtime
+            $overtimeMinutes = $attendance->overtime ?? 0;
+            $overtimeHours = floor($overtimeMinutes / 60);
+            $overtimeMinutes = $overtimeMinutes % 60;
+            $overtimeFormatted = sprintf('%02d:%02d', $overtimeHours, $overtimeMinutes);
+
             $attendanceData[$employeeId][$date] = [
                 'date' => $date,
                 'punch_in' => Carbon::parse($attendance->punch_in)->format('h:i A'),
                 'punch_out' => $attendance->punch_out ? Carbon::parse($attendance->punch_out)->format('h:i A') : '--',
                 'break_duration' => 0,
                 'production' => 0,
-                'overtime' => 0,
+                'overtime' => $overtimeMinutes, // Raw minutes for calculations
+                'overtime_formatted' => $overtimeFormatted, // Formatted HH:MM
                 'employee' => $attendance->employee
             ];
         }
@@ -110,8 +125,13 @@ class AttendanceController extends Controller
     foreach ($attendanceData as $employeeId => $dates) {
         foreach ($dates as $date => $data) {
             $attendanceData[$employeeId][$date]['production'] = $data['production'] / 60;
-            $attendanceData[$employeeId][$date]['overtime'] = $data['overtime'] / 60;
             $attendanceData[$employeeId][$date]['break_duration'] = $data['break_duration'] / 60;
+            
+            // Format total overtime for the day
+            $totalOvertimeHours = floor($data['overtime'] / 60);
+            $totalOvertimeMinutes = $data['overtime'] % 60;
+            $attendanceData[$employeeId][$date]['overtime_formatted'] = 
+                sprintf('%02d:%02d', $totalOvertimeHours, $totalOvertimeMinutes);
         }
     }
 
@@ -132,23 +152,14 @@ class AttendanceController extends Controller
           if ($attendance->punch_out) {
               $attendance->punch_out = Carbon::parse($attendance->punch_out);
               
-              // Calculate worked hours and overtime
-              $productionMinutes = $attendance->punch_in->diffInMinutes($attendance->punch_out);
+              $calculations = $this->calculateProductionAndOvertime(
+                  $attendance->punch_in,
+                  $attendance->punch_out,
+                  $attendance->break_duration
+              );
               
-              // Subtract break duration if exists
-              $productionMinutes -= ($attendance->break_duration ?? 0);
-              
-              $attendance->production = $productionMinutes;
-              
-              // Calculate overtime (anything over 8 hours)
-              $regularHours = 8 * 60; // 8 hours in minutes
-              if ($productionMinutes > $regularHours) {
-                  $attendance->overtime = $productionMinutes - $regularHours;
-              } else {
-                  $attendance->overtime = 0;
-              }
-              
-              // Save the calculated values to database
+              $attendance->production = $calculations['production'];
+              $attendance->overtime = $calculations['overtime'];
               $attendance->save();
               
               \Log::info('Attendance Record:', [
@@ -226,42 +237,25 @@ class AttendanceController extends Controller
 
         if ($attendance) {
             $punchOut = Carbon::now();
-            $punchIn = Carbon::parse($attendance->punch_in);
             
-            // Calculate total minutes worked
-            $productionMinutes = $punchIn->diffInMinutes($punchOut);
+            $calculations = $this->calculateProductionAndOvertime(
+                $attendance->punch_in,
+                $punchOut
+            );
             
-            // Get hours for punch in
-            $punchInHour = (int)$punchIn->format('H');
-            
-            // Set overtime equal to production minutes if:
-            // - Time is between midnight and 8 AM (0-7) OR
-            // - Time is between 5 PM and midnight (17-23)
-            $overtime = $productionMinutes; // Since these times are all in overtime period
-            
-            \Log::info('Detailed Time Calculations:', [
-                'punch_in_time' => $punchIn->format('H:i:s'),
-                'punch_in_hour' => $punchInHour,
-                'punch_out_time' => $punchOut->format('H:i:s'),
-                'production_minutes' => $productionMinutes,
-                'is_overtime_period' => 'Yes - Before 8 AM',
-                'overtime_minutes' => $overtime
-            ]);
-
-            // Update database with explicit values
             $updated = DB::table('attendances')
                 ->where('id', $attendance->id)
                 ->update([
                     'punch_out' => $punchOut->format('Y-m-d H:i:s'),
-                    'production' => $productionMinutes,
-                    'overtime' => $overtime, // This should now be equal to production minutes
+                    'production' => $calculations['production'],
+                    'overtime' => $calculations['overtime'],
                     'session_id' => session()->getId()
                 ]);
 
             \Log::info('Final Values Saved:', [
                 'attendance_id' => $attendance->id,
-                'production' => $productionMinutes,
-                'overtime' => $overtime,
+                'production' => $calculations['production'],
+                'overtime' => $calculations['overtime'],
                 'update_success' => $updated
             ]);
 
@@ -269,8 +263,8 @@ class AttendanceController extends Controller
                 'message' => 'Punched out successfully!',
                 'attendance' => [
                     'punch_out' => $punchOut->format('Y-m-d H:i:s'),
-                    'production' => $productionMinutes,
-                    'overtime' => $overtime,
+                    'production' => $calculations['production'],
+                    'overtime' => $calculations['overtime'],
                     'session_id' => session()->getId()
                 ]
             ]);
@@ -286,23 +280,6 @@ class AttendanceController extends Controller
         
         // If punch in and out are within break hours
         if ($punchIn->between($breakStart, $breakEnd) && $punchOut->between($breakStart, $breakEnd)) {
-            return $punchIn->diffInMinutes($punchOut);
-        }
-        
-        return 0;
-    }
-
-    private function calculateOvertime($punchIn, $punchOut)
-    {
-        $regularEndTime = Carbon::createFromTime(17, 0); // 5 PM
-        
-        // If punch out is after 5 PM
-        if ($punchOut->greaterThan($regularEndTime)) {
-            // If punch in was before 5 PM
-            if ($punchIn->lessThan($regularEndTime)) {
-                return $punchOut->diffInMinutes($regularEndTime);
-            }
-            // If both punch in and out were after 5 PM
             return $punchIn->diffInMinutes($punchOut);
         }
         
@@ -363,5 +340,31 @@ class AttendanceController extends Controller
         }
     }
 
- 
+    private function calculateProductionAndOvertime($punchIn, $punchOut, $breakDuration = 0)
+    {
+        $punchIn = Carbon::parse($punchIn);
+        $punchOut = Carbon::parse($punchOut);
+        
+        // Calculate total minutes worked
+        $productionMinutes = $punchOut->diffInMinutes($punchIn);
+        $productionMinutes -= ($breakDuration ?? 0);
+        
+        // Calculate overtime based on time of day
+        $punchInHour = (int)$punchIn->format('H');
+        
+        // If work is done during overtime hours (before 8 AM or after 5 PM)
+        if ($punchInHour < 8 || $punchInHour >= 17) {
+            $overtime = $productionMinutes;
+        } else {
+            // Regular hours calculation (over 8 hours)
+            $regularHours = 8 * 60; // 8 hours in minutes
+            $overtime = max(0, $productionMinutes - $regularHours);
+        }
+        
+        return [
+            'production' => $productionMinutes,
+            'overtime' => $overtime
+        ];
+    }
+
 }

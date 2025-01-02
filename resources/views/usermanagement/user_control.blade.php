@@ -15,40 +15,12 @@
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_user"><i class="fa fa-plus"></i> Add User</a>
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_user" style="border:none;color:white;background-color:#5a83d2;“><i class="fa fa-plus"></i> Add User</a>
                     </div>
                 </div>
             </div>
 			<!-- /Page Header -->
 
-            <!-- Search Filter -->
-            <form action="{{ route('search/user/list') }}" method="POST">
-                @csrf
-                <div class="row filter-row">
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" id="name" name="name">
-                            <label class="focus-label">User Name</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" id="name" name="role_name">
-                            <label class="focus-label">Role Name</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3"> 
-                        <div class="form-group form-focus">
-                            <input type="text" class="form-control floating" id="name" name="status">
-                            <label class="focus-label">Status</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">  
-                        <button type="sumit" class="btn btn-success btn-block"> Search </button>  
-                    </div>
-                </div>
-            </form>     
-            <!-- /Search Filter -->
             {{-- message --}}
             {!! Toastr::message() !!}
             <div class="row">

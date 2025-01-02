@@ -16,7 +16,7 @@
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">
-                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_department"><i class="fa fa-plus"></i> Add Department</a>
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_department" style="background-color:#5a83d2;border:none; color:white;"><i class="fa fa-plus"></i> Add Department</a>
                     </div>
                 </div>
             </div>

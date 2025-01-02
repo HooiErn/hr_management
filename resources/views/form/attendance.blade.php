@@ -73,7 +73,7 @@
                                     <th>Punch Out</th>
                                     <th>Break Duration</th>
                                     <th>Production</th>
-                                    <th>Overtime</th>
+                                    <th>Overtime (Hours:Minutes)</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -114,14 +114,7 @@
                                                 --
                                             @endif
                                         </td>
-                                        <td>
-                                            @if(isset($attendance['overtime']) && $attendance['overtime'] > 0)
-                                                {{ floor($attendance['overtime']) }}h 
-                                                {{ ($attendance['overtime'] * 60) % 60 }}m
-                                            @else
-                                                0h 0m
-                                            @endif
-                                        </td>
+                                        <td>{{ $attendance['overtime_formatted'] ?? '--' }}</td>
                                         <td class="attendance-status">
                                             @if($attendance)
                                                 @if($attendance['punch_out'] !== '--')

@@ -59,7 +59,7 @@
                         <li><a class="{{set_active(['jobs','job/applicants','job/details'])}} {{ (request()->is('job/applicants/*')) ? 'active' : '' }}" href="{{ route('jobs') }} "> Manage Jobs </a></li>
                         <li><a class="{{set_active(['page/manage/resumes'])}}" href="{{ route('page/manage/resumes') }}"> Manage Resumes </a></li>
                         <li><a class="{{set_active(['page/candidates'])}}" href="{{ route('page/candidates') }}"> Candidates List </a></li>
-                        <li><a class="{{set_active(['page/interviwer'])}}" href="{{ route('page/interviwer') }}"> Interviewer List(Schedule) </a></li>
+                        <li><a class="{{set_active(['page/interviwer'])}}" href="{{ route('page/interviwer') }}"> Interviewer List(Schedule)</a></li>
                         <!-- <li><a class="{{set_active(['page/schedule/timing'])}}" href="{{ route('page/schedule/timing') }}"> Create Meeting </a></li> -->
                         <li><a class="{{set_active(['video/dashboard'])}}" href="{{ route('video.dashboard') }}"> Join Meeting </a></li>
                         <li><a class="{{set_active(['public/meeting'])}}" href="{{ route('public.meeting') }}"> Join Meeting(Interviewer) </a></li>

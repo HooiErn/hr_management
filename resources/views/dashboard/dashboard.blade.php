@@ -47,7 +47,7 @@
                     <div class="card dash-widget">
                         <div class="card-body"> <span class="dash-widget-icon"><i class="fa fa-user"></i></span>
                             <div class="dash-widget-info">
-                                <h3></h3> <span>Schedule</span>
+                                <h3>{{ $scheduledCount }}</h3> <span>Schedule</span>
                             </div>
                         </div>
                     </div>
@@ -82,9 +82,9 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3">
                                     <div> <span class="d-block">New Employees</span> </div>
-                                    <div> <span class="text-success">+10%</span> </div>
+                                    <div> <span class="text-success">Coming Soon</span> </div>
                                 </div>
-                                <h3 class="mb-3">10</h3>
+                                <h3 class="mb-3">Coming Soon</h3>
                                 <div class="progress mb-2" style="height: 5px;">
                                     <div class="progress-bar bg-primary" role="progressbar" style="width: 70%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
@@ -95,39 +95,39 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3">
                                     <div> <span class="d-block">Earnings</span> </div>
-                                    <div> <span class="text-success">+12.5%</span> </div>
+                                    <div> <span class="text-success">Coming Soon</span> </div>
                                 </div>
-                                <h3 class="mb-3">$1,42,300</h3>
+                                <h3 class="mb-3">Coming Soon</h3>
                                 <div class="progress mb-2" style="height: 5px;">
                                     <div class="progress-bar bg-primary" role="progressbar" style="width: 70%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <p class="mb-0">Previous Month <span class="text-muted">$1,15,852</span></p>
+                                <p class="mb-0">Coming Soon<span class="text-muted">Coming Soon</span></p>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3">
                                     <div> <span class="d-block">Expenses</span> </div>
-                                    <div> <span class="text-danger">-2.8%</span> </div>
+                                    <div> <span class="text-danger">Coming Soon</span> </div>
                                 </div>
-                                <h3 class="mb-3">$8,500</h3>
+                                <h3 class="mb-3">Coming Soon</h3>
                                 <div class="progress mb-2" style="height: 5px;">
                                     <div class="progress-bar bg-primary" role="progressbar" style="width: 70%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <p class="mb-0">Previous Month <span class="text-muted">$7,500</span></p>
+                                <p class="mb-0">Coming Soon<span class="text-muted">Coming Soon</span></p>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3">
                                     <div> <span class="d-block">Profit</span> </div>
-                                    <div> <span class="text-danger">-75%</span> </div>
+                                    <div> <span class="text-danger">Coming Soon</span> </div>
                                 </div>
-                                <h3 class="mb-3">$1,12,000</h3>
+                                <h3 class="mb-3">Coming Soon</h3>
                                 <div class="progress mb-2" style="height: 5px;">
                                     <div class="progress-bar bg-primary" role="progressbar" style="width: 70%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <p class="mb-0">Previous Month <span class="text-muted">$1,42,000</span></p>
+                                <p class="mb-0">Coming Soon<span class="text-muted">Coming Soon</span></p>
                             </div>
                         </div>
                     </div>

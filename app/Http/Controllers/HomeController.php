@@ -37,8 +37,12 @@ class HomeController extends Controller
         $leaveCount = DB::table('leaves_admins')
             ->whereYear('created_at', Carbon::now()->year)
             ->count();
+         // Count scheduled interviews
+        $scheduledCount = DB::table('timesheets')
+        ->where('status', 'scheduled')  // Assuming 'scheduled' is the status for scheduled interviews
+        ->count();
 
-        return view('dashboard.dashboard', compact('employeeCount', 'interviewerCount', 'leaveCount'));
+        return view('dashboard.dashboard', compact('employeeCount', 'interviewerCount', 'leaveCount', 'scheduledCount'));
     }
 
     public function showHomepage()
