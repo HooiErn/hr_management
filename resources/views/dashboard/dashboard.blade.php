@@ -88,7 +88,7 @@
                                 <div class="progress mb-2" style="height: 5px;">
                                     <div class="progress-bar bg-primary" role="progressbar" style="width: 70%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
-                                <p class="mb-0">Overall Employees 218</p>
+                                <p class="mb-0">Coming Soon</p>
                             </div>
                         </div>
                         <div class="card">

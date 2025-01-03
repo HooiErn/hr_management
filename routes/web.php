@@ -18,7 +18,8 @@ use App\Http\Controllers\PersonalInformationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\ProfileController;
+
+
 
 
 /*
@@ -78,6 +79,7 @@ Route::controller(SettingController::class)->group(function () {
     Route::post('roles/permissions/update', 'editRolesPermissions')->middleware('auth')->name('roles/permissions/update');
     Route::post('roles/permissions/delete', 'deleteRolesPermissions')->middleware('auth')->name('roles/permissions/delete');
     Route::get('get/company/info', 'getCompanyInfo')->name('get.company.info');
+    Route::post('change/password', 'changePassword')->middleware('auth')->name('settings/password');
 });
 
 // -----------------------------login----------------------------------------//
@@ -136,7 +138,7 @@ Route::controller(UserManagementController::class)->group(function () {
 // ----------------------------- form change password ------------------------------//
 Route::controller(UserManagementController::class)->group(function () {
     Route::get('change/password', 'changePasswordView')->middleware('auth')->name('change/password');
-    Route::post('change/password/db', 'changePasswordDB')->name('change/password/db');    
+        
 });
 
 // ----------------------------- job ------------------------------//
@@ -159,8 +161,12 @@ Route::controller(JobController::class)->group(function () {
     Route::get('cv/download/{id}', 'downloadCV')->middleware('auth');
     Route::get('/jobs/filter', 'filter')->middleware('auth')->name('jobs/filter');
     Route::post('form/jobs/save', 'JobsSaveRecord')->name('form/jobs/save');
-    Route::post('form/apply/job/save', 'applyJobSaveRecord')->name('form/apply/job/save');
-    Route::post('form/apply/job/update', 'applyJobUpdateRecord')->name('form/apply/job/update');
+    Route::post('form/apply/job/save', 'applyJobSaveRecord')->middleware('auth')->name('form/apply/job/save');
+    Route::post('form/apply/job/update', 'applyJobUpdateRecord')->middleware('auth')->name('form/apply/job/update');
+    
+    //delete multiple jobs
+    Route::post('/jobs/delete', 'deleteJob')->middleware('auth')->name('jobs/delete');
+
 
     Route::get('page/manage/resumes', 'manageResumesIndex')->middleware('auth')->name('page/manage/resumes');
     Route::post('all/resumes/search', 'employeeSearch')->name('all/resumes/search');
@@ -172,8 +178,8 @@ Route::controller(JobController::class)->group(function () {
     Route::get('page/aptitude/result', 'aptituderesultIndex')->middleware('auth')->name('page/aptitude/result');
     Route::post('candidate/approve', 'approveCandidate')->middleware('auth')->name('candidate/approve');
     Route::post('candidate/edit', 'editCandidate')->middleware('auth')->name('candidate/edit');
-
-    Route::get('video/dashboard', [JobController::class, 'videoDashboard'])->name('video.dashboard');
+    Route::post('candidate/delete', 'deleteCandidate')->middleware('auth')->name('candidate/delete');
+    Route::get('video/dashboard', 'videoDashboard')->name('video.dashboard');
 });
 
 // ----------------------------- Interviewer  ------------------------------//
@@ -316,16 +322,3 @@ Route::controller(PersonalInformationController::class)->group(function () {
 // Public meeting routes (no auth required)
 Route::get('public/meeting', [JobController::class, 'publicMeeting'])->name('public.meeting');
 Route::post('public/meeting/join', [JobController::class, 'joinPublicMeeting'])->name('public.meeting.join');
-
-
-
-
-
-
-
-
-
-
-
-
-

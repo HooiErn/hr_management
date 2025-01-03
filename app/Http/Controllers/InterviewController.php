@@ -69,7 +69,7 @@ class InterviewController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Interview scheduled and notifications sent',
+                'message' => 'Interview scheduled and notifications email sent',
                 'roomID' => $roomID,
             ]);
 

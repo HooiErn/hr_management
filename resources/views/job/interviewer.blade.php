@@ -740,6 +740,7 @@ $(document).ready(function() {
                 if (response.success) {
                     $('#schedule_interview').modal('hide');
                     toastr.success('Interview scheduled successfully');
+                    toastr.success('Email notification sent to interviewer\'s email');
                     setTimeout(function() {
                         location.reload();
                     }, 1500); // Reload page after 1.5 seconds

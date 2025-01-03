@@ -130,14 +130,34 @@ class JobController extends Controller
     /** jobs */
     public function Jobs()
     {
-        $jobs = AddJob::all(); 
-        $department = DB::table('departments')->get();
-        $type_job   = DB::table('type_jobs')->get();
-        $job_list   = DB::table('add_jobs')->get();
+        $now = Carbon::now('Asia/Kuala_Lumpur')->startOfDay();
         
-        $company = Company::first();  
+        // Get departments
+        $department = DB::table('departments')->get();
+        
+        // Get job types
+        $type_job = DB::table('type_jobs')->get();
+        
+        // Get company info
+        $company = Company::first();
+        
+        $job_list = DB::table('add_jobs')
+            ->select('*')
+            ->get()
+            ->map(function($job) use ($now) {
+                $expired_date = Carbon::parse($job->expired_date)->startOfDay();
+                $job->is_expired = $now->gt($expired_date);
+                $job->days_remaining = $now->diffInDays($expired_date, false);
+                return $job;
+            });
 
-        return view('job.jobs',compact('department','type_job','job_list','jobs', 'company'));
+        return view('job.jobs', compact(
+            'job_list',
+            'now',
+            'department',
+            'type_job',
+            'company'
+        ));
     }
 
     /** job save record */
@@ -179,12 +199,12 @@ class JobController extends Controller
             $add_job->save();
 
             DB::commit();
-            Toastr::success('Create job successfully :)','Success');
+            Toastr::success('Job created successfully!', 'Success');
             return redirect()->back();
             
         } catch(\Exception $e) {
             DB::rollback();
-            Toastr::error('Add Job fail :)','Error');
+            Toastr::error('Failed to create job!', 'Error');
             return redirect()->back();
         } 
     }
@@ -600,6 +620,20 @@ class JobController extends Controller
         }
     }
 
+    public function deleteCandidate(Request $request)
+    {
+        try {
+            $candidate = Candidate::findOrFail($request->candidate_id);
+            $candidate->delete();
+            
+            Toastr::success('Candidate deleted successfully!','Success');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Toastr::error('Error deleting candidate!','Error');
+            return redirect()->back();
+        }
+    }
+
     public function editCandidateForm($id)
     {
         $candidate = Candidate::findOrFail($id);
@@ -627,6 +661,69 @@ class JobController extends Controller
             'roomID' => $request->roomID,
             'userName' => $request->name
         ]);
+    }
+
+    public function deleteMultipleJobs(Request $request)
+    {
+        try {
+            AddJob::whereIn('id', $request->ids)->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false]);
+        }
+    }
+
+    public function deleteJob(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            // Debug log
+            \Log::info('Attempting to delete job ID: ' . $request->job_id);
+            
+            // Validate job_id exists
+            if (!$request->has('job_id')) {
+                throw new \Exception('Job ID is required');
+            }
+
+            // Find the job
+            $job = AddJob::find($request->job_id);
+            
+            if (!$job) {
+                throw new \Exception('Job not found');
+            }
+
+            // Delete the job
+            $job->delete();
+            
+            DB::commit();
+
+            // Return success response
+            if ($request->ajax()) {
+                return response()->json(['success' => true]);
+            }
+
+            Toastr::success('Job deleted successfully!', 'Success');
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Job Delete Error: ' . $e->getMessage());
+            
+            // Return error response
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()]);
+            }
+
+            Toastr::error('Error deleting job: ' . $e->getMessage(), 'Error');
+            return redirect()->back();
+        }
+    }
+
+    public function showCandidates($job_id)
+    {
+        $job = AddJob::findOrFail($job_id);
+        $candidates = JobApplicant::where('job_id', $job_id)->get();
+        return view('job.candidates', compact('candidates', 'job'));
     }
 
 }

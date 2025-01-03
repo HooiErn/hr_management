@@ -7,15 +7,11 @@
                 <li class="menu-title">
                     <span>Main</span>
                 </li>
-                <li class="{{ set_active(['home', 'em/dashboard']) }} submenu">
-                    <a href="#" class="{{ set_active(['home', 'em/dashboard']) ? 'noti-dot' : '' }}">
+                <li class="{{ set_active(['home']) }}">
+                    <a href="{{ route('home') }}" class="{{ set_active(['home', 'em/dashboard']) ? 'noti-dot' : '' }}">
                         <i class="la la-dashboard"></i>
-                        <span> Dashboard</span> <span class="menu-arrow"></span>
+                        <span>Admin Dashboard</span>
                     </a>
-                    <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }}">
-                        <li><a class="{{set_active(['home'])}}" href="{{ route('home') }}">Admin Dashboard</a></li>
-                        <!-- <li><a class="{{set_active(['em/dashboard'])}}" href="{{ route('em/dashboard') }}">Employee Dashboard</a></li> -->
-                    </ul>
                 </li>
                 @if (Auth::user()->role_name=='Admin')
                     <li class="menu-title"> <span>Authentication</span> </li>
@@ -67,14 +63,13 @@
                 </li>
                 <li class="menu-title"> <span>HR</span> </li>
                
-                <li class="{{set_active(['form/leave/reports/page'])}} submenu">
-                    <a href="#" class="{{ set_active(['form/leave/reports/page']) ? 'noti-dot' : '' }}"><i class="la la-pie-chart"></i>
-                    <span> Reports </span> <span class="menu-arrow"></span></a>
-                    <ul style="{{ request()->is('/*') ? 'display: block;' : 'display: none;' }}">
-                        <li><a class="{{set_active(['form/leave/reports/page'])}}" href="{{ route('form/leave/reports/page') }}"> Leave Report </a></li>
-                      
-                    </ul>
+                <li class="{{ set_active(['form/leave/reports/page']) }}">
+                    <a href="{{ route('form/leave/reports/page') }}" class="{{ set_active(['form/leave/reports/page']) ? 'noti-dot' : '' }}">
+                        <i class="la la-pie-chart"></i>
+                        <span>Leave Reports</span>
+                    </a>
                 </li>
+
             </ul>
         </div>
     </div>

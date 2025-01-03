@@ -45,7 +45,7 @@ input.form-control, select.form-control {
                     <li><a href="{{ route('home') }}"><i class="la la-home"></i> <span>Back to Home</span></a></li>
                     <li class="menu-title">Settings</li>
                     <li class="active"><a href="{{ route('company/settings/page') }}"><i class="la la-building"></i><span>Company Settings</span></a></li>
-                    <li><a href="{{ route('roles/permissions/page') }}"><i class="la la-key"></i><span>Roles & Permissions</span></a></li>
+                    <!-- <li><a href="{{ route('roles/permissions/page') }}"><i class="la la-key"></i><span>Roles & Permissions</span></a></li> -->
                     <li><a href="{{ route('change/password') }}"><i class="la la-lock"></i><span>Change Password</span></a></li>
                 </ul>
             </div>
@@ -162,7 +162,7 @@ input.form-control, select.form-control {
                             </div>
                         </div>
                         <div class="submit-section">
-                            <button type="submit" class="btn btn-primary submit-btn">Save</button>
+                            <button type="submit" class="btn btn-primary submit-btn" style="background-color:#5a83d2;">Save</button>
                         </div>
                     </form>
                 </div>

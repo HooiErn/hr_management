@@ -8,6 +8,8 @@ use Brian2694\Toastr\Facades\Toastr;
 use App\Models\Company;
 use DB;
 use Twilio\Rest\Client;
+use Illuminate\Support\Facades\Hash;
+use App\Rules\MatchOldPassword;
 
 class SettingController extends Controller
 {
@@ -147,6 +149,33 @@ class SettingController extends Controller
                 'success' => false,
                 'message' => 'Error fetching company information'
             ]);
+        }
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', new MatchOldPassword],
+            'new_password' => 'required|string|min:8|different:current_password',
+            'new_confirm_password' => 'required|same:new_password'
+        ], [
+            'current_password.required' => 'Please enter your current password',
+            'new_password.required' => 'Please enter a new password',
+            'new_password.min' => 'New password must be at least 8 characters',
+            'new_password.different' => 'New password must be different from current password',
+            'new_confirm_password.same' => 'Password confirmation does not match',
+        ]);
+
+        try {
+            auth()->user()->update([
+                'password' => Hash::make($request->new_password)
+            ]);
+
+            Toastr::success('Password changed successfully!', 'Success');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            Toastr::error('Error changing password!', 'Error');
+            return redirect()->back();
         }
     }
 }

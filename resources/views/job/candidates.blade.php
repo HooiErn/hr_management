@@ -208,28 +208,28 @@
                                                     <a class="dropdown-item approve-candidate" href="#" data-toggle="modal" data-target="#approval_modal" data-id="{{ $candidate->id }}">
                                                         <i class="fa fa-check m-r-5"></i> Approval
                                                     </a>
-                                                    @if($candidates->count() > 0)
-                                                        <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
-                                                           data-id="{{ $candidate->id }}"
-                                                           data-name="{{ $candidate->name }}"
-                                                           data-candidate-id="{{ $candidate->candidate_id }}"
-                                                           data-email="{{ $candidate->email }}"
-                                                           data-phone="{{ $candidate->phone_number }}"
-                                                           data-ic-number="{{ $candidate->ic_number }}"
-                                                           data-birth-date="{{ $candidate->birth_date }}"
-                                                           data-age="{{ $candidate->age }}"
-                                                           data-gender="{{ $candidate->gender }}"
-                                                           data-race="{{ $candidate->race }}"
-                                                           data-education="{{ $candidate->highest_education }}"
-                                                           data-experience="{{ $candidate->work_experiences }}">
-                                                            <i class="fa fa-pencil m-r-5"></i> Edit
-                                                        </a>
-                                                    @else
-                                                        <a class="dropdown-item disabled" href="#" onclick="return false;">
-                                                            <i class="fa fa-pencil m-r-5"></i> No Candidates to Edit
-                                                        </a>
-                                                    @endif
-                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                                    <a class="dropdown-item edit-candidate" href="#" 
+                                                       data-toggle="modal" 
+                                                       data-target="#edit_candidate"
+                                                       data-id="{{ $candidate->id }}"
+                                                       data-race="{{ $candidate->race }}"
+                                                       data-gender="{{ $candidate->gender }}"
+                                                       data-name="{{ $candidate->name }}"
+                                                       data-candidate-id="{{ $candidate->candidate_id }}"
+                                                       data-email="{{ $candidate->email }}"
+                                                       data-phone="{{ $candidate->phone_number }}"
+                                                       data-ic-number="{{ $candidate->ic_number }}"
+                                                       data-birth-date="{{ $candidate->birth_date }}"
+                                                       data-age="{{ $candidate->age }}"
+                                                       data-gender="{{ $candidate->gender }}"
+                                                       data-race="{{ $candidate->race }}"
+                                                       data-education="{{ $candidate->highest_education }}"
+                                                       data-experience="{{ $candidate->work_experiences }}">
+                                                        <i class="fa fa-pencil m-r-5"></i> Edit
+                                                    </a>
+                                                    <a class="dropdown-item delete-candidate" href="#" data-toggle="modal" data-target="#delete_job" data-id="{{ $candidate->id }}">
+                                                        <i class="fa fa-trash-o m-r-5"></i> Delete
+                                                    </a>
                                                 </div>
                                             </div>
                                         </td>
@@ -346,7 +346,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Gender <span class="text-danger">*</span></label>
                                         <select class="form-control @error('gender') is-invalid @enderror" name="gender" required>
@@ -471,11 +471,11 @@
                                         <div class="form-group">
                                             <label>Race<span class="text-danger">*</span></label>
                                             <select class="form-control" name="race" id="edit_race">
-                                            <option value="">Select Race</option>
-                                            <option value="Malay" {{ ($candidate->race ?? '') == 'Malay' ? 'selected' : '' }}>Malay</option>
-                                            <option value="Chinese" {{ ($candidate->race ?? '') == 'Chinese' ? 'selected' : '' }}>Chinese</option>
-                                            <option value="Indian" {{ ($candidate->race ?? '') == 'Indian' ? 'selected' : '' }}>Indian</option>
-                                            <option value="Others" {{ ($candidate->race ?? '') == 'Others' ? 'selected' : '' }}>Others</option>
+                                                <option value="">Select Race</option>
+                                                <option value="Malay">Malay</option>
+                                                <option value="Chinese">Chinese</option>
+                                                <option value="Indian">Indian</option>
+                                                <option value="Others">Others</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
@@ -552,18 +552,22 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="form-header">
-                            <h3>Delete</h3>
-                            <p>Are you sure want to delete?</p>
+                            <h3>Delete Candidate</h3>
+                            <p>Are you sure want to delete this candidate?</p>
                         </div>
                         <div class="modal-btn delete-action">
-                            <div class="row">
-                                <div class="col-6">
-                                    <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                            <form action="{{ route('candidate/delete') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="candidate_id" id="delete_candidate_id">
+                                <div class="row">
+                                    <div class="col-6 px-2">
+                                        <button type="submit" class="btn btn-danger w-100" style="width: 100%;">Delete</button>
+                                    </div>
+                                    <div class="col-6 px-2">
+                                        <button type="button" data-dismiss="modal" class="btn btn-secondary w-100" style="width: 100%;">Cancel</button>
+                                    </div>
                                 </div>
-                                <div class="col-6">
-                                    <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
-                                </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -776,17 +780,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <a class="dropdown-item approve-candidate" href="#" data-toggle="modal" data-target="#approval_modal" data-id="${candidate.id}">
                                             <i class="fa fa-check m-r-5"></i> Approval
                                         </a>
-                                        <a class="dropdown-item edit-candidate" href="#" data-toggle="modal" data-target="#edit_candidate" 
-                                            data-id="${candidate.id}"
-                                            data-name="${candidate.name}"
-                                            data-email="${candidate.email}"
-                                            data-phone="${candidate.phone_number}"
-                                            data-age="${candidate.age}"
-                                            data-gender="${candidate.gender}"
-                                            data-race="${candidate.race}">
+                                        <a class="dropdown-item edit-candidate" href="#" 
+                                           data-toggle="modal" 
+                                           data-target="#edit_candidate"
+                                           data-id="${candidate.id}"
+                                           data-race="${candidate.race}"
+                                           data-gender="${candidate.gender}"
+                                           data-name="${candidate.name}"
+                                           data-candidate-id="${candidate.candidate_id}"
+                                           data-email="${candidate.email}"
+                                           data-phone="${candidate.phone_number}"
+                                           data-ic-number="${candidate.ic_number}"
+                                           data-birth-date="${candidate.birth_date}"
+                                           data-age="${candidate.age}"
+                                           data-gender="${candidate.gender}"
+                                           data-race="${candidate.race}"
+                                           data-education="${candidate.highest_education}"
+                                           data-experience="${candidate.work_experiences}">
                                             <i class="fa fa-pencil m-r-5"></i> Edit
                                         </a>
-                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_job"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                        <a class="dropdown-item delete-candidate" href="#" data-toggle="modal" data-target="#delete_job" data-id="${candidate.id}">
+                                            <i class="fa fa-trash-o m-r-5"></i> Delete
+                                        </a>
                                     </div>
                                 </div>
                             </td>
@@ -1106,6 +1121,35 @@ document.addEventListener('DOMContentLoaded', function() {
             $('#edit_race').val(race);
             $('#edit_education').val(education);
             $('#edit_experience').val(experience);
+        });
+    });
+    </script>
+
+    <script>
+    $(document).ready(function() {
+        // When edit button is clicked
+        $('.edit-candidate').on('click', function() {
+            // Get data from data attributes
+            var race = $(this).data('race');
+            var gender = $(this).data('gender');
+            
+            // Set values in the form
+            $('#edit_race').val(race);
+            $('#edit_gender').val(gender);
+            
+            // Debug logs
+            console.log('Race:', race);
+            console.log('Gender:', gender);
+        });
+    });
+    </script>
+
+    <script>
+    $(document).ready(function() {
+        // When delete button is clicked
+        $('.delete-candidate').click(function() {
+            var candidateId = $(this).data('id');
+            $('#delete_candidate_id').val(candidateId);
         });
     });
     </script>

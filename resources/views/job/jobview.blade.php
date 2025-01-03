@@ -106,7 +106,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="job-det-info job-widget">
-                            <a class="btn job-btn" href="#" data-toggle="modal" data-target="#apply_job">Apply For This Job</a>
+                            @if (!$now->greaterThanOrEqualTo($expired_date))
+                                <a class="btn job-btn" href="#" data-toggle="modal" data-target="#apply_job">Apply For This Job</a>
+                            @else
+                                <div class="alert alert-warning">
+                                    <i class="fa fa-exclamation-triangle"></i> This job posting has expired
+                                </div>
+                            @endif
+                            
                             <div class="info-list">
                                 <span><i class="fa fa-bar-chart"></i></span>
                                 <h5>Job Type</h5>
@@ -143,11 +150,13 @@
                                 </p>
                             </div>
                             <div class="info-list text-center">
-                                @if ($now->greaterThanOrEqualTo($expired_date))  <!-- Check if expired -->
-                                    <p style="color: red;">Job is expired.</p>
+                                @if ($now->greaterThanOrEqualTo($expired_date))
+                                    <p class="text-danger">
+                                        <i class="fa fa-clock-o"></i> Job expired on {{ date('d F, Y', strtotime($expired_date)) }}
+                                    </p>
                                 @else
                                     <a class="app-ends" href="#">
-                                    Application ends in {{ $diff }}
+                                        <i class="fa fa-clock-o"></i> Application ends in {{ $diff }}
                                     </a>
                                 @endif
                             </div>
