@@ -93,7 +93,6 @@
                                         <div class="dropdown-menu dropdown-menu-right">
                                             <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-info"></i> Open</a>
                                             <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-success"></i> Closed</a>
-                                            <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-danger"></i> Cancelled</a>
                                         </div>
                                     </div>
                                 </td>
@@ -125,11 +124,25 @@
                                             <i class="material-icons">more_vert</i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right">
-                                            @if(!$is_expired)
-                                                <a href="#" class="dropdown-item edit_job" data-toggle="modal" data-target="#edit_job">
-                                                    <i class="fa fa-pencil m-r-5"></i> Edit
-                                                </a>
-                                            @endif
+                                            <a class="dropdown-item edit_job" href="#" 
+                                               data-toggle="modal" 
+                                               data-target="#edit_job"
+                                               data-id="{{ $items->id }}"
+                                               data-job-title="{{ $items->job_title }}"
+                                               data-department="{{ $items->department }}"
+                                               data-job-location="{{ $items->job_location }}"
+                                               data-vacancies="{{ $items->no_of_vacancies }}"
+                                               data-experience="{{ $items->experience }}"
+                                               data-age="{{ $items->age }}"
+                                               data-salary-from="{{ $items->salary_from }}"
+                                               data-salary-to="{{ $items->salary_to }}"
+                                               data-job-type="{{ $items->job_type }}"
+                                               data-status="{{ $items->status }}"
+                                               data-start-date="{{ $items->start_date }}"
+                                               data-expired-date="{{ $items->expired_date }}"
+                                               data-description="{{ $items->description }}">
+                                                <i class="fa fa-pencil m-r-5"></i> Edit
+                                            </a>
                                             <a href="#" 
                                                class="dropdown-item delete_job" 
                                                data-toggle="modal" 
@@ -250,7 +263,6 @@
                                     <select class="select @error('status') is-invalid @enderror" name="status" required>
                                         <option value="Open">Open</option>
                                         <option value="Closed">Closed</option>
-                                        <option value="Cancelled">Cancelled</option>
                                     </select>
                                 </div>
                             </div>
@@ -330,7 +342,7 @@
                                             name="department">
                                         <option value="">Select Department</option>
                                         @foreach ($department as $value)
-                                            <option value="{{ $value->department }}">{{ $value->department }}</option>
+                                            <option value="{{ $value->department }}" {{ old('department') == $value->department ? "selected" :""}} required>{{ $value->department }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -409,14 +421,13 @@
                                     <label>Job Type</label>
                                     <select class="select @error('job_type') is-invalid @enderror" 
                                             id="e_job_type" 
-                                            name="job_type">
+                                            name="job_type"
+                                            disabled>
                                         @foreach ($type_job as $job)
-                                        <option value="{{ $job->name_type_job }}" 
-                                                {{ old('job_type') == $job->name_type_job ? 'selected' : '' }}>
-                                            {{ $job->name_type_job }}
-                                        </option>
+                                        <option value="{{ $job->name_type_job }}">{{ $job->name_type_job }}</option>
                                         @endforeach
                                     </select>
+                                    <input type="hidden" name="job_type" id="e_job_type_hidden">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -425,9 +436,8 @@
                                     <select class="select @error('status') is-invalid @enderror" 
                                             id="e_status" 
                                             name="status">
-                                        <option value="Open" {{ old('status') == 'Open' ? 'selected' : '' }}>Open</option>
-                                        <option value="Closed" {{ old('status') == 'Closed' ? 'selected' : '' }}>Closed</option>
-                                        <option value="Cancelled" {{ old('status') == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        <option value="Open">Open</option>
+                                        <option value="Closed">Closed</option>
                                     </select>
                                 </div>
                             </div>
@@ -676,6 +686,54 @@
             }
 
             // Date validation code...
+        });
+    });
+    </script>
+
+    <script>
+    $(document).ready(function() {
+
+        // Edit job
+        $('.edit_job').on('click', function(e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            var jobTitle = $(this).data('job-title');
+            var department = $(this).data('department');
+            var jobLocation = $(this).data('job-location');
+            var vacancies = $(this).data('vacancies');
+            var experience = $(this).data('experience');
+            var age = $(this).data('age');
+            var salaryFrom = $(this).data('salary-from');
+            var salaryTo = $(this).data('salary-to');
+            var jobType = $(this).data('job-type');
+            var status = $(this).data('status');
+            var startDate = $(this).data('start-date');
+            var expiredDate = $(this).data('expired-date');
+            var description = $(this).data('description');
+
+            // Set modal values
+            $('#edit_job #e_id').val(id);
+            $('#edit_job #e_job_title').val(jobTitle);
+            $('#edit_job #e_department').val(department);
+            $('#edit_job #e_job_location').val(jobLocation);
+            $('#edit_job #e_no_of_vacancies').val(vacancies);
+            $('#edit_job #e_experience').val(experience);
+            $('#edit_job #e_age').val(age);
+            $('#edit_job #e_salary_from').val(salaryFrom);
+            $('#edit_job #e_salary_to').val(salaryTo);
+            $('#edit_job #e_job_type').val(jobType);
+            $('#edit_job #e_status').val(status);
+            $('#edit_job #e_start_date').val(startDate);
+            $('#edit_job #e_expired_date').val(expiredDate);
+            $('#edit_job #e_description').val(description);
+            
+            // Set the select values
+            $('#e_job_type').val(jobType);
+            $('#e_status').val(status);
+            
+            // Set the hidden input values
+            $('#e_job_type_hidden').val(jobType);
+            $('#e_status_hidden').val(status);
         });
     });
     </script>

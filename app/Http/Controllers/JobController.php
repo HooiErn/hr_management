@@ -17,9 +17,15 @@ class JobController extends Controller
     // job List
     public function jobList(Request $request)
     {    
-        \Log::info('Job List Request:', $request->all()); // Log incoming request parameters
+        \Log::info('Job List Request:', $request->all());
 
         $query = AddJob::query();
+
+        // Only hide expired jobs that are closed
+        $query->where(function($q) {
+            $q->where('expired_date', '>', now())  // Show non-expired jobs
+              ->orWhere('status', 'Open');         // OR show jobs marked as Open
+        });
 
         // Apply filters based on request parameters
         if ($request->filled('job_title')) {
@@ -46,7 +52,7 @@ class JobController extends Controller
             return response()->json($job_list);
         }
 
-        // For non-AJAX requests, return the view with all jobs
+        // For non-AJAX requests, return the view with filtered jobs
         return view('job.joblist', compact('job_list'));
     }
 
@@ -141,6 +147,7 @@ class JobController extends Controller
         // Get company info
         $company = Company::first();
         
+        // Get and process jobs
         $job_list = DB::table('add_jobs')
             ->select('*')
             ->get()
@@ -148,6 +155,23 @@ class JobController extends Controller
                 $expired_date = Carbon::parse($job->expired_date)->startOfDay();
                 $job->is_expired = $now->gt($expired_date);
                 $job->days_remaining = $now->diffInDays($expired_date, false);
+                
+                // Automatically update status based on expiration
+                if ($job->is_expired && $job->status === 'Open') {
+                    DB::table('add_jobs')
+                        ->where('id', $job->id)
+                        ->update(['status' => 'Closed']);
+                    $job->status = 'Closed';
+                    
+                    \Log::info('Job status automatically updated to Closed', [
+                        'job_id' => $job->id,
+                        'job_title' => $job->job_title
+                    ]);
+                }
+                
+                // Add status color for UI
+                $job->status_class = $job->status === 'Open' ? 'text-success' : 'text-danger';
+                
                 return $job;
             });
 
@@ -181,7 +205,11 @@ class JobController extends Controller
 
         DB::beginTransaction();
         try {
-            
+            // Check if expired_date is in the past
+            if (Carbon::parse($request->expired_date)->isPast()) {
+                throw new \Exception('Expired date cannot be in the past');
+            }
+
             $add_job = new AddJob;
             $add_job->job_title       = $request->job_title;
             $add_job->department      = $request->department;
@@ -204,7 +232,8 @@ class JobController extends Controller
             
         } catch(\Exception $e) {
             DB::rollback();
-            Toastr::error('Failed to create job!', 'Error');
+            \Log::error('Job creation failed: ' . $e->getMessage());
+            Toastr::error('Failed to create job: ' . $e->getMessage(), 'Error');
             return redirect()->back();
         } 
     }
@@ -311,8 +340,13 @@ class JobController extends Controller
 
                     DB::commit();
 
+                    // Always show the first success message
                     Toastr::success('Apply job successfully', 'Success');
-                    Toastr::success('Candidate has been successfully sent to the interviewer.', 'Success');
+                    
+                    // Only show the second message if user is admin
+                    if (auth()->check() && auth()->user()->role_name === 'Admin') {
+                        Toastr::success('Candidate has been successfully sent to the interviewer.', 'Success');
+                    }
 
                     return redirect()->back();
                 }
@@ -380,7 +414,7 @@ class JobController extends Controller
             'salary_from' => 'required',
             'salary_to' => 'required',
             'job_type' => 'required|string',
-            'status' => 'required|string',
+            'status' => 'required|in:Open,Closed', // Add validation for status
             'start_date' => 'required|date',
             'expired_date' => 'required|date',
             'description' => 'required|string',
@@ -392,7 +426,6 @@ class JobController extends Controller
                 'job_title' => $request->job_title,
                 'department' => $request->department,
                 'job_location' => $request->job_location,
-
                 'no_of_vacancies' => $request->no_of_vacancies,
                 'experience' => $request->experience,
                 'age' => $request->age,
@@ -405,6 +438,16 @@ class JobController extends Controller
                 'description' => $request->description,
             ];
 
+            // If manually setting status to Open, check if the job isn't expired
+            if ($request->status === 'Open') {
+                $now = Carbon::now();
+                $expiredDate = Carbon::parse($request->expired_date);
+                
+                if ($expiredDate->lt($now)) {
+                    throw new \Exception("Cannot set status to Open for an expired job.");
+                }
+            }
+
             AddJob::where('id', $request->id)->update($update);
             
             DB::commit();
@@ -416,6 +459,52 @@ class JobController extends Controller
             Toastr::error('Failed to update job: ' . $e->getMessage(), 'Error');
             return redirect()->back();
         } 
+    }
+
+    /**
+     * Update job status
+     */
+    public function updateJobStatus(Request $request)
+    {
+        $request->validate([
+            'job_id' => 'required|exists:add_jobs,id',
+            'status' => 'required|in:Open,Closed'
+        ]);
+
+        try {
+            $job = AddJob::findOrFail($request->job_id);
+            
+            // If trying to set status to Open, check if job isn't expired
+            if ($request->status === 'Open') {
+                $now = Carbon::now();
+                $expiredDate = Carbon::parse($job->expired_date);
+                
+                if ($expiredDate->lt($now)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot set expired job to Open status'
+                    ], 400);
+                }
+            }
+
+            $job->status = $request->status;
+            $job->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job status updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Status Update Error:', [
+                'error' => $e->getMessage(),
+                'job_id' => $request->job_id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update job status'
+            ], 500);
+        }
     }
 
     /** manage Resumes */
@@ -725,5 +814,65 @@ class JobController extends Controller
         $candidates = JobApplicant::where('job_id', $job_id)->get();
         return view('job.candidates', compact('candidates', 'job'));
     }
+
+    public function updateJob(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $job = AddJob::findOrFail($request->id);
+            
+            $job->job_title = $request->job_title;
+            $job->department = $request->department;
+            $job->job_location = $request->job_location;
+            $job->no_of_vacancies = $request->no_of_vacancies;
+            $job->experience = $request->experience;
+            $job->age = $request->age;
+            $job->salary_from = $request->salary_from;
+            $job->salary_to = $request->salary_to;
+            $job->job_type = $request->job_type;
+            $job->status = $request->status;  // Add this line
+            $job->start_date = $request->start_date;
+            $job->expired_date = $request->expired_date;
+            $job->description = $request->description;
+            
+            $job->save();
+            
+            DB::commit();
+            Toastr::success('Job updated successfully :)','Success');
+            return redirect()->back();
+        } catch(\Exception $e) {
+            DB::rollback();
+            Toastr::error('Job update failed :)','Error');
+            return redirect()->back();
+        }
+    }
+
+    public function checkAndUpdateJobStatuses()
+    {
+        try {
+            $affected = DB::table('add_jobs')
+                ->where('status', 'Open')
+                ->where('expired_date', '<', now())
+                ->update(['status' => 'Closed']);
+
+            \Log::info('Manual job status update:', ['affected_rows' => $affected]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Updated {$affected} expired job(s)",
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in manual job status update:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update job statuses',
+            ], 500);
+        }
+    }
+
 
 }

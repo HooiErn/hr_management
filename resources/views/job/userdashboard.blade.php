@@ -33,7 +33,7 @@
                     <div class="card-body">
                         <span class="dash-widget-icon"><i class="fa fa-file-text-o"></i></span>
                         <div class="dash-widget-info">
-                            <h3>110</h3>
+                            <h3>Coming soon</h3>
                             <span>Offered</span>
                         </div>
                     </div>
@@ -44,7 +44,7 @@
                     <div class="card-body">
                         <span class="dash-widget-icon"><i class="fa fa-clipboard"></i></span>
                         <div class="dash-widget-info">
-                            <h3>40</h3>
+                            <h3>Coming soon</h3>
                             <span>Applied</span>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
                     <div class="card-body">
                         <span class="dash-widget-icon"><i class="fa fa-retweet"></i></span>
                         <div class="dash-widget-info">
-                            <h3>374</h3>
+                            <h3>Coming soon</h3>
                             <span>Visited</span>
                         </div>
                     </div>
@@ -66,45 +66,14 @@
                     <div class="card-body">
                         <span class="dash-widget-icon"><i class="fa fa-floppy-o"></i></span>
                         <div class="dash-widget-info">
-                            <h3>220</h3>
+                            <h3>Coming soon</h3>
                             <span>Saved</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-                    
-        <div class="row">
-            <div class="col-md-12">
-                <div class="row">
-                    <div class="col-md-6 text-center d-flex">
-                        <div class="card flex-fill">
-                            <div class="card-body">
-                                <h3 class="card-title">Overview</h3>
-                                <canvas id="lineChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 d-flex">
-                        <div class="card flex-fill">
-                            <div class="card-body">
-                                <h3 class="card-title text-center">Latest Jobs</h3>
-                                <ul class="list-group">
-                                    @foreach ($job_list as $key => $items)
-                                    @php
-                                        $date = $items->created_at;
-                                        $date = Carbon\Carbon::parse($date);
-                                        $elapsed =  $date->diffForHumans();
-                                    @endphp
-                                    <li class="list-group-item list-group-item-action">{{ $items->job_title }} <span class="float-right text-sm text-muted">{{ $elapsed }}</span></li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                
 
         <div class="row">
             <div class="col-md-12">

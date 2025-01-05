@@ -141,40 +141,17 @@ class AttendanceController extends Controller
   // attendance employee
   public function viewAttendance(Request $request)
   {
-      $attendances = Attendance::where('employee_id', auth()->user()->id)
+      // Get employee with ID EMP0001
+      $employeeId = \App\Models\Employee::where('employee_id', 'EMP0002')->first()->id;
+
+      $attendances = Attendance::where('employee_id', $employeeId)
           ->where('date', Carbon::today()->toDateString())
           ->get();
 
-      foreach ($attendances as $attendance) {
-          if ($attendance->punch_in) {
-              $attendance->punch_in = Carbon::parse($attendance->punch_in);
-          }
-          if ($attendance->punch_out) {
-              $attendance->punch_out = Carbon::parse($attendance->punch_out);
-              
-              $calculations = $this->calculateProductionAndOvertime(
-                  $attendance->punch_in,
-                  $attendance->punch_out,
-                  $attendance->break_duration
-              );
-              
-              $attendance->production = $calculations['production'];
-              $attendance->overtime = $calculations['overtime'];
-              $attendance->save();
-              
-              \Log::info('Attendance Record:', [
-                  'punch_in' => $attendance->punch_in,
-                  'punch_out' => $attendance->punch_out,
-                  'worked_minutes' => $attendance->production,
-                  'overtime' => $attendance->overtime,
-              ]);
-          } else {
-              $attendance->worked_hours = 0;
-              $attendance->overtime = 0;
-          }
-      }
-
-      return view('form.attendanceemployee', compact('attendances'));
+      // Pass both the numeric ID and employee_id to the view
+      $employee = \App\Models\Employee::find($employeeId);
+      
+      return view('form.attendanceemployee', compact('attendances', 'employeeId', 'employee'));
   }
 
     public function checkToday(Request $request)
@@ -201,6 +178,27 @@ class AttendanceController extends Controller
             'employee_id' => 'required|exists:employees,id',
         ]);
 
+        // Check if employee ID is valid
+        if (!$request->employee_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid employee ID'
+            ], 400);
+        }
+
+        // Check if already punched in today
+        $existingPunchIn = Attendance::where('employee_id', $request->employee_id)
+            ->whereDate('date', Carbon::today())
+            ->whereNull('punch_out')
+            ->first();
+
+        if ($existingPunchIn) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Already punched in today'
+            ], 400);
+        }
+
         // Get client IP and WiFi info
         $clientIP = $request->ip();
         $wifiName = $request->input('wifi_name', 'Unknown');
@@ -213,15 +211,32 @@ class AttendanceController extends Controller
         $attendance->location = $wifiName;
         $attendance->ip_address = $clientIP;
         $attendance->session_id = session()->getId();
-        $attendance->save();
+        
+        try {
+            $attendance->save();
+            
+            \Log::info('Punch In Created:', [
+                'attendance_id' => $attendance->id,
+                'punch_in' => $attendance->punch_in,
+                'session_id' => $attendance->session_id
+            ]);
 
-        \Log::info('Punch In Created:', [
-            'attendance_id' => $attendance->id,
-            'punch_in' => $attendance->punch_in,
-            'session_id' => $attendance->session_id
-        ]);
-
-        return response()->json(['message' => 'Punched in successfully!', 'attendance' => $attendance]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Punched in successfully!', 
+                'attendance' => $attendance
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Punch In Failed:', [
+                'error' => $e->getMessage(),
+                'employee_id' => $request->employee_id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to punch in. Please try again.'
+            ], 500);
+        }
     }
 
     public function punchOut(Request $request)

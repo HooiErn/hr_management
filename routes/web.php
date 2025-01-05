@@ -161,9 +161,9 @@ Route::controller(JobController::class)->group(function () {
     Route::get('cv/download/{id}', 'downloadCV')->middleware('auth');
     Route::get('/jobs/filter', 'filter')->middleware('auth')->name('jobs/filter');
     Route::post('form/jobs/save', 'JobsSaveRecord')->name('form/jobs/save');
-    Route::post('form/apply/job/save', 'applyJobSaveRecord')->middleware('auth')->name('form/apply/job/save');
+    Route::post('form/apply/job/save', 'applyJobSaveRecord')->name('form/apply/job/save');
     Route::post('form/apply/job/update', 'applyJobUpdateRecord')->middleware('auth')->name('form/apply/job/update');
-    
+    Route::post('/job/update-status', 'updateJobStatus')->middleware('auth')->name('job.update.status');
     //delete multiple jobs
     Route::post('/jobs/delete', 'deleteJob')->middleware('auth')->name('jobs/delete');
 

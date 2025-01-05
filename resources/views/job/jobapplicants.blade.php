@@ -10,7 +10,7 @@
                     <div class="col-sm-12">
                         <h3 class="page-title">Job Applicants</h3>
                         <ul class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('jobs') }}">Dashboard</a></li>
                             <li class="breadcrumb-item active">Job Applicants</li>
                         </ul>
                     </div>

@@ -76,16 +76,33 @@
                                 <div class="stats-info">
                                     <p style="display: flex; align-items: center;">
                                         Today <strong style="margin-left: 5px;">
-                                            {{ $attendances->isNotEmpty() && $attendances->first()->punch_in && $attendances->first()->punch_out 
-                                                ? floor($attendances->first()->punch_in->diffInMinutes($attendances->first()->punch_out) / 60) . ' hrs ' . ($attendances->first()->punch_in->diffInMinutes($attendances->first()->punch_out) % 60) . ' mins'
-                                                : '0 hrs' 
-                                            }}
-                                        </strong>
+                                        @php
+                                            $todayHours = 0;
+                                            $todayMinutes = 0;
+                                            
+                                            if ($attendances->isNotEmpty()) {
+                                                $attendance = $attendances->first();
+                                                if ($attendance->punch_in && $attendance->punch_out) {
+                                                    $punchIn = \Carbon\Carbon::parse($attendance->punch_in);
+                                                    $punchOut = \Carbon\Carbon::parse($attendance->punch_out);
+                                                    $diffInMinutes = $punchOut->diffInMinutes($punchIn);
+                                                    $todayHours = floor($diffInMinutes / 60);
+                                                    $todayMinutes = $diffInMinutes % 60;
+                                                }
+                                            }
+                                        @endphp
+                                        {{ $todayHours }} hrs {{ $todayMinutes }} mins
+                                    </strong>
                                         <span style="margin-left: 5px;">/ 8 hrs</span>
                                     </p>
                                     <div class="progress">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $attendances->isNotEmpty() ? ($attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) / 8) * 100 : 0 }}%" aria-valuenow="{{ $attendances->isNotEmpty() ? ($attendances->first()->punch_in->diffInHours($attendances->first()->punch_out) / 8) * 100 : 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ ($todayHours + ($todayMinutes / 60)) / 8 * 100 }}%" 
+                                        aria-valuenow="{{ ($todayHours + ($todayMinutes / 60)) / 8 * 100 }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
                                     </div>
+                                </div>
                                 </div>
                                 <div class="stats-info">
                                     <p>This Week <strong><small>coming soon/ 40 hrs</small></strong></p>
@@ -157,6 +174,7 @@
                                     <th>Punch In</th>
                                     <th>Punch Out</th>
                                     <th>Production</th>
+                                    <th>Wifi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -167,7 +185,7 @@
                                     <td>{{ $attendance->punch_in ? \Carbon\Carbon::parse($attendance->punch_in)->format('h:i A') : 'N/A' }}</td>
                                     <td>{{ $attendance->punch_out ? \Carbon\Carbon::parse($attendance->punch_out)->format('h:i A') : 'N/A' }}</td>
                                     <td>{{ floor($attendance->production / 60) }} hrs {{ $attendance->production % 60 }} mins</td>
-                                    
+                                    <td>{{ $attendance->location }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -183,7 +201,7 @@
     <script>
         $(document).ready(function() {
             let isPunchedIn = false;
-            const employeeId = {{ auth()->user()->id }};
+            const employeeId = {{ $employeeId ?? 'null' }};
 
             // Function to get WiFi information
             async function getWiFiInfo() {
@@ -220,6 +238,12 @@
                 // Log the WiFi name for debugging
                 console.log('WiFi Name:', wifiName);
                 
+                // Check if we have a valid employee ID
+                if (!employeeId || employeeId === 'null') {
+                    alert('Invalid employee ID. Please contact administrator.');
+                    return;
+                }
+                
                 $.ajax({
                     url: '{{ route("attendance.punchIn") }}',
                     type: 'POST',
@@ -229,14 +253,22 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        console.log('Punch in response:', response);
-                        isPunchedIn = true;
-                        updateUI();
-                        location.reload();
+                        if (response.success) {
+                            console.log('Punch in response:', response);
+                            isPunchedIn = true;
+                            updateUI();
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Error punching in. Please try again.');
+                        }
                     },
                     error: function(xhr) {
                         console.error('Punch in error:', xhr);
-                        alert('Error punching in. Please try again.');
+                        let errorMessage = 'Error punching in. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
                     }
                 });
             }

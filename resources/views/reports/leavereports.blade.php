@@ -119,17 +119,17 @@
                                 <td>{{ $leave->day }}</td>
                                 <td>
                                     <div class="leave-reason">
-                                        <span class="reason-text" data-toggle="modal" data-target="#reasonModalReport{{ $leave->id }}_{{ $leave->employee_id }}">
+                                        <span class="reason-text" data-toggle="modal" data-target="#reasonModalReport{{ $leave->id }}">
                                             {{ \Str::limit($leave->leave_reason, 20) }}
                                         </span>
                                     </div>
 
                                     <!-- Modal with unique ID per employee and leave -->
-                                    <div class="modal fade" id="reasonModalReport{{ $leave->id }}_{{ $leave->employee_id }}" tabindex="-1" role="dialog">
+                                    <div class="modal fade" id="reasonModalReport{{ $leave->id }}" tabindex="-1" role="dialog">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">Leave Reason - {{ $leave->employee->name ?? 'Employee' }}</h5>
+                                                    <h5 class="modal-title">Leave Reason - {{ $leave->employee_name }}</h5>
                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
@@ -145,12 +145,10 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if($leave->leave_status == 'Approved')
-                                        <span class="badge bg-success">Approved</span>
-                                    @elseif($leave->leave_status == 'Pending')
-                                        <span class="badge bg-warning">Pending</span>
-                                    @else
-                                        <span class="badge bg-danger">Rejected</span>
+                                    @if($leave->leave_status == 'paid')
+                                        <span class="badge bg-success">Paid</span>
+                                    @elseif($leave->leave_status == 'unpaid')
+                                        <span class="badge bg-danger">Unpaid</span>
                                     @endif
                                 </td>
                                 <td>{{ $leave->remaining_days }}</td>
