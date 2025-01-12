@@ -184,7 +184,7 @@
                                     <td>{{ \Carbon\Carbon::parse($attendance->date)->format('d M Y') }}</td>
                                     <td>{{ $attendance->punch_in ? \Carbon\Carbon::parse($attendance->punch_in)->format('h:i A') : 'N/A' }}</td>
                                     <td>{{ $attendance->punch_out ? \Carbon\Carbon::parse($attendance->punch_out)->format('h:i A') : 'N/A' }}</td>
-                                    <td>{{ floor($attendance->production / 60) }} hrs {{ $attendance->production % 60 }} mins</td>
+                                    <td>{{ formatMinutes($attendance->production) }}</td>
                                     <td>{{ $attendance->location }}</td>
                                 </tr>
                                 @endforeach
@@ -274,6 +274,11 @@
             }
 
             function punchOut() {
+                if (!employeeId || employeeId === 'null') {
+                    alert('Invalid employee ID. Please contact administrator.');
+                    return;
+                }
+
                 $.ajax({
                     url: '{{ route("attendance.punchOut") }}',
                     type: 'POST',
@@ -282,12 +287,22 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                        isPunchedIn = false;
-                        updateUI();
-                        location.reload(); // Refresh to show updated status
+                        if (response.success) {
+                            console.log('Punch out response:', response);
+                            isPunchedIn = false;
+                            updateUI();
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Error punching out. Please try again.');
+                        }
                     },
                     error: function(xhr) {
-                        alert('Error punching out. Please try again.');
+                        console.error('Punch out error:', xhr);
+                        let errorMessage = 'Error punching out. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
                     }
                 });
             }
@@ -318,6 +333,35 @@
                     $('#punchOutBtn').hide();
                 }
             }
+
+            @php
+                function formatMinutes($minutesString) {
+                    if (empty($minutesString)) return '0 hours 0 mins';
+                    
+                    $minutes = (int)$minutesString;
+                    $hours = floor($minutes / 60);
+                    $remainingMinutes = $minutes % 60;
+                    
+                    if ($hours == 0) {
+                        return "0 hours {$remainingMinutes} mins";
+                    } else {
+                        return "{$hours} hours {$remainingMinutes} mins";
+                    }
+                }
+
+                function formatDecimalHours($decimal) {
+                    if (empty($decimal)) return '0 hours 0 mins';
+                    
+                    $hours = floor($decimal);
+                    $minutes = round(($decimal - $hours) * 60);
+                    
+                    if ($hours == 0) {
+                        return "0 hours {$minutes} mins";
+                    } else {
+                        return "{$hours} hours {$minutes} mins";
+                    }
+                }
+            @endphp
         });
     </script>
 @endsection

@@ -108,13 +108,32 @@
                                         </td>
                                         <td>
                                             @if(isset($attendance['production']))
-                                                {{ floor($attendance['production']) }}h 
-                                                {{ ($attendance['production'] * 60) % 60 }}m
+                                                @php
+                                                    $productionHours = floor($attendance['production']);
+                                                    $productionMinutes = round(($attendance['production'] - $productionHours) * 60);
+                                                @endphp
+                                                {{ $productionHours }}h {{ $productionMinutes }}m
                                             @else
                                                 --
                                             @endif
                                         </td>
-                                        <td>{{ $attendance['overtime_formatted'] ?? '--' }}</td>
+                                        <td>
+                                            @if(isset($attendance['overtime']))
+                                                @php
+                                                    // If overtime is an array of multiple records, sum them up
+                                                    $totalOvertimeMinutes = is_array($attendance['overtime']) 
+                                                        ? array_sum($attendance['overtime'])
+                                                        : $attendance['overtime'];
+                                                    
+                                                    // Calculate hours and minutes
+                                                    $overtimeHours = floor($totalOvertimeMinutes / 60);
+                                                    $overtimeMinutes = round($totalOvertimeMinutes % 60);
+                                                @endphp
+                                                {{ $overtimeHours }}h {{ $overtimeMinutes }}m
+                                            @else
+                                                --
+                                            @endif
+                                        </td>
                                         <td class="attendance-status">
                                             @if($attendance)
                                                 @if($attendance['punch_out'] !== '--')
@@ -146,6 +165,7 @@ $(document).ready(function() {
         var monthFilter = $('#monthSelect').val();
         var yearFilter = $('#yearSelect').val();
 
+        let totalOvertimeHours = 0;
         let totalOvertimeMinutes = 0;
 
         $('.attendance-row').each(function() {
@@ -192,20 +212,18 @@ $(document).ready(function() {
                 if (overtimeText !== '--') {
                     let hours = parseInt(overtimeText.match(/(\d+)h/)[1] || 0);
                     let minutes = parseInt(overtimeText.match(/(\d+)m/)[1] || 0);
-                    totalOvertimeMinutes += (hours * 60) + minutes;
+                    totalOvertimeHours += hours;
+                    totalOvertimeMinutes += minutes;
                 }
             }
         });
 
-        // Update total overtime display
-        updateTotalOvertime(totalOvertimeMinutes);
-    }
+        // Convert excess minutes to hours
+        totalOvertimeHours += Math.floor(totalOvertimeMinutes / 60);
+        totalOvertimeMinutes = totalOvertimeMinutes % 60;
 
-    // Function to update total overtime display
-    function updateTotalOvertime(totalMinutes) {
-        let hours = Math.floor(totalMinutes / 60);
-        let minutes = totalMinutes % 60;
-        $('#totalOvertime').text(`${hours}h ${minutes}m`);
+        // Update total overtime display
+        $('#totalOvertime').text(`${totalOvertimeHours}h ${totalOvertimeMinutes}m`);
     }
 
     // Attach event listeners

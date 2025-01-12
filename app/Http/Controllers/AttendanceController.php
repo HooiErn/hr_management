@@ -63,23 +63,19 @@ class AttendanceController extends Controller
         $date = $attendance->date;
 
         if (!isset($attendanceData[$employeeId][$date])) {
-            // Add null checks for overtime
-            $overtimeMinutes = $attendance->overtime ?? 0;
-            $overtimeHours = floor($overtimeMinutes / 60);
-            $overtimeMinutes = $overtimeMinutes % 60;
-            $overtimeFormatted = sprintf('%02d:%02d', $overtimeHours, $overtimeMinutes);
-
             $attendanceData[$employeeId][$date] = [
                 'date' => $date,
                 'punch_in' => Carbon::parse($attendance->punch_in)->format('h:i A'),
                 'punch_out' => $attendance->punch_out ? Carbon::parse($attendance->punch_out)->format('h:i A') : '--',
                 'break_duration' => 0,
                 'production' => 0,
-                'overtime' => $overtimeMinutes, // Raw minutes for calculations
-                'overtime_formatted' => $overtimeFormatted, // Formatted HH:MM
+                'overtime' => 0, // Initialize overtime
                 'employee' => $attendance->employee
             ];
         }
+
+        // Add to total overtime for this employee and date
+        $attendanceData[$employeeId][$date]['overtime'] += ($attendance->overtime ?? 0);
 
         // Calculate production and overtime
         if ($attendance->punch_out) {
@@ -118,6 +114,17 @@ class AttendanceController extends Controller
             if (!$currentPunchOut || $newPunchOut->gt($currentPunchOut)) {
                 $attendanceData[$employeeId][$date]['punch_out'] = $newPunchOut->format('h:i A');
             }
+        }
+    }
+
+    // After the loop, format the overtime for display
+    foreach ($attendanceData as $employeeId => $dates) {
+        foreach ($dates as $date => $data) {
+            $totalOvertimeMinutes = $data['overtime'];
+            $overtimeHours = floor($totalOvertimeMinutes / 60);
+            $overtimeMinutes = round($totalOvertimeMinutes % 60);
+            $attendanceData[$employeeId][$date]['overtime_formatted'] = 
+                sprintf('%02dh %02dm', $overtimeHours, $overtimeMinutes);
         }
     }
 
@@ -241,51 +248,70 @@ class AttendanceController extends Controller
 
     public function punchOut(Request $request)
     {
-        $request->validate([
-            'employee_id' => 'required|exists:employees,id',
-        ]);
+        try {
+            $request->validate([
+                'employee_id' => 'required|exists:employees,id',
+            ]);
 
-        $attendance = Attendance::where('employee_id', $request->employee_id)
-            ->where('date', Carbon::today()->toDateString())
-            ->whereNull('punch_out')
-            ->first();
+            $attendance = Attendance::where('employee_id', $request->employee_id)
+                ->whereDate('date', Carbon::today())
+                ->whereNotNull('punch_in')
+                ->whereNull('punch_out')
+                ->latest()
+                ->first();
 
-        if ($attendance) {
+            if (!$attendance) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active punch-in found for today'
+                ], 400);
+            }
+
             $punchOut = Carbon::now();
-            
-            $calculations = $this->calculateProductionAndOvertime(
-                $attendance->punch_in,
-                $punchOut
-            );
-            
-            $updated = DB::table('attendances')
-                ->where('id', $attendance->id)
-                ->update([
-                    'punch_out' => $punchOut->format('Y-m-d H:i:s'),
-                    'production' => $calculations['production'],
-                    'overtime' => $calculations['overtime'],
-                    'session_id' => session()->getId()
-                ]);
+            $punchIn = Carbon::parse($attendance->punch_in);
 
-            \Log::info('Final Values Saved:', [
+            // Calculate minutes
+            $productionMinutes = $punchOut->diffInMinutes($punchIn);
+            $breakDuration = 0.00;
+            
+            // Store values in correct format
+            $attendance->punch_out = $punchOut->format('H:i:s');
+            $attendance->production = (string)$productionMinutes;  // varchar
+            $attendance->overtime = number_format($productionMinutes, 2);  // decimal(5,2) - store minutes directly
+            $attendance->break_duration = number_format($breakDuration, 2);  // decimal(5,2)
+            $attendance->save();
+
+            \Log::info('Punch Out Success:', [
                 'attendance_id' => $attendance->id,
-                'production' => $calculations['production'],
-                'overtime' => $calculations['overtime'],
-                'update_success' => $updated
+                'punch_in' => $attendance->punch_in,
+                'punch_out' => $attendance->punch_out,
+                'production' => $productionMinutes,
+                'break_duration' => $breakDuration,
+                'overtime' => $productionMinutes
             ]);
 
             return response()->json([
+                'success' => true,
                 'message' => 'Punched out successfully!',
-                'attendance' => [
-                    'punch_out' => $punchOut->format('Y-m-d H:i:s'),
-                    'production' => $calculations['production'],
-                    'overtime' => $calculations['overtime'],
-                    'session_id' => session()->getId()
+                'data' => [
+                    'punch_out' => $punchOut->format('H:i:s'),
+                    'production' => (string)$productionMinutes,
+                    'break_duration' => number_format($breakDuration, 2),
+                    'overtime' => number_format($productionMinutes, 2)
                 ]
             ]);
-        }
 
-        return response()->json(['message' => 'No punch in record found for today.'], 404);
+        } catch (\Exception $e) {
+            \Log::error('Punch Out Error:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error punching out: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     private function calculateBreakDuration($punchIn, $punchOut)

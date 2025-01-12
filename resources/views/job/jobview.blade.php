@@ -392,10 +392,11 @@
      document.addEventListener('DOMContentLoaded', function() {
         const icNumberInput = document.getElementById('ic_number');
         const birthDateInput = document.getElementById('birth_date');
+        const ageInput = document.getElementById('age');
         
         if (icNumberInput) {
             icNumberInput.addEventListener('input', function(e) {
-                // Remove non-digit characters
+                // Remove any non-digits
                 let value = this.value.replace(/[^\d]/g, '');
                 
                 // Limit to 12 digits
@@ -405,62 +406,103 @@
                 
                 this.value = value;
                 
-                // Validation for IC number length (must be exactly 12 digits)
-                if (value.length === 12) {
-                    // Extract birth date from IC number (first 6 digits: YYMMDD)
-                    const yearPrefix = value.substring(0, 2);  // First two digits of year
-                    const month = value.substring(2, 4);
-                    const day = value.substring(4, 6);
-
-                    // Determine if the year is from 1900s or 2000s
-                    let year = parseInt(yearPrefix);
-                    const currentYear = new Date().getFullYear();
-                    const currentCentury = Math.floor(currentYear / 100); // Get the current century (20 for 2023)
-                    
-                    // If the yearPrefix is greater than the current year, it's from the 1900s
-                    if (year > currentYear % 100) {
-                        year += 1900; // If it’s larger than the current year, it’s from the 1900s
+                // Clear previous validations if input is incomplete
+                if (value.length !== 12) {
+                    this.setCustomValidity('IC number must be exactly 12 digits');
+                    this.classList.remove('is-valid');
+                    birthDateInput.value = '';
+                    ageInput.value = '';
+                    if (value.length > 0) {
+                        this.classList.add('is-invalid');
                     } else {
-                        year += 2000; // Otherwise, it's from the 2000s
+                        this.classList.remove('is-invalid');
                     }
+                    return;
+                }
 
-                    // Format the birth date as YYYY-MM-DD
-                    const birthDate = `${year}-${month}-${day}`;
-
-                    // Set the birth date in the hidden field
-                    birthDateInput.value = birthDate;
-
-                    // Calculate and set age based on the birth date
-                    const birthDateObj = new Date(birthDate);
-                    const today = new Date();
-                    let age = today.getFullYear() - birthDateObj.getFullYear();
-                    const monthDiff = today.getMonth() - birthDateObj.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-                        age--;
+                // Parse IC components
+                const yearPrefix = value.substring(0, 2);
+                const month = parseInt(value.substring(2, 4));
+                const day = parseInt(value.substring(4, 6));
+                
+                // Validate month and day
+                let isValid = true;
+                let errorMessage = '';
+                
+                // Month validation
+                if (month < 1 || month > 12) {
+                    isValid = false;
+                    errorMessage = 'Invalid month in IC number';
+                }
+                
+                // Day validation based on month
+                if (isValid) {
+                    const daysInMonth = new Date(2000, month, 0).getDate();
+                    if (day < 1 || day > daysInMonth) {
+                        isValid = false;
+                        errorMessage = `Invalid day for ${getMonthName(month)}`;
                     }
-                    
-                    // Display the age in a separate field or use the value for further actions
-                    document.getElementById('age').value = age;  // Assume you have an 'age' field
-
-                    // Visual feedback for valid IC number
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
-                } else {
-                    // Provide feedback for invalid IC number
+                }
+                
+                if (!isValid) {
+                    this.setCustomValidity(errorMessage);
                     this.classList.remove('is-valid');
                     this.classList.add('is-invalid');
+                    birthDateInput.value = '';
+                    ageInput.value = '';
+                    return;
                 }
-            });
-            
-            // Add blur event for additional validation
-            icNumberInput.addEventListener('blur', function() {
-                if (this.value.length > 0 && this.value.length < 12) {
+
+                // Determine full year (19xx or 20xx)
+                let fullYear = parseInt(yearPrefix);
+                const currentYear = new Date().getFullYear();
+                fullYear += fullYear > (currentYear - 2000) ? 1900 : 2000;
+
+                // Format date components
+                const formattedMonth = month.toString().padStart(2, '0');
+                const formattedDay = day.toString().padStart(2, '0');
+                const birthDate = `${fullYear}-${formattedMonth}-${formattedDay}`;
+                
+                // Calculate age
+                const birthDateObj = new Date(birthDate);
+                const today = new Date();
+                let age = today.getFullYear() - birthDateObj.getFullYear();
+                const monthDiff = today.getMonth() - birthDateObj.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+                    age--;
+                }
+
+                // Validate age (minimum 17 years)
+                if (age < 17) {
+                    isValid = false;
+                    errorMessage = 'Applicant must be at least 17 years old';
+                    this.setCustomValidity(errorMessage);
+                    this.classList.remove('is-valid');
                     this.classList.add('is-invalid');
-                    this.setCustomValidity('IC number must be exactly 12 digits');
+                    birthDateInput.value = '';
+                    ageInput.value = '';
+                    return;
                 }
+
+                // Set values if everything is valid
+                this.setCustomValidity('');
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                birthDateInput.value = birthDate;
+                ageInput.value = age;
             });
         }
     });
+
+    // Helper function to get month name
+    function getMonthName(monthNumber) {
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        return months[monthNumber - 1];
+    }
 </script>
 
 
